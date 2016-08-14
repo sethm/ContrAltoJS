@@ -38,6 +38,11 @@ var AluFunction = {
   BUS_AND_NOT_T:       14
 };
 
+//
+// This implements the stripped-down version of the 74181 ALU
+// that the Alto exposes to the microcode, and nothing more.
+//
+
 var Alu = {
 
   // State
@@ -51,7 +56,6 @@ var Alu = {
     this.carry = 0;
   },
 
-  // Execute
   execute: function(fn, bus, t, skip) {
     var r = 0;
 
@@ -126,13 +130,12 @@ var Alu = {
       r = (bus & (~t));
       carry = 0;
       break;
-      
+
     default:
       throw("Unimplemented Function");
     }
 
     return r & 0xffff;
   }
-
 
 };
