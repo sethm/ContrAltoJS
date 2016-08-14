@@ -12,19 +12,15 @@
 <body>
 
 <div id="container">
-  <canvas id="myCanvas" width="768" height="1024"></canvas>
+  <canvas id="altoDisplay" width="768" height="1024"></canvas>
 </div>
 
 <script>
     // JavaScript code goes here
-    var canvas = document.getElementById("myCanvas");
+    var canvas = document.getElementById("altoDisplay");
     var ctx = canvas.getContext("2d");
-    
-    ctx.beginPath();
-    ctx.rect(20, 40, 50, 50);
-    ctx.fillStyle = "#FF0000";
-    ctx.fill();
-    ctx.closePath();
+    ctx.font="20px Georgia";
+    ctx.fillText("I Don't Do Anything Yet",10,50);
 </script>
 
 </body>
