@@ -236,19 +236,21 @@ QUnit.module("CPU Tests", {
 });
 
 QUnit.test("CPU Reset", function(assert) {
+    var i, j;
+
     assert.ok(32 === Cpu.r.length, "r.length == 32");
 
-    for (var i = 0; i < Cpu.r.length; i++) {
+    for (i = 0; i < Cpu.r.length; i++) {
         assert.ok(Cpu.r[i] === 0, "r[i] == 0");
     }
 
     assert.ok(8 === Cpu.s.length, "s.length == 8");
 
-    for (var i = 0; i < Cpu.s.length; i++) {
+    for (i = 0; i < Cpu.s.length; i++) {
         assert.ok(Cpu.s[i] instanceof Array, "s[i] is an array");
         assert.ok(32 === Cpu.s[i].length, "s[i] has a length of 8");
 
-        for (var j = 0; j < Cpu.s[i].length; j++) {
+        for (j = 0; j < Cpu.s[i].length; j++) {
             assert.ok(0 === Cpu.s[i][j], "s[i][j] == 0");
         }
     }
@@ -260,5 +262,5 @@ QUnit.test("CPU Reset", function(assert) {
 
     assert.ok(0 === Cpu.aluC0, "aluC0 == 0");
 
-    assert.ok(0 === Cpu.rmr, "rmr == 0");
+    assert.ok(0xffff === Cpu.rmr, "rmr == 0xffff");
 });

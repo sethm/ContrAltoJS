@@ -141,6 +141,10 @@ var Alu = {
 };
 
 var Cpu = {
+    R_SIZE: 32,
+    S_SIZE: 8,
+    S_I_SIZE: 32,
+
     // State
 
     // CPU Registers
@@ -150,33 +154,68 @@ var Cpu = {
     ir: 0,
 
     // R and S register files and bank select
-    r: new Array(32),
-    s: new Array(8),
+    r: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+
+    s: [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
 
     // Stores the last carry from the ALU on a Load L
     aluC0: 0,
     rmr: 0,
 
+    // Tasks
+    nextTask: undefined,
+    currentTask: undefined,
+    tasks: [
+    ],
+
     // Functions
+
+    // Reset the CPU state
     reset: function() {
-        
-        for (var i = 0; i < this.r.length; i++) {
+        var i;
+
+        // Initialize r and s
+        for (i = 0; i < this.R_SIZE; i++) {
             this.r[i] = 0;
         }
-        
-        for (var i = 0; i < this.s.length; i++) {
-            if (!(this.s[i] instanceof Array)) {
-                this.s[i] = new Array(32);
-            }
 
-            for (var j = 0; j < this.s[i].length; j++) {
+        for (i = 0; i < this.S_SIZE; i++) {
+            for (var j = 0; j < this.S_I_SIZE; j++) {
                 this.s[i][j] = 0;
             }
         }
 
+        // Initialize CPU registers
         this.t = 0;
         this.l = 0;
         this.m = 0;
         this.ir = 0;
+
+        this.aluC0 = 0;
+        // Start all tasks in ROM0
+        this.rmr = 0xffff;
+
+        // reset tasks.
+        for (i = 0; i < this.tasks.length; i++) {
+            if (tasks[i] != undefined) {
+                tasks[i].reset();
+            }
+        }
     }
 };
