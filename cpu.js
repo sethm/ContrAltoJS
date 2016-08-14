@@ -137,5 +137,45 @@ var Alu = {
 
     return r & 0xffff;
   }
+};
 
+var Cpu = {
+  // State
+
+  // CPU Registers
+  t:  0,
+  l:  0,
+  m:  0,
+  ir: 0,
+
+  // R and S register files and bank select
+  r: new Array(32),
+  s: new Array(8),
+
+  // Stores the last carry from the ALU on a Load L
+  aluC0: 0,
+  rmr: 0,
+
+  // Functions
+  reset: function() {
+    
+    for (var i = 0; i < this.r.length; i++) {
+      this.r[i] = 0;
+    }
+    
+    for (var i = 0; i < this.s.length; i++) {
+      if (!(this.s[i] instanceof Array)) {
+        this.s[i] = new Array(32);
+      }
+
+      for (var j = 0; j < this.s[i].length; j++) {
+        this.s[i][j] = 0;
+      }
+    }
+
+    this.t = 0;
+    this.l = 0;
+    this.m = 0;
+    this.ir = 0;
+  }
 };

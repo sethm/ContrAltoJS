@@ -204,3 +204,39 @@ QUnit.test("ALU Unimplemented Function", function(assert) {
     "raised 'Unimplemented Function'"
   );
 });
+
+
+QUnit.module("CPU Tests", {
+  beforeEach: function() {
+    Cpu.reset();
+  }
+});
+
+QUnit.test("CPU Reset", function(assert) {
+  assert.ok(32 === Cpu.r.length, "r.length == 32");
+
+  for (var i = 0; i < Cpu.r.length; i++) {
+    assert.ok(Cpu.r[i] === 0, "r[i] == 0");
+  }
+
+  assert.ok(8 === Cpu.s.length, "s.length == 8");
+
+  for (var i = 0; i < Cpu.s.length; i++) {
+    assert.ok(Cpu.s[i] instanceof Array, "s[i] is an array");
+    assert.ok(32 === Cpu.s[i].length, "s[i] has a length of 8")
+
+    for (var j = 0; j < Cpu.s[i].length; j++) {
+      assert.ok(0 === Cpu.s[i][j], "s[i][j] == 0");
+    }
+  }
+
+  assert.ok(0 === Cpu.t, "t == 0");
+  assert.ok(0 === Cpu.l, "l == 0");
+  assert.ok(0 === Cpu.m, "m == 0");
+  assert.ok(0 === Cpu.ir, "ir == 0");
+
+  assert.ok(0 === Cpu.aluC0, "aluC0 == 0");
+
+  assert.ok(0 === Cpu.rmr, "rmr == 0");
+});
+
