@@ -22,21 +22,62 @@
 // Alto CPU
 //
 
+// Enums
+
+var BusSource = {
+    READ_R:          0,
+    LOAD_R:          1,
+    NONE:            2,
+    TASK_SPECIFIC_1: 3,
+    TASK_SPECIFIC_2: 4,
+    READ_MD:         5,
+    READ_MOUSE:      6,
+    READ_DISP:       7
+};
+
+// TODO: The manual describes this field as being four bits wide, and
+// yet there are only 8 defined values. Why is that?
+var SpecialFunction1 = {
+    NONE:     0,
+    LOAD_MAR: 1,
+    TASK:     2,
+    BLOCK:    3,
+    LLSH1:    4,
+    LRSH1:    5,
+    LLCY8:    6,
+    CONSTANT: 7
+};
+
+// TODO: The manual describes this field as being four bits wide, and
+// yet there are only 8 defined values. Why is that?
+var SpecialFunction2 = {
+    NONE:     0,
+    BUSEQ0:   1,
+    SHLT0:    2,
+    SHEQ0:    3,
+    BUS:      4,
+    ALUCY:    5,
+    STOREMD:  6,
+    CONSTANT: 7
+};
+
 var AluFunction = {
     BUS:                 0,
     T:                   1,
     BUS_OR_T:            2,
     BUS_AND_T:           3,
-    ALU_BUS_AND_T:       4,
-    BUS_XOR_T:           6,
-    BUS_PLUS_1:          7,
-    BUS_MINUS_1:         8,
-    BUS_PLUS_T:          9,
-    BUS_MINUS_T:         10,
-    BUS_MINUS_T_MINUS_1: 11,
-    BUS_PLUS_T_PLUS_1:   12,
-    BUS_PLUS_SKIP:       13,
-    BUS_AND_NOT_T:       14
+    BUS_XOR_T:           4,
+    BUS_PLUS_1:          5,
+    BUS_MINUS_1:         6,
+    BUS_PLUS_T:          7,
+    BUS_MINUS_T:         8,
+    BUS_MINUS_T_MINUS_1: 9,
+    BUS_PLUS_T_PLUS_1:   10,
+    BUS_PLUS_SKIP:       11,
+    ALU_BUS_AND_T:       12,
+    BUS_AND_NOT_T:       13,
+    UNDEFINED_1:         14,
+    UNDEFINED_2:         15
 };
 
 //
@@ -218,4 +259,21 @@ var Cpu = {
             }
         }
     }
+};
+
+var MicroInstruction = function(code) {
+
+    // Decode fields
+
+    // Bit manipulation in JavaScript is fraught with traps, so we
+    // must tread carefully and test well.
+
+    this.rselect = (code >> 27) & 0x1f;
+    this.aluf    = (code >> 23) & 0x0f;   // ALU Function
+    this.bs      = (code >> 20) & 0x07;   // Bus Source
+    this.f1      = (code >> 16) & 0x0f;   // Special Function 1
+    this.f2      = (code >> 12) & 0x0f;   // Special Function 2
+    this.loadT   = ((code >> 11) & 1) === 0 ? false : true;
+    this.loadL   = ((code >> 10) & 1) === 0 ? false : true;
+    this.next    = code & 0x3ff;
 };

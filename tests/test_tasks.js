@@ -32,10 +32,13 @@ QUnit.module("Task Tests", {
 });
 
 QUnit.test("EmulatorTask Reset", function(assert) {
+    assert.equal(EmulatorTask.rb, 0);
+    assert.equal(EmulatorTask.srSelect, 0);
+    assert.notOk(EmulatorTask.loadS);
+
+    EmulatorTask.wakeup = false;
+    EmulatorTask.reset();
     assert.ok(EmulatorTask.wakeup, "wakeup == true");
-    assert.ok(0 === EmulatorTask.rb, "rb == 0");
-    assert.ok(0 === EmulatorTask.srSelect, "srSelect == 0");
-    assert.ok(false === EmulatorTask.loadS, "loadS is false");
 });
 
 QUnit.test("EmulatorTask getBusSource", function(assert) {
@@ -46,9 +49,13 @@ QUnit.test("EmulatorTask getBusSource", function(assert) {
     EmulatorTask.rb = 1;
     EmulatorTask.srSelect = 5;
 
-    assert.ok(0x5a == EmulatorTask.getBusSource(EmulatorBusSource.READ_S_LOCATION));
-    assert.ok(0xffff == EmulatorTask.getBusSource(EmulatorBusSource.LOAD_S_LOCATION));
+    assert.equal(EmulatorTask.getBusSource(EmulatorBusSource.READ_S_LOCATION), 0x5a);
+    assert.notOk(EmulatorTask.loadS);
+
+    // Load should return ffff and set loadS to true
+    assert.ok(EmulatorTask.getBusSource(EmulatorBusSource.LOAD_S_LOCATION), 0xffff);
+    assert.ok(EmulatorTask.loadS);
 
     EmulatorTask.srSelect = 0;
-    assert.ok(0xf0 == EmulatorTask.getBusSource(EmulatorBusSource.READ_S_LOCATION));
+    assert.ok(EmulatorTask.getBusSource(EmulatorBusSource.READ_S_LOCATION), 0xf0);
 });

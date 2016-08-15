@@ -57,7 +57,7 @@ var EmulatorTask = {
             break;
             ;;
         case EmulatorBusSource.LOAD_S_LOCATION:
-            loadS = true;
+            this.loadS = true;
             return 0xffff;
             break;
             ;;
