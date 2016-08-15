@@ -265,15 +265,12 @@ var MicroInstruction = function(code) {
 
     // Decode fields
 
-    // Bit manipulation in JavaScript is fraught with traps, so we
-    // must tread carefully and test well.
-
-    this.rselect = (code >> 27) & 0x1f;
-    this.aluf    = (code >> 23) & 0x0f;   // ALU Function
-    this.bs      = (code >> 20) & 0x07;   // Bus Source
-    this.f1      = (code >> 16) & 0x0f;   // Special Function 1
-    this.f2      = (code >> 12) & 0x0f;   // Special Function 2
-    this.loadT   = ((code >> 11) & 1) === 0 ? false : true;
-    this.loadL   = ((code >> 10) & 1) === 0 ? false : true;
+    this.rselect = (code >>> 27) & 0x1f;
+    this.aluf    = (code >>> 23) & 0x0f;   // ALU Function
+    this.bs      = (code >>> 20) & 0x07;   // Bus Source
+    this.f1      = (code >>> 16) & 0x0f;   // Special Function 1
+    this.f2      = (code >>> 12) & 0x0f;   // Special Function 2
+    this.loadT   = ((code >>> 11) & 1) === 0 ? false : true;
+    this.loadL   = ((code >>> 10) & 1) === 0 ? false : true;
     this.next    = code & 0x3ff;
 };
