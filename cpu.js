@@ -51,14 +51,14 @@ var SpecialFunction1 = {
 // TODO: The manual describes this field as being four bits wide, and
 // yet there are only 8 defined values. Why is that?
 var SpecialFunction2 = {
-    NONE:     0,
-    BUSEQ0:   1,
-    SHLT0:    2,
-    SHEQ0:    3,
-    BUS:      4,
-    ALUCY:    5,
-    STOREMD:  6,
-    CONSTANT: 7
+    NONE:      0,
+    BUSEQ0:    1,
+    SHLT0:     2,
+    SHEQ0:     3,
+    BUS:       4,
+    ALUCY:     5,
+    STORE_MD:  6,
+    CONSTANT:  7
 };
 
 var AluFunction = {
@@ -79,6 +79,35 @@ var AluFunction = {
     UNDEFINED_1:         14,
     UNDEFINED_2:         15
 };
+
+var EmulatorF1 = {
+    SWMODE:    8,
+    WRTRAM:    9,
+    RDRAM:     10,
+    LOAD_RMR:  11,
+    Unused:    12,
+    LOAD_ESRB: 13,
+    RSNF:      14,
+    STARTF:    15
+};
+
+var EmulatorF2 = {
+    BUSODD:    8,
+    MAGIC:     9,
+    LOAD_DNS:  10,
+    ACDEST:    11,
+    LOAD_IR:   12,
+    IDISP:     13,
+    ACSOURCE:  14,
+    UNUSED:    15
+};
+
+var MemoryOperation = {
+    NONE:         0,
+    LOAD_ADDRESS: 1,
+    READ:         2,
+    STORE:        3
+}
 
 //
 // This implements the stripped-down version of the 74181 ALU
@@ -273,4 +302,65 @@ var MicroInstruction = function(code) {
     this.loadT   = ((code >>> 11) & 1) === 0 ? false : true;
     this.loadL   = ((code >>> 10) & 1) === 0 ? false : true;
     this.next    = code & 0x3ff;
+
+    // Whether this instruction references constant memory
+
+    this.constantAccess = (this.f1 == SpecialFunction1.CONSTANT ||
+                           this.f2 == SpecialFunction2.CONSTANT);
+
+    this.constantAccessOrBS4 = (this.constantAccess || this.bs > 4);
+
+    // TODO: constantValue. Need to implement Control ROM first
+
+    this.constantValue = false;
+
+    // Whether this instruction needs the Shifter output This is the
+    // only task-specific thing we cache, even if this isn't the right
+    // task, worst-case we'll do an operation we didn't need to.
+    this.needShifterOutput = (this.f2 == EmulatorF2.LOAD_DNS ||
+                              this.f2 == SpecialFunction2.SHEQ0 ||
+                              this.f2 == SpecialFunction2.SHLT0);
+
+    // Whether this instruction accesses memory
+    this.memoryAccess = ((this.bs == BusSource.READ_MD && !this.constantAccess) ||
+                         this.f1 == SpecialFunction1.LOAD_MAR ||
+                         this.f2 == SpecialFunction2.STORE_MD);
+
+    if (this.memoryAccess) {
+        if (this.f1 == SpecialFunction1.LOAD_MAR) {
+            this.memoryOperation = MemoryOperation.LOAD_ADDRESS;
+        } else if (this.bs == BusSource.READ_MD) {
+            this.memoryOperation = MemoryOperation.READ;
+        } else {
+            this.memoryOperation = MemoryOperation.STORE;
+        }
+    } else {
+        this.memoryOperation = MemoryOperation.NONE;
+    }
+
+    switch(this.aluf) {
+    case AluFunction.BUS:
+    case AluFunction.BUS_OR_T:
+    case AluFunction.BUS_PLUS_1:
+    case AluFunction.BUS_MINUS_1:
+    case AluFunction.BUS_PLUS_T_PLUS_1:
+    case AluFunction.BUS_PLUS_SKIP:
+    case AluFunction.ALU_BUS_AND_T:
+        this.loadTFromALU = true;
+        break;
+    default:
+        this.loadTFromALU = false;
+    }
+};
+
+
+MicroInstruction.prototype.toString = function() {
+    return("RSELECT=" + this.rselect.toString(8) +
+           " ALUF=" + this.aluf +
+           " BS=" + this.bs +
+           " F1=" + this.f1 +
+           " F2=" + this.f2 +
+           " LoadT=" + (this.loadT ? "1" : "0") +
+           " LoadL=" + (this.loadL ? "1" : "0") +
+           " NEXT=" + this.next.toString(8));
 };

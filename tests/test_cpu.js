@@ -377,7 +377,7 @@ QUnit.test("Parses Special Function 2", function(assert) {
     assert.equal(u.f2, SpecialFunction2.ALUCY);
 
     u = new MicroInstruction(0x00006000);
-    assert.equal(u.f2, SpecialFunction2.STOREMD);
+    assert.equal(u.f2, SpecialFunction2.STORE_MD);
 
     u = new MicroInstruction(0x00007000);
     assert.equal(u.f2, SpecialFunction2.CONSTANT);
@@ -417,4 +417,122 @@ QUnit.test("Parses Next", function(assert) {
 
     u = new MicroInstruction(0xffffffc00);
     assert.equal(0, u.next);
+});
+
+QUnit.test("Parses constantAccess", function(assert) {
+    u = new MicroInstruction(0xf1001000);
+    assert.equal(u.constantAccess, false);
+
+    u = new MicroInstruction(0x00070000);
+    assert.equal(u.constantAccess, true);
+
+    u = new MicroInstruction(0x00007000);
+    assert.equal(u.constantAccess, true);
+
+    u = new MicroInstruction(0x00077000);
+    assert.equal(u.constantAccess, true);
+
+    u = new MicroInstruction(0x00003000);
+    assert.equal(u.constantAccess, false);
+});
+
+QUnit.test("Parses constantAccessOrBS4", function(assert) {
+    u = new MicroInstruction(0);
+    assert.equal(u.constantAccessOrBS4, false);
+
+    u = new MicroInstruction(0x00077000);
+    assert.equal(u.constantAccessOrBS4, true);
+
+    u = new MicroInstruction(0x00300000);
+    assert.equal(u.constantAccessOrBS4, false);
+
+    u = new MicroInstruction(0x00500000);
+    assert.equal(u.constantAccessOrBS4, true);
+});
+
+// QUnit.test("Parses constantValue", function(assert) {
+//
+// });
+
+QUnit.test("Parses needShifterOutput", function(assert) {
+    u = new MicroInstruction(0);
+    assert.equal(u.needShifterOutput, false);
+
+    u = new MicroInstruction(0x0000a000);      // LOAD_DNS
+    assert.equal(u.needShifterOutput, true);
+
+    u = new MicroInstruction(0x00002000);      // SHEQ0
+    assert.equal(u.needShifterOutput, true);
+
+    u = new MicroInstruction(0x00003000);      // SHLT0
+    assert.equal(u.needShifterOutput, true);
+
+    u = new MicroInstruction(0x00001000);      // BUSEQ0
+    assert.equal(u.needShifterOutput, false);
+});
+
+QUnit.test("Parses memoryAccess", function(assert) {
+    u = new MicroInstruction(0);
+    assert.equal(u.memoryAccess, false);
+
+    u = new MicroInstruction(0x00500000); // bs = READ_MD,
+    assert.equal(u.memoryAccess, true);
+
+    u = new MicroInstruction(0x00010000); // LOAD_MAR
+    assert.equal(u.memoryAccess, true);
+
+    u = new MicroInstruction(0x00006000);
+    assert.equal(u.memoryAccess, true);
+
+    u = new MicroInstruction(0x00507000); // bs = READ_MD, but ConstantAccess
+    assert.equal(u.memoryAccess, false);
+});
+
+QUnit.test("Parses memoryOperation", function(assert) {
+    u = new MicroInstruction(0);
+    assert.equal(u.memoryOperation, MemoryOperation.NONE);
+
+    u = new MicroInstruction(0x00010000); // LOAD_MAR
+    assert.equal(u.memoryOperation, MemoryOperation.LOAD_ADDRESS);
+
+    u = new MicroInstruction(0x00500000); // READ_MD
+    assert.equal(u.memoryOperation, MemoryOperation.READ);
+
+    u = new MicroInstruction(0x00006000); // STORE_MD
+    assert.equal(u.memoryOperation, MemoryOperation.STORE);
+});
+
+QUnit.test("Parses LoadTFromAlu", function(assert) {
+    u = new MicroInstruction(0x00800000); // T
+    assert.equal(u.loadTFromALU, false);
+
+    u = new MicroInstruction(0x0); // BUS
+    assert.equal(u.loadTFromALU, true);
+
+    u = new MicroInstruction(0x01000000); // BUS_OR_T
+    assert.equal(u.loadTFromALU, true);
+
+    u = new MicroInstruction(0x01800000); // BUS_AND_T
+    assert.equal(u.loadTFromALU, false);
+
+    u = new MicroInstruction(0x02800000); // BUS_PLUS_1
+    assert.equal(u.loadTFromALU, true);
+
+    u = new MicroInstruction(0x03000000); // BUS_MINUS_1
+    assert.equal(u.loadTFromALU, true);
+
+    u = new MicroInstruction(0x05000000); // BUS_PLUS_T_PLUS_1
+    assert.equal(u.loadTFromALU, true);
+
+    u = new MicroInstruction(0x05800000); // BUS_PLUS_SKIP
+    assert.equal(u.loadTFromALU, true);
+
+    u = new MicroInstruction(0x06000000); // ALU_BUS_AND_T
+    assert.equal(u.loadTFromALU, true);
+});
+
+QUnit.test("toString", function(assert) {
+    u = new MicroInstruction(0x09623903);
+
+    assert.equal(u.toString(), "RSELECT=1 ALUF=2 BS=6 F1=2 F2=3 LoadT=1 LoadL=0 NEXT=403");
 });
