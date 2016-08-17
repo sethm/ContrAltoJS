@@ -43,6 +43,10 @@ var EmulatorTask = {
         this.wakeup = true;
     },
 
+    executeNext: function() {
+        return InstructionCompletion.NORMAL;
+    },
+
     getBusSource: function (bs) {
         switch(bs) {
         case EmulatorBusSource.READ_S_LOCATION:
@@ -64,5 +68,9 @@ var EmulatorTask = {
         default:
             throw "Unhandled bus source " + bs;
         }
+    },
+
+    toString: function() {
+        return "Emulator Task [rb=" + this.rb + ", srSelect=" + this.srSelect + "]";
     }
 };

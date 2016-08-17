@@ -251,8 +251,7 @@ var Cpu = {
     // Tasks
     nextTask: undefined,
     currentTask: undefined,
-    tasks: [
-    ],
+    tasks: [EmulatorTask],
 
     // Functions
 
@@ -283,8 +282,55 @@ var Cpu = {
 
         // reset tasks.
         for (i = 0; i < this.tasks.length; i++) {
-            if (tasks[i] != undefined) {
-                tasks[i].reset();
+            if (this.tasks[i] != undefined) {
+                this.tasks[i].reset();
+            }
+        }
+
+        // Execute the initial task switch
+        this.taskSwitch();
+
+        this.currentTask = this.nextTask;
+        this.nextTask = undefined;
+    },
+
+    // Execute a single clock step
+    clock: function() {
+        switch(this.currentTask.executeNext()) {
+        case InstructionCompletion.TASK_SWITCH:
+            // Invoke the task switch, this will take effect after
+            // the NEXT instruction completes, not this one.
+            this.taskSwitch();
+            break;
+
+        case InstructionCompletion.NORMAL:
+            if (this.nextTask != undefined) {
+                // If we have a new task, switch to it now.
+                this.currentTask = this.nextTask;
+                this.nextTask = undefined;
+                this.currentTask.onTaskSwitch();
+            }
+            break;
+
+        case InstructionCompletion.MEMORY_WAIT:
+            // We were waiting for memory on this cycle, we do nothing
+            // (no task switch even if one is pending) in this case.
+            break;
+        }
+    },
+
+    softReset: function() {
+        console.log("Soft Reset.");
+    },
+
+    // Switch tasks
+    taskSwitch: function() {
+        for (var i = this.tasks.length - 1; i >= 0; i--) {
+            if (this.tasks[i] !== undefined && this.tasks[i].wakeup) {
+                console.log("Switching to task: " + this.tasks[i]);
+                this.nextTask = this.tasks[i];
+                this.nextTask.firstInstructionAfterSwitch = true;
+                break;
             }
         }
     }
