@@ -437,6 +437,8 @@ QUnit.test("Parses constantAccess", function(assert) {
 });
 
 QUnit.test("Parses constantAccessOrBS4", function(assert) {
+    var u;
+
     u = new MicroInstruction(0);
     assert.equal(u.constantAccessOrBS4, false);
 
@@ -450,11 +452,16 @@ QUnit.test("Parses constantAccessOrBS4", function(assert) {
     assert.equal(u.constantAccessOrBS4, true);
 });
 
-// QUnit.test("Parses constantValue", function(assert) {
-//
-// });
+QUnit.test("Parses constantValue", function(assert) {
+    var u;
+
+    u = new MicroInstruction(0x07300000);
+    assert.equal(u.constantValue, 0xfffe);
+});
 
 QUnit.test("Parses needShifterOutput", function(assert) {
+    var u;
+
     u = new MicroInstruction(0);
     assert.equal(u.needShifterOutput, false);
 
@@ -472,6 +479,8 @@ QUnit.test("Parses needShifterOutput", function(assert) {
 });
 
 QUnit.test("Parses memoryAccess", function(assert) {
+    var u;
+
     u = new MicroInstruction(0);
     assert.equal(u.memoryAccess, false);
 
@@ -489,6 +498,8 @@ QUnit.test("Parses memoryAccess", function(assert) {
 });
 
 QUnit.test("Parses memoryOperation", function(assert) {
+    var u;
+
     u = new MicroInstruction(0);
     assert.equal(u.memoryOperation, MemoryOperation.NONE);
 
@@ -503,6 +514,8 @@ QUnit.test("Parses memoryOperation", function(assert) {
 });
 
 QUnit.test("Parses LoadTFromAlu", function(assert) {
+    var u;
+
     u = new MicroInstruction(0x00800000); // T
     assert.equal(u.loadTFromALU, false);
 
@@ -532,6 +545,8 @@ QUnit.test("Parses LoadTFromAlu", function(assert) {
 });
 
 QUnit.test("toString", function(assert) {
+    var u;
+
     u = new MicroInstruction(0x09623903);
 
     assert.equal(u.toString(), "RSELECT=1 ALUF=2 BS=6 F1=2 F2=3 LoadT=1 LoadL=0 NEXT=403");

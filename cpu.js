@@ -310,9 +310,24 @@ var MicroInstruction = function(code) {
 
     this.constantAccessOrBS4 = (this.constantAccess || this.bs > 4);
 
-    // TODO: constantValue. Need to implement Control ROM first
-
-    this.constantValue = false;
+    // Constant ROM access
+    //
+    // "The constant memory is gated to the bus by F1=7, F2=7, or
+    // BS > 4. The constant memory is addressed by the (8 bit)
+    // concatenation of RSELECT and BS. The intent in enabling
+    // constants with BS>4 is to provide a masking facility,
+    // particularly for the <-MOUSE and <-DISP bus sources. This works
+    // because the processor bus ANDs if more than one source is gated
+    // to it. Up to 32 such mask contans can be provided for each of
+    // the four bus sources > 4."
+    //
+    // NOTE also:
+    //
+    // "Note that the [emulator task F2] functions which replace the
+    // low bits of RSELECT with IR affect only the selection of R;
+    // they do not affect the address supplied to the constant ROM."
+    // Hence this can be statically cached without issue.
+    this.constantValue = CROM[(this.rselect << 3) | this.bs];
 
     // Whether this instruction needs the Shifter output This is the
     // only task-specific thing we cache, even if this isn't the right
