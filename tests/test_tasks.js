@@ -80,3 +80,18 @@ QUnit.test("ExecuteSpecialFunction1", function(assert) {
 
     assert.ok(true);
 });
+
+QUnit.test("Base Task resets shifter on exec", function(assert) {
+    var u;
+
+    u = new MicroInstruction(0);
+
+    var called = false;
+
+    doWithMock(Shifter, "reset", function() {
+        called = true;
+    }, function() {
+        Task.executeInstruction(u);
+        assert.strictEqual(called, true);
+    });
+});

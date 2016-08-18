@@ -25,13 +25,6 @@
 // ----------------------------------------------------------------------
 // ALU Tests
 
-function doWithMock(o, f, mockImpl, code) {
-    var originalImpl = o[f];
-    o[f] = mockImpl;
-    code();
-    o[f] = originalImpl;
-}
-
 QUnit.module("ALU Tests", {
     beforeEach: function() {
         Alu.reset();

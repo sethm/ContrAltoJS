@@ -17,7 +17,7 @@
  <http://www.gnu.org/licenses/>.
 */
 
-// Microcode Task
+// Microcode Tasks
 
 function extend(src, dst) {
 
@@ -50,7 +50,6 @@ var TaskType = {
     DISK_WORD:      14
 };
 
-
 var InstructionCompletion = {
     NORMAL:      0,
     TASK_SWITCH: 1,
@@ -76,6 +75,10 @@ var Task = {
         this.wrtRam = false;
         this.wakeup = false;
         this.skip = 0;
+    },
+
+    reset: function() {
+        return this.baseReset();
     },
 
     priority: function() {
@@ -105,8 +108,37 @@ var Task = {
         return this.executeInstruction(instruction);
     },
 
+    // ExecuteInstruction causes the Task to execute the next
+    // instruction (the one this.mpc is pointing to). The base
+    // implementation covers non-task specific logic, but other
+    // tasks may provide their own implementation.
+    //
+    // Returns an InstructionCompletion indicating whether this
+    // instruction calls for a task switch or not.
+    baseExecuteInstruction: function(instruction) {
+        var completion = InstructionCompletion.NORMAL;
+
+        var swMode = false;
+        var block = false;
+        var aluData = 0;
+        var nextModifier = 0;
+
+        this.loadR = false;
+        this.loadS = false;
+        this.rSelect = 0;
+        this.srSelect = 0;
+        this.busData = 0;
+        this.softReset = false;
+
+        Shifter.reset();
+
+        // TODO: Much, much more implementation.
+
+        return completion;
+    },
+
     executeInstruction: function(instruction) {
-        // TODO: Implement
+        return this.baseExecuteInstruction(instruction);
     }
 };
 
