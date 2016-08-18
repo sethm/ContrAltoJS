@@ -70,7 +70,20 @@ var Memory = {
         }
     },
 
+    load: function(address, data, task, extendedMemory) {
+        // Check for XM registers; this occurs regardless of XM
+        // flag since it's in the I/O page
+        if (address >= this.xmBankStart && address < this.xmBankStart + 16) {
+            this.xmBanks[address - this.xmBankStart] = data;
+        } else {
+            address += 0x10000 * this.getBankNumber(task, extendedMemory);
+            this.mem[address] = data;
+        }
+    },
+
     getBankNumber: function(task, extendedMemory) {
-        return extendedMemory ? (this.xmBanks[task] & 0x3) : (this.xmBanks[task] & 0xc) >>> 2;
+        return extendedMemory ?
+            (this.xmBanks[task] & 0x3) :
+            (this.xmBanks[task] & 0xc) >>> 2;
     }
 };

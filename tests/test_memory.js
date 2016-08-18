@@ -64,6 +64,35 @@ QUnit.test("Get Bank Number", function(assert) {
     assert.strictEqual(Memory.getBankNumber(TaskType.DISK_SECTOR, false), 3);
 });
 
+QUnit.test("Read and Write Meory", function(assert) {
+    Memory.init();
+    Memory.reset();
+    Memory.xmBanks[TaskType.DISK_SECTOR] = 5; // 0101 -- bank 1
+    Memory.xmBanks[TaskType.ETHERNET] = 10;   // 1010 -- bank 2
+
+    Memory.load(0, 0x5a5a, TaskType.EMULATOR, false);
+    assert.strictEqual(Memory.read(0, TaskType.EMULATOR, false),
+                       0x5a5a);
+    assert.strictEqual(Memory.mem[0], 0x5a5a);
+
+    Memory.load(0xff, 0xa5a5, TaskType.EMULATOR, false);
+    assert.strictEqual(Memory.read(0xff, TaskType.EMULATOR, false),
+                       0xa5a5);
+    assert.strictEqual(Memory.mem[0xff], 0xa5a5);
+
+    // DISK_SECTOR should be in bank 1
+    Memory.load(0, 0x1234, TaskType.DISK_SECTOR, false);
+    assert.strictEqual(Memory.read(0, TaskType.DISK_SECTOR, false),
+                       0x1234);
+    assert.strictEqual(Memory.mem[0x10000], 0x1234);
+
+    // ETHERNET should be in bank 2
+    Memory.load(0, 0xabcd, TaskType.ETHERNET, false);
+    assert.strictEqual(Memory.read(0, TaskType.ETHERNET, false),
+                       0xabcd);
+    assert.strictEqual(Memory.mem[0x20000], 0xabcd);
+});
+
 QUnit.module("MemoryBus Tests", {
     beforeEach: function() {
         Configuration.systemType = SystemType.ALTO_II;
