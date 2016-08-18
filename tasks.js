@@ -19,6 +19,38 @@
 
 // Microcode Task
 
+function extend(src, dst) {
+
+    var sourceKeys = Object.keys(src);
+    var destKeys = Object.keys(dst);
+
+    for (var i = 0; i < sourceKeys.length; i++) {
+        var name = sourceKeys[i];
+
+        if (dst[name] === undefined) {
+            dst[name] = src[name];
+        }
+    }
+
+    return dst;
+}
+
+// Also serves as priority
+var TaskType = {
+    INVALID:        -1,
+    EMULATOR:        0,
+    DISK_SECTOR:     1,
+    ETHERNET:        7,
+    MEMORY_REFRESH:  8,
+    DISPLAY_WORD:    9,
+    CURSOR:         10,
+    DISPLAY_HORIZ:  11,
+    DISPLAY_VERT:   12,
+    PARITY:         13,
+    DISK_WORD:      14
+};
+
+
 var InstructionCompletion = {
     NORMAL:      0,
     TASK_SWITCH: 1,
@@ -30,24 +62,83 @@ var EmulatorBusSource = {
     LOAD_S_LOCATION: 4
 };
 
-var EmulatorTask = {
+//
+// Base Task implementation used by all tasks
+//
+
+var Task = {
+    baseReset: function() {
+        this.mpc = this.taskType;
+        this.rdRam = false;
+        this.rb = 0;
+        this.firstInstructionAfterSwitch = false;
+        this.swMode = false;
+        this.wrtRam = false;
+        this.wakeup = false;
+        this.skip = 0;
+    },
+
+    priority: function() {
+        return this.taskType;
+    },
+
+    softReset: function() {
+        this.mpc = this.taskType;
+    },
+
+    // Removes the Wakeup signal for this task
+    blockTask: function() {
+        this.wakeup = true;
+    },
+
+    // Sets the wakeup signal for this task
+    wakeupTask: function() {
+        this.wakeup = true;
+    },
+
+    // Execute a single microinstruction.
+    //
+    // Returns an 'InstructionCompletion' indicating whether this
+    // instruction calls for a task switch or not.
+    executeNext: function() {
+        var instruction = UcodeMemory.getInstruction(this.mpc, this.taskType);
+        return this.executeInstruction(instruction);
+    },
+
+    executeInstruction: function(instruction) {
+        // TODO: Implement
+    }
+};
+
+var EmulatorTask = extend(Task, {
+    taskType: TaskType.EMULATOR,
+
     wakeup: true,
-    rb: 0,
     srSelect: 0,
+    priority: 0,
     loadS: false,
 
     reset: function() {
+        this.baseReset();
         this.rb = 0;
         this.srSelect = 0;
         this.loadS = false;
         this.wakeup = true;
     },
 
+    blockTask: function() {
+        throw("The emulator task cannot be blocked.");
+    },
+
+    wakeupTask: function() {
+        throw("The emulator task is always in wakeup state.");
+    },
+
     executeNext: function() {
         return InstructionCompletion.NORMAL;
     },
 
-    getBusSource: function (bs) {
+    getBusSource: function(bs) {
         switch(bs) {
         case EmulatorBusSource.READ_S_LOCATION:
             if (this.srSelect != 0) {
@@ -70,7 +161,84 @@ var EmulatorTask = {
         }
     },
 
+    executeSpecialFunctionEarly(instruction) {
+
+    },
+
     toString: function() {
         return "Emulator Task [rb=" + this.rb + ", srSelect=" + this.srSelect + "]";
     }
-};
+});
+
+
+var DiskSectorTask = extend(Task, {
+    taskType: TaskType.DISK_SECTOR,
+
+    reset: function() {
+        this.baseReset();
+    }
+});
+
+var DiskWordTask = extend(Task, {
+    taskType: TaskType.DISK_WORD,
+
+    reset: function() {
+        this.baseReset();
+    }
+});
+
+var DisplayWordTask = extend(Task, {
+    taskType: TaskType.DISPLAY_WORD,
+
+    reset: function() {
+        this.baseReset();
+    }
+});
+
+var DisplayHorizontalTask = extend(Task, {
+    taskType: TaskType.DISPLAY_HORIZ,
+
+    reset: function() {
+        this.baseReset();
+    }
+});
+
+var DisplayVerticalTask = extend(Task, {
+    taskType: TaskType.DISPLAY_VERT,
+
+    reset: function() {
+        this.baseReset();
+    }
+});
+
+var CursorTask = extend(Task, {
+    taskType: TaskType.CURSOR,
+
+    reset: function() {
+        this.baseReset();
+    }
+});
+
+var MemoryRefreshTask = extend(Task, {
+    taskType: TaskType.MEMORY_REFRESH,
+
+    reset: function() {
+        this.baseReset();
+    }
+});
+
+var EthernetTask = extend(Task, {
+    taskType: TaskType.ETHERNET,
+
+    reset: function() {
+        this.baseReset();
+    }
+});
+
+var ParityTask = extend(Task, {
+    taskType: TaskType.PARITY,
+
+    reset: function() {
+        this.baseReset();
+    }
+});

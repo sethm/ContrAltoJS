@@ -35,8 +35,6 @@ var BusSource = {
     READ_DISP:       7
 };
 
-// TODO: The manual describes this field as being four bits wide, and
-// yet there are only 8 defined values. Why is that?
 var SpecialFunction1 = {
     NONE:     0,
     LOAD_MAR: 1,
@@ -48,8 +46,6 @@ var SpecialFunction1 = {
     CONSTANT: 7
 };
 
-// TODO: The manual describes this field as being four bits wide, and
-// yet there are only 8 defined values. Why is that?
 var SpecialFunction2 = {
     NONE:      0,
     BUSEQ0:    1,
@@ -251,7 +247,25 @@ var Cpu = {
     // Tasks
     nextTask: undefined,
     currentTask: undefined,
-    tasks: [EmulatorTask],
+
+    // Tasks, ordered by priority
+    tasks: [
+        EmulatorTask,            // 0
+        undefined,               // 1
+        undefined,               // 2
+        undefined,               // 3
+        DiskSectorTask,          // 4
+        undefined,               // 5
+        undefined,               // 6
+        EthernetTask,            // 7
+        MemoryRefreshTask,       // 8
+        DisplayWordTask,         // 9
+        CursorTask,              // 10
+        DisplayHorizontalTask,   // 11
+        DisplayVerticalTask,     // 12
+        ParityTask,              // 13
+        DiskWordTask,            // 14
+    ],
 
     // Functions
 

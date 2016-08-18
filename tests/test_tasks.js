@@ -17,13 +17,7 @@
  <http://www.gnu.org/licenses/>.
 */
 
-//
-// Unit Tests for the Alto CPU
-//
-
-// ALU tests
-
-QUnit.module("Task Tests", {
+QUnit.module("Emulator Task Tests", {
     beforeEach: function() {
         Alu.reset();
         Cpu.reset();
@@ -58,4 +52,31 @@ QUnit.test("EmulatorTask getBusSource", function(assert) {
 
     EmulatorTask.srSelect = 0;
     assert.ok(EmulatorTask.getBusSource(EmulatorBusSource.READ_S_LOCATION), 0xf0);
+});
+
+QUnit.test("Unimplemented functions", function(assert) {
+    assert.throws(
+        function() {
+            EmulatorTask.blockTask();
+        },
+            /The emulator task cannot be blocked/,
+        "raises"
+    );
+
+    assert.throws(
+        function() {
+            EmulatorTask.wakeupTask();
+        },
+            /The emulator task is always in wakeup state/,
+        "raises"
+    );
+});
+
+QUnit.test("ExecuteSpecialFunction1", function(assert) {
+    var u;
+
+    u = new MicroInstruction(0);
+    u.f1 = EmulatorF1.LOAD_RMR;
+
+    assert.ok(true);
 });
