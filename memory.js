@@ -35,24 +35,42 @@ var Memory = {
 
     mem: [],
     xmBanks: [],
-    memTop: 0xfdff,        // 176777
+    memTop: 0xfdff,       // 176777
     xmBankStart: 0xffe0,  // 177740
     addresses: [],
 
     init: function() {
         if (Configuration.systemType === SystemType.ALTO_I) {
             this.addresses = [
+                // Main bank of RAM to 176777. IO above this.
                 new MemoryRange(0, this.memTop)
             ];
         } else {
             this.addresses = [
+                // Main bank of RAM to 176777. IO above this.
                 new MemoryRange(0, this.memTop),
+                // Memory bank registers
                 new MemoryRange(this.xmBankStart, this.xmBankStart + 16)
             ];
         }
     },
 
     reset: function() {
-    }
+        // Clear out memory and bank registers
+        this.mem = [];
+        this.xmBanks = [];
+    },
 
+    read: function(address, task, extendedMemory) {
+        if (address >= this.xmBankStart && address < this.xmBankStart + 16) {
+            return this.xmBanks[address - this.xmBankStart] & 0xfff0;
+        } else {
+            address += 0x10000 * this.getBankNumber(task, extendedMemory);
+            return this.mem[address];
+        }
+    },
+
+    getBankNumber: function(task, extendedMemory) {
+        return extendedMemory ? (this.xmBanks[task] & 0x3) : (this.xmBanks[task] & 0xc) >>> 2;
+    }
 };

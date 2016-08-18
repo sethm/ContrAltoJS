@@ -55,6 +55,14 @@ QUnit.test("Memory should be inittable - Alto II", function(assert) {
     assert.strictEqual(Memory.addresses[0].end, 0xfdff);
 });
 
+QUnit.test("Get Bank Number", function(assert) {
+    Memory.init();
+    Memory.reset();
+
+    Memory.xmBanks[TaskType.DISK_SECTOR] = 0xd;   // 1101
+    assert.strictEqual(Memory.getBankNumber(TaskType.DISK_SECTOR, true), 1);
+    assert.strictEqual(Memory.getBankNumber(TaskType.DISK_SECTOR, false), 3);
+});
 
 QUnit.module("MemoryBus Tests", {
     beforeEach: function() {
