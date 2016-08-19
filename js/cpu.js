@@ -195,7 +195,7 @@ var Alu = {
 
         case AluFunction.BUS_AND_NOT_T:
             r = (bus & (~t));
-            carry = 0;
+            this.carry = 0;
             break;
 
         default:

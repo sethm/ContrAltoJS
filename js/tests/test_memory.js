@@ -96,6 +96,8 @@ QUnit.test("Read and Write Meory", function(assert) {
 QUnit.module("MemoryBus Tests", {
     beforeEach: function() {
         Configuration.systemType = SystemType.ALTO_II;
+        Memory.init();
+        Memory.reset();
         MemoryBus.reset();
     }
 });
@@ -328,4 +330,21 @@ QUnit.test("ReadMD returns memoryData2 - Alto II", function(assert) {
     assert.strictEqual(MemoryBus.readMD(), 0xa5e5);
     // Should have been set to false.
     assert.strictEqual(MemoryBus.doubleWordMixed, false);
+});
+
+QUnit.test("Adds main memory to bus", function(assert) {
+    MemoryBus.addDevice(Memory);
+
+    // Main memory
+    assert.equal(Memory.addresses[0].start, 0);
+    assert.equal(Memory.addresses[0].end, 0xfdff);
+
+    // Extended memory bank registers
+    assert.equal(Memory.addresses[1].start, 0xffe0);
+    assert.equal(Memory.addresses[1].end, 0xfff0);
+
+    // Let's just check the first 16 slots to make sure they're filled.
+    for (var i = 0; i <= 0xf; i++) {
+        assert.strictEqual(MemoryBus.bus[i], Memory);
+    }
 });

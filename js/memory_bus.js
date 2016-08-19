@@ -52,7 +52,29 @@ var MemoryBus = {
     },
 
     addDevice: function(dev) {
-        // TODO: Implement
+        // We represent the bus as an object where each key is a
+        // physical address slot number (1 - 65535) and each value is
+        // a reference to a device that is mapped to that address.
+        // This isn't so space efficient, but shouldn't be TOO bad.
+
+        var ranges = dev.addresses;
+
+        if (dev === Memory) {
+            console.log("Adding main memory to bus.");
+            this.mainMemory = dev;
+        }
+
+        for (var i = 0; i < ranges.length; i++) {
+            for (var addr = ranges[i].start; addr <= ranges[i].end; addr++) {
+                // Make sure nothing is already using the slot
+                if (this.bus[addr] !== undefined) {
+                    throw "Memory mapped address collision for dev "
+                        + dev + " at address " + addr + " with " +
+                        this.bus[addr];
+                }
+                this.bus[addr] = dev;
+            }
+        }
     },
 
     clock: function() {
