@@ -17,6 +17,10 @@
  <http://www.gnu.org/licenses/>.
 */
 
+var MEM_SIZE = 0x40000;
+var BANK_SIZE = 0x10000;
+var BANKS = 16;
+
 var MemoryRange = function (start, end) {
     if (!(end >= start)) {
         throw "end must be greater than or equal to start";
@@ -32,7 +36,6 @@ MemoryRange.prototype.overlaps = function(other) {
 };
 
 var Memory = {
-
     mem: [],
     xmBanks: [],
     memTop: 0xfdff,       // 176777
@@ -50,22 +53,31 @@ var Memory = {
                 // Main bank of RAM to 176777. IO above this.
                 new MemoryRange(0, this.memTop),
                 // Memory bank registers
-                new MemoryRange(this.xmBankStart, this.xmBankStart + 16)
+                new MemoryRange(this.xmBankStart, this.xmBankStart + BANKS)
             ];
         }
     },
 
     reset: function() {
         // Clear out memory and bank registers
-        this.mem = [];
-        this.xmBanks = [];
+        var i;
+
+        for (i = 0; i < MEM_SIZE; i++) {
+            this.mem[i] = 0;
+        }
+
+        for (i = 0; i < BANKS; i++) {
+            this.xmBanks[i] = 0;
+        }
+
     },
 
     read: function(address, task, extendedMemory) {
-        if (address >= this.xmBankStart && address < this.xmBankStart + 16) {
+        if (address >= this.xmBankStart &&
+            address < this.xmBankStart + BANKS) {
             return this.xmBanks[address - this.xmBankStart] & 0xfff0;
         } else {
-            address += 0x10000 * this.getBankNumber(task, extendedMemory);
+            address += BANK_SIZE * this.getBankNumber(task, extendedMemory);
             return this.mem[address];
         }
     },
@@ -73,10 +85,11 @@ var Memory = {
     load: function(address, data, task, extendedMemory) {
         // Check for XM registers; this occurs regardless of XM
         // flag since it's in the I/O page
-        if (address >= this.xmBankStart && address < this.xmBankStart + 16) {
+        if (address >= this.xmBankStart &&
+            address < this.xmBankStart + BANKS) {
             this.xmBanks[address - this.xmBankStart] = data;
         } else {
-            address += 0x10000 * this.getBankNumber(task, extendedMemory);
+            address += BANK_SIZE * this.getBankNumber(task, extendedMemory);
             this.mem[address] = data;
         }
     },

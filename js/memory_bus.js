@@ -38,19 +38,6 @@ var MemoryBus = {
     extendedMemoryReference: false,
     bus: {},
 
-    reset: function() {
-        this.memoryCycle = 0;
-        this.memoryAddress = 0;
-        this.memoryCycle = 0;
-        this.memoryAddress = 0;
-        this.memoryData = 0;
-        this.memoryData2 = 0;
-        this.doubleWordStore = false;
-        this.doubleWordMixed = false;
-        this.memoryOperationActive = false;
-        this.extendedMemoryReference = false;
-    },
-
     addDevice: function(dev) {
         // We represent the bus as an object where each key is a
         // physical address slot number (1 - 65535) and each value is
@@ -77,40 +64,111 @@ var MemoryBus = {
         }
     },
 
+    reset: function() {
+        this.memoryCycle = 0;
+        this.memoryAddress = 0;
+        this.memoryCycle = 0;
+        this.memoryAddress = 0;
+        this.memoryData = 0;
+        this.memoryData2 = 0;
+        this.doubleWordStore = false;
+        this.doubleWordMixed = false;
+        this.memoryOperationActive = false;
+        this.extendedMemoryReference = false;
+    },
+
+    // A few short name aliases
+
+    mar: function() {
+        return this.memoryAddress;
+    },
+
+    md: function() {
+        return this.memoryData;
+    },
+
+    cycle: function() {
+        return this.memoryCycle;
+    },
+
+    active: function() {
+        return this.memoryOperationActive;
+    },
+
     clock: function() {
-        // TODO: Implement
+        this.memoryCycle++;
+
+        if (this.memoryOperationActive) {
+            if (Configuration.systemType == SystemType.ALTO_I) {
+                this.clockAltoI();
+            } else {
+                this.clockAltoII();
+            }
+        }
     },
 
     clockAltoI: function() {
-        // TODO: Implement
+        switch (this.memoryCycle) {
+        case 4:
+            // Buffered read of single word
+            this.memoryData = this.readFromBus(this.memoryAddress,
+                                               this.task,
+                                               this.extendedMemoryReference);
+            break;
+        case 5:
+            // Buffered read of double-word
+            this.memoryData2 = this.readFromBus((this.memoryAddress | 1),
+                                                this.task,
+                                                this.extendedMemoryReference);
+            break;
+        case 7:
+            // End of memory operation
+            this.memoryOperationActive = false;
+            this.doubleWordStore = false;
+            break;
+        }
     },
 
     clockAltoII: function() {
-        // TODO: Implement
+        switch(this.memoryCycle) {
+        case 3:
+            this.memoryData = this.readFromBus(this.memoryAddress,
+                                               this.task,
+                                               this.extendedMemoryReference);
+            break;
+        case 4:
+            // Buffered read of double-word
+            this.memoryData2 = this.readFromBus((this.memoryAddress ^ 1),
+                                                this.task,
+                                                this.extendedMemoryReference);
+            break;
+        case 5:
+            this.memoryOperationActive = false;
+            this.doubleWordStore = false;
+            break;
+        }
     },
 
     ready: function(memoryOperation) {
-        if (this.memoryOperationActive) {
-            switch (memoryOperation) {
-            case MemoryOperation.LOAD_ADDRESS:
-                return false;
 
-            case MemoryOperation.READ:
-                return this.memoryCycle > 4;
-
-            case MemoryOperation.STORE:
-                if (Configuration.systemType === SystemType.ALTO_I) {
-                    return this.memoryCycle > 4;
-                } else {
-                    return this.memoryCycle > 2;
-                }
-
-            default:
-                throw "Unexpected memory operation " + memoryOperation;
-            }
-        } else {
+        if (!this.memoryOperationActive) {
             // Nothing running right now, we're ready for anything
             return true;
+        }
+
+        switch (memoryOperation) {
+        case MemoryOperation.LOAD_ADDRESS:
+            return false;
+        case MemoryOperation.READ:
+            return this.memoryCycle > 4;
+        case MemoryOperation.STORE:
+            if (Configuration.systemType === SystemType.ALTO_I) {
+                return this.memoryCycle > 4;
+            } else {
+                return this.memoryCycle > 2;
+            }
+        default:
+            throw "Unexpected memory operation " + memoryOperation;
         }
     },
 
@@ -209,5 +267,105 @@ var MemoryBus = {
                 return this.memoryData;
             }
         }
+    },
+
+    loadMD: function(data) {
+        if (!this.memoryOperationActive) {
+            return;
+        }
+
+        if (this.systemType === SystemType.ALTO_I) {
+            this.loadMDAltoI(data);
+        } else {
+            this.loadMDAltoII(data);
+        }
+    },
+
+    loadMDAltoI(data) {
+        switch(this.memoryCycle) {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+            throw "Unexpected microcode behavior -- LoadMD "
+                + "during incorrect memory cycle.";
+        case 5:
+            this.memoryData = data;
+            this.writeToBus(this.memoryAddress, data, this.task,
+                            this.extendedMemoryReference);
+            this.doubleWordStore = true;
+            this.doubleWordMixed = true;
+            break;
+        case 6:
+            if (!this.doubleWordStore) {
+                throw "Unexpected microcode behavior -- LoadMD "
+                    + "on cycle 6, no LoadMD on cycle 5";
+            }
+
+            this.memoryData = data;
+
+            var actualAddress = this.memoryAddress | 1;
+
+            this.writeToBus(actualAddress, data, this.task,
+                            this.extendedMemoryReference);
+            break;
+        }
+    },
+
+    loadMDAltoII(data) {
+        switch(this.memoryCycle) {
+        case 1:
+        case 2:
+        case 5:
+            throw "Unexpected microcode behavior -- LoadMD "
+                + "during incorrect memory cycle.";
+        case 3:
+            this.memoryData = data;
+            this.writeToBus(this.memoryAddress, data, this.task,
+                            this.extendedMemoryReference);
+            this.doubleWordStore = true;
+            this.doubleWordMixed = true;
+            break;
+        case 4:
+            this.memoryData = data;
+
+            var actualAddress = this.doubleWordStore ?
+                    this.memoryAddress ^ 1 :
+                    this.memoryAddress;
+
+            this.writeToBus(actualAddress, data, this.task,
+                            this.extendedMemoryReference);
+            break;
+        }
+    },
+
+    readFromBus: function(address, task, extendedMemoryReference) {
+        if (address <= Memory.memTop) {
+            return this.mainMemory.read(address, task, extendedMemoryReference);
+        }
+
+        var device = this.bus[address];
+
+        if (device === undefined) {
+            return 0;
+        }
+
+        return device.read(address, task, extendedMemoryReference);
+    },
+
+    writeToBus: function(address, data, task, extendedMemoryReference) {
+        if (address <= Memory.memTop) {
+            this.mainMemory.load(address, data, task, extendedMemoryReference);
+            return;
+        }
+
+        var device = this.bus[address];
+
+        if (device === undefined) {
+            // TODO: Should we error or raise?
+            return;
+        }
+
+        device.load(address, data, task, extendedMemoryReference);
     }
 };

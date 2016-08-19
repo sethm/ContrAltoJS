@@ -99,6 +99,7 @@ QUnit.module("MemoryBus Tests", {
         Memory.init();
         Memory.reset();
         MemoryBus.reset();
+        MemoryBus.bus = {}; // Clear off the old bus
     }
 });
 
@@ -347,4 +348,38 @@ QUnit.test("Adds main memory to bus", function(assert) {
     for (var i = 0; i <= 0xf; i++) {
         assert.strictEqual(MemoryBus.bus[i], Memory);
     }
+});
+
+QUnit.test("Writes and Reads from bus", function(assert) {
+    var MockDevice = {
+        writeData: 0,
+        writeAddress: 0,
+
+        addresses: [
+            new MemoryRange(0xfffe, 0xffff)
+        ],
+
+        read: function(address, task, xmr) {
+            return this.writeData;
+        },
+
+        load: function(address, data, task, xmr) {
+            this.writeData = data;
+            this.writeAddress = address;
+        }
+    };
+
+    MemoryBus.addDevice(Memory);
+    MemoryBus.addDevice(MockDevice);
+
+    MemoryBus.writeToBus(0x0f1f, 0x5a5a, TaskType.EMULATOR, false);
+
+    assert.equal(MemoryBus.readFromBus(0x0f1f, TaskType.EMULATOR, false),
+                 0x5a5a);
+
+    MemoryBus.writeToBus(0xfffe, 0xabcd, TaskType.EMULATOR, false);
+    assert.equal(MockDevice.writeData, 0xabcd);
+    assert.equal(MockDevice.writeAddress, 0xfffe);
+    assert.equal(MemoryBus.readFromBus(0xfffe, TaskType.EMULATOR, false),
+                 0xabcd);
 });
