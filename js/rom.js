@@ -101,7 +101,7 @@ var MicrocodeBank = {
     RAM2: 4
 };
 
-var UCodeMemory = {
+var uCodeMemory = {
     getInstruction: function() {
         // TODO: Implement
         return new MicroInstruction(0);

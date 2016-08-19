@@ -110,7 +110,7 @@ var MemoryOperation = {
 // that the Alto exposes to the microcode, and nothing more.
 //
 
-var Alu = {
+var alu = {
 
     // State
 
@@ -206,7 +206,7 @@ var Alu = {
     }
 };
 
-var Cpu = {
+var cpu = {
     R_SIZE: 32,
     S_SIZE: 8,
     S_I_SIZE: 32,
@@ -250,21 +250,21 @@ var Cpu = {
 
     // Tasks, ordered by priority
     tasks: [
-        EmulatorTask,            // 0
+        emulatorTask,            // 0
         undefined,               // 1
         undefined,               // 2
         undefined,               // 3
-        DiskSectorTask,          // 4
+        diskSectorTask,          // 4
         undefined,               // 5
         undefined,               // 6
-        EthernetTask,            // 7
-        MemoryRefreshTask,       // 8
-        DisplayWordTask,         // 9
-        CursorTask,              // 10
-        DisplayHorizontalTask,   // 11
-        DisplayVerticalTask,     // 12
-        ParityTask,              // 13
-        DiskWordTask,            // 14
+        ethernetTask,            // 7
+        memoryRefreshTask,       // 8
+        displayWordTask,         // 9
+        cursorTask,              // 10
+        displayHorizontalTask,   // 11
+        displayVerticalTask,     // 12
+        parityTask,              // 13
+        diskWordTask,            // 14
     ],
 
     // Functions
@@ -344,7 +344,7 @@ var Cpu = {
 
         console.log("Silent Boot: microcode banks initialized " +
                     "to " + this.rmr.toString(8));
-        UCodeMemory.loadBanksFromRMR(this.rmr);
+        uCodeMemory.loadBanksFromRMR(this.rmr);
 
         this.rmr = 0;
         this.currentTask = this.tasks[TaskType.EMULATOR];

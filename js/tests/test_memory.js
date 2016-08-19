@@ -39,251 +39,251 @@ QUnit.module("Memory Tests", {
 
 QUnit.test("Memory should be inittable - Alto I", function(assert) {
     Configuration.systemType = SystemType.ALTO_I;
-    Memory.init();
-    Memory.reset();
-    assert.strictEqual(Memory.addresses.length, 1);
-    assert.strictEqual(Memory.addresses[0].start, 0);
-    assert.strictEqual(Memory.addresses[0].end, 0xfdff);
+    memory.init();
+    memory.reset();
+    assert.strictEqual(memory.addresses.length, 1);
+    assert.strictEqual(memory.addresses[0].start, 0);
+    assert.strictEqual(memory.addresses[0].end, 0xfdff);
 });
 
 QUnit.test("Memory should be inittable - Alto II", function(assert) {
     Configuration.systemType = SystemType.ALTO_II;
-    Memory.init();
-    Memory.reset();
-    assert.strictEqual(Memory.addresses.length, 2);
-    assert.strictEqual(Memory.addresses[0].start, 0);
-    assert.strictEqual(Memory.addresses[0].end, 0xfdff);
+    memory.init();
+    memory.reset();
+    assert.strictEqual(memory.addresses.length, 2);
+    assert.strictEqual(memory.addresses[0].start, 0);
+    assert.strictEqual(memory.addresses[0].end, 0xfdff);
 });
 
 QUnit.test("Get Bank Number", function(assert) {
-    Memory.init();
-    Memory.reset();
+    memory.init();
+    memory.reset();
 
-    Memory.xmBanks[TaskType.DISK_SECTOR] = 0xd;   // 1101
-    assert.strictEqual(Memory.getBankNumber(TaskType.DISK_SECTOR, true), 1);
-    assert.strictEqual(Memory.getBankNumber(TaskType.DISK_SECTOR, false), 3);
+    memory.xmBanks[TaskType.DISK_SECTOR] = 0xd;   // 1101
+    assert.strictEqual(memory.getBankNumber(TaskType.DISK_SECTOR, true), 1);
+    assert.strictEqual(memory.getBankNumber(TaskType.DISK_SECTOR, false), 3);
 });
 
 QUnit.test("Read and Write Meory", function(assert) {
-    Memory.init();
-    Memory.reset();
-    Memory.xmBanks[TaskType.DISK_SECTOR] = 5; // 0101 -- bank 1
-    Memory.xmBanks[TaskType.ETHERNET] = 10;   // 1010 -- bank 2
+    memory.init();
+    memory.reset();
+    memory.xmBanks[TaskType.DISK_SECTOR] = 5; // 0101 -- bank 1
+    memory.xmBanks[TaskType.ETHERNET] = 10;   // 1010 -- bank 2
 
-    Memory.load(0, 0x5a5a, TaskType.EMULATOR, false);
-    assert.strictEqual(Memory.read(0, TaskType.EMULATOR, false),
+    memory.load(0, 0x5a5a, TaskType.EMULATOR, false);
+    assert.strictEqual(memory.read(0, TaskType.EMULATOR, false),
                        0x5a5a);
-    assert.strictEqual(Memory.mem[0], 0x5a5a);
+    assert.strictEqual(memory.mem[0], 0x5a5a);
 
-    Memory.load(0xff, 0xa5a5, TaskType.EMULATOR, false);
-    assert.strictEqual(Memory.read(0xff, TaskType.EMULATOR, false),
+    memory.load(0xff, 0xa5a5, TaskType.EMULATOR, false);
+    assert.strictEqual(memory.read(0xff, TaskType.EMULATOR, false),
                        0xa5a5);
-    assert.strictEqual(Memory.mem[0xff], 0xa5a5);
+    assert.strictEqual(memory.mem[0xff], 0xa5a5);
 
     // DISK_SECTOR should be in bank 1
-    Memory.load(0, 0x1234, TaskType.DISK_SECTOR, false);
-    assert.strictEqual(Memory.read(0, TaskType.DISK_SECTOR, false),
+    memory.load(0, 0x1234, TaskType.DISK_SECTOR, false);
+    assert.strictEqual(memory.read(0, TaskType.DISK_SECTOR, false),
                        0x1234);
-    assert.strictEqual(Memory.mem[0x10000], 0x1234);
+    assert.strictEqual(memory.mem[0x10000], 0x1234);
 
     // ETHERNET should be in bank 2
-    Memory.load(0, 0xabcd, TaskType.ETHERNET, false);
-    assert.strictEqual(Memory.read(0, TaskType.ETHERNET, false),
+    memory.load(0, 0xabcd, TaskType.ETHERNET, false);
+    assert.strictEqual(memory.read(0, TaskType.ETHERNET, false),
                        0xabcd);
-    assert.strictEqual(Memory.mem[0x20000], 0xabcd);
+    assert.strictEqual(memory.mem[0x20000], 0xabcd);
 });
 
-QUnit.module("MemoryBus Tests", {
+QUnit.module("memoryBus Tests", {
     beforeEach: function() {
         Configuration.systemType = SystemType.ALTO_II;
-        Memory.init();
-        Memory.reset();
-        MemoryBus.reset();
-        MemoryBus.bus = {}; // Clear off the old bus
+        memory.init();
+        memory.reset();
+        memoryBus.reset();
+        memoryBus.bus = {}; // Clear off the old bus
     }
 });
 
 QUnit.test("Ready returns true if no memoryOperation active", function(assert) {
-    MemoryBus.memoryOperationActive = false;
-    assert.strictEqual(MemoryBus.ready(MemoryOperation.LOAD_ADDRESS), true);
+    memoryBus.memoryOperationActive = false;
+    assert.strictEqual(memoryBus.ready(MemoryOperation.LOAD_ADDRESS), true);
 });
 
 QUnit.test("Ready returns false if Load Address during active", function(assert) {
-    MemoryBus.memoryOperationActive = true;
-    assert.strictEqual(MemoryBus.ready(MemoryOperation.LOAD_ADDRESS), false);
+    memoryBus.memoryOperationActive = true;
+    assert.strictEqual(memoryBus.ready(MemoryOperation.LOAD_ADDRESS), false);
 });
 
 QUnit.test("Ready returns false if Read with memorycycle <= 4 during active", function(assert) {
-    MemoryBus.memoryOperationActive = true;
+    memoryBus.memoryOperationActive = true;
 
-    MemoryBus.memoryCycle = 0;
-    assert.strictEqual(MemoryBus.ready(MemoryOperation.READ), false);
+    memoryBus.memoryCycle = 0;
+    assert.strictEqual(memoryBus.ready(MemoryOperation.READ), false);
 
-    MemoryBus.memoryCycle = 1;
-    assert.strictEqual(MemoryBus.ready(MemoryOperation.READ), false);
+    memoryBus.memoryCycle = 1;
+    assert.strictEqual(memoryBus.ready(MemoryOperation.READ), false);
 
-    MemoryBus.memoryCycle = 2;
-    assert.strictEqual(MemoryBus.ready(MemoryOperation.READ), false);
+    memoryBus.memoryCycle = 2;
+    assert.strictEqual(memoryBus.ready(MemoryOperation.READ), false);
 
-    MemoryBus.memoryCycle = 3;
-    assert.strictEqual(MemoryBus.ready(MemoryOperation.READ), false);
+    memoryBus.memoryCycle = 3;
+    assert.strictEqual(memoryBus.ready(MemoryOperation.READ), false);
 
-    MemoryBus.memoryCycle = 4;
-    assert.strictEqual(MemoryBus.ready(MemoryOperation.READ), false);
+    memoryBus.memoryCycle = 4;
+    assert.strictEqual(memoryBus.ready(MemoryOperation.READ), false);
 
-    MemoryBus.memoryCycle = 5;
-    assert.strictEqual(MemoryBus.ready(MemoryOperation.READ), true);
+    memoryBus.memoryCycle = 5;
+    assert.strictEqual(memoryBus.ready(MemoryOperation.READ), true);
 });
 
 QUnit.test("Ready returns false if Store with memorycycle <= 4 during active (Alto I)", function(assert) {
-    MemoryBus.memoryOperationActive = true;
+    memoryBus.memoryOperationActive = true;
     Configuration.systemType = SystemType.ALTO_I;
 
-    MemoryBus.memoryCycle = 0;
-    assert.strictEqual(MemoryBus.ready(MemoryOperation.STORE), false);
+    memoryBus.memoryCycle = 0;
+    assert.strictEqual(memoryBus.ready(MemoryOperation.STORE), false);
 
-    MemoryBus.memoryCycle = 1;
-    assert.strictEqual(MemoryBus.ready(MemoryOperation.STORE), false);
+    memoryBus.memoryCycle = 1;
+    assert.strictEqual(memoryBus.ready(MemoryOperation.STORE), false);
 
-    MemoryBus.memoryCycle = 2;
-    assert.strictEqual(MemoryBus.ready(MemoryOperation.STORE), false);
+    memoryBus.memoryCycle = 2;
+    assert.strictEqual(memoryBus.ready(MemoryOperation.STORE), false);
 
-    MemoryBus.memoryCycle = 3;
-    assert.strictEqual(MemoryBus.ready(MemoryOperation.STORE), false);
+    memoryBus.memoryCycle = 3;
+    assert.strictEqual(memoryBus.ready(MemoryOperation.STORE), false);
 
-    MemoryBus.memoryCycle = 4;
-    assert.strictEqual(MemoryBus.ready(MemoryOperation.STORE), false);
+    memoryBus.memoryCycle = 4;
+    assert.strictEqual(memoryBus.ready(MemoryOperation.STORE), false);
 
-    MemoryBus.memoryCycle = 5;
-    assert.strictEqual(MemoryBus.ready(MemoryOperation.STORE), true);
+    memoryBus.memoryCycle = 5;
+    assert.strictEqual(memoryBus.ready(MemoryOperation.STORE), true);
 });
 
 QUnit.test("Ready returns false if Store with memorycycle <= 2 during active (Alto II)", function(assert) {
-    MemoryBus.memoryOperationActive = true;
+    memoryBus.memoryOperationActive = true;
     Configuration.systemType = SystemType.ALTO_II;
 
-    MemoryBus.memoryCycle = 0;
-    assert.strictEqual(MemoryBus.ready(MemoryOperation.STORE), false);
+    memoryBus.memoryCycle = 0;
+    assert.strictEqual(memoryBus.ready(MemoryOperation.STORE), false);
 
-    MemoryBus.memoryCycle = 1;
-    assert.strictEqual(MemoryBus.ready(MemoryOperation.STORE), false);
+    memoryBus.memoryCycle = 1;
+    assert.strictEqual(memoryBus.ready(MemoryOperation.STORE), false);
 
-    MemoryBus.memoryCycle = 2;
-    assert.strictEqual(MemoryBus.ready(MemoryOperation.STORE), false);
+    memoryBus.memoryCycle = 2;
+    assert.strictEqual(memoryBus.ready(MemoryOperation.STORE), false);
 
-    MemoryBus.memoryCycle = 3;
-    assert.strictEqual(MemoryBus.ready(MemoryOperation.STORE), true);
+    memoryBus.memoryCycle = 3;
+    assert.strictEqual(memoryBus.ready(MemoryOperation.STORE), true);
 });
 
 QUnit.test("Ready throws if unknown type", function(assert) {
-    MemoryBus.memoryOperationActive = true;
+    memoryBus.memoryOperationActive = true;
     assert.throws(function() {
-        MemoryBus.ready(MemoryOperation.NONE);
+        memoryBus.ready(MemoryOperation.NONE);
     }, /Unexpected memory operation/);
 });
 
 QUnit.test("LoadMAR throws if memory operation active", function(assert) {
-    MemoryBus.memoryOperationActive = true;
+    memoryBus.memoryOperationActive = true;
     assert.throws(function() {
-        MemoryBus.loadMAR(0, TaskType.EMULATOR, true);
+        memoryBus.loadMAR(0, TaskType.EMULATOR, true);
     }, /Invalid LoadMAR request during active memory operation/);
 });
 
 
 QUnit.test("LoadMAR sets extendedMemoryReference", function(assert) {
-    MemoryBus.memoryOperationActive = false;
+    memoryBus.memoryOperationActive = false;
 
-    MemoryBus.loadMAR(0, TaskType.EMULATOR, true);
-    assert.strictEqual(MemoryBus.extendedMemoryReference, true);
+    memoryBus.loadMAR(0, TaskType.EMULATOR, true);
+    assert.strictEqual(memoryBus.extendedMemoryReference, true);
 
-    MemoryBus.loadMAR(0, TaskType.EMULATOR, false);
-    assert.strictEqual(MemoryBus.extendedMemoryReference, false);
+    memoryBus.loadMAR(0, TaskType.EMULATOR, false);
+    assert.strictEqual(memoryBus.extendedMemoryReference, false);
 });
 
 QUnit.test("LoadMAR sets internal state", function(assert) {
-    MemoryBus.memoryOperationActive = false;
+    memoryBus.memoryOperationActive = false;
 
-    MemoryBus.loadMAR(0xf1e1, TaskType.DISK_SECTOR, true);
-    assert.strictEqual(MemoryBus.extendedMemoryReference, true);
+    memoryBus.loadMAR(0xf1e1, TaskType.DISK_SECTOR, true);
+    assert.strictEqual(memoryBus.extendedMemoryReference, true);
 
-    assert.strictEqual(MemoryBus.doubleWordStore, false);
-    assert.strictEqual(MemoryBus.doubleWordMixed, false);
-    assert.strictEqual(MemoryBus.memoryAddress, 0xf1e1);
-    assert.strictEqual(MemoryBus.task, TaskType.DISK_SECTOR);
-    assert.strictEqual(MemoryBus.memoryCycle, 1);
+    assert.strictEqual(memoryBus.doubleWordStore, false);
+    assert.strictEqual(memoryBus.doubleWordMixed, false);
+    assert.strictEqual(memoryBus.memoryAddress, 0xf1e1);
+    assert.strictEqual(memoryBus.task, TaskType.DISK_SECTOR);
+    assert.strictEqual(memoryBus.memoryCycle, 1);
 });
 
 QUnit.test("ReadMD returns 0xffff if not in memory operation - Alto I", function(assert) {
     Configuration.systemType = SystemType.ALTO_I;
-    MemoryBus.memoryOperationActive = false;
+    memoryBus.memoryOperationActive = false;
 
-    assert.strictEqual(MemoryBus.readMD(), 0xffff);
+    assert.strictEqual(memoryBus.readMD(), 0xffff);
 });
 
 QUnit.test("ReadMD throws if memorycycle too low - Alto I", function(assert) {
     Configuration.systemType = SystemType.ALTO_I;
-    MemoryBus.memoryOperationActive = true;
+    memoryBus.memoryOperationActive = true;
 
-    MemoryBus.memoryCycle = 1;
+    memoryBus.memoryCycle = 1;
     assert.throws(function() {
-        MemoryBus.readMD();
+        memoryBus.readMD();
     }, /Unexpected microcode behavior/);
 
-    MemoryBus.memoryCycle = 2;
+    memoryBus.memoryCycle = 2;
     assert.throws(function() {
-        MemoryBus.readMD();
+        memoryBus.readMD();
     }, /Unexpected microcode behavior/);
 
-    MemoryBus.memoryCycle = 3;
+    memoryBus.memoryCycle = 3;
     assert.throws(function() {
-        MemoryBus.readMD();
+        memoryBus.readMD();
     }, /Invalid readMD request during cycle 3 or 4/);
 
-    MemoryBus.memoryCycle = 4;
+    memoryBus.memoryCycle = 4;
     assert.throws(function() {
-        MemoryBus.readMD();
+        memoryBus.readMD();
     }, /Invalid readMD request during cycle 3 or 4/);
 });
 
 QUnit.test("ReadMD returns memoryData - Alto I", function(assert) {
     Configuration.systemType = SystemType.ALTO_I;
-    MemoryBus.memoryOperationActive = true;
-    MemoryBus.memoryCycle = 5;
-    MemoryBus.memoryData = 0x1e35;
-    assert.strictEqual(MemoryBus.readMD(), 0x1e35);
+    memoryBus.memoryOperationActive = true;
+    memoryBus.memoryCycle = 5;
+    memoryBus.memoryData = 0x1e35;
+    assert.strictEqual(memoryBus.readMD(), 0x1e35);
 });
 
 QUnit.test("ReadMD returns memoryData2 - Alto I", function(assert) {
     Configuration.systemType = SystemType.ALTO_I;
-    MemoryBus.memoryOperationActive = true;
-    MemoryBus.memoryCycle = 6;
-    MemoryBus.memoryData = 0x1e35;
-    MemoryBus.memoryData2 = 0xa5e5;
-    assert.strictEqual(MemoryBus.readMD(), 0xa5e5);
+    memoryBus.memoryOperationActive = true;
+    memoryBus.memoryCycle = 6;
+    memoryBus.memoryData = 0x1e35;
+    memoryBus.memoryData2 = 0xa5e5;
+    assert.strictEqual(memoryBus.readMD(), 0xa5e5);
 });
 
 QUnit.test("ReadMD throws if memorycycle too low - Alto II", function(assert) {
     Configuration.systemType = SystemType.ALTO_II;
-    MemoryBus.memoryOperationActive = true;
+    memoryBus.memoryOperationActive = true;
 
-    MemoryBus.memoryCycle = 1;
+    memoryBus.memoryCycle = 1;
     assert.throws(function() {
-        MemoryBus.readMD();
+        memoryBus.readMD();
     }, /Unexpected microcode behavior/);
 
-    MemoryBus.memoryCycle = 2;
+    memoryBus.memoryCycle = 2;
     assert.throws(function() {
-        MemoryBus.readMD();
+        memoryBus.readMD();
     }, /Unexpected microcode behavior/);
 
-    MemoryBus.memoryCycle = 3;
+    memoryBus.memoryCycle = 3;
     assert.throws(function() {
-        MemoryBus.readMD();
+        memoryBus.readMD();
     }, /Invalid readMD request during cycle 3 or 4/);
 
-    MemoryBus.memoryCycle = 4;
+    memoryBus.memoryCycle = 4;
     assert.throws(function() {
-        MemoryBus.readMD();
+        memoryBus.readMD();
     }, /Invalid readMD request during cycle 3 or 4/);
 });
 
@@ -292,66 +292,66 @@ QUnit.test("ReadMD throws if memorycycle is 6 - Alto II", function(assert) {
     // memory cycle 6, we should error.
 
     Configuration.systemType = SystemType.ALTO_II;
-    MemoryBus.memoryOperationActive = true;
-    MemoryBus.memoryCycle = 6;
+    memoryBus.memoryOperationActive = true;
+    memoryBus.memoryCycle = 6;
 
     assert.throws(function() {
-        MemoryBus.readMD();
+        memoryBus.readMD();
     }, /Unexpected memory cycle 6 in memory state machine/);
 });
 
 QUnit.test("ReadMD returns memoryData - Alto II", function(assert) {
     Configuration.systemType = SystemType.ALTO_II;
-    MemoryBus.memoryOperationActive = true;
-    MemoryBus.memoryCycle = 5;
-    MemoryBus.memoryData = 0x1e35;
-    assert.strictEqual(MemoryBus.readMD(), 0x1e35);
+    memoryBus.memoryOperationActive = true;
+    memoryBus.memoryCycle = 5;
+    memoryBus.memoryData = 0x1e35;
+    assert.strictEqual(memoryBus.readMD(), 0x1e35);
 });
 
 QUnit.test("ReadMD returns memoryData2 doubleWordMixed - Alto II", function(assert) {
     Configuration.systemType = SystemType.ALTO_II;
-    MemoryBus.memoryOperationActive = false;
-    MemoryBus.memoryCycle = 5;
-    MemoryBus.memoryData = 0x1e35;
-    MemoryBus.memoryData2 = 0xf1ef;
-    MemoryBus.doubleWordMixed = true;
-    assert.strictEqual(MemoryBus.readMD(), 0xf1ef);
+    memoryBus.memoryOperationActive = false;
+    memoryBus.memoryCycle = 5;
+    memoryBus.memoryData = 0x1e35;
+    memoryBus.memoryData2 = 0xf1ef;
+    memoryBus.doubleWordMixed = true;
+    assert.strictEqual(memoryBus.readMD(), 0xf1ef);
 
     // Should have been set to false.
-    assert.strictEqual(MemoryBus.doubleWordMixed, false);
+    assert.strictEqual(memoryBus.doubleWordMixed, false);
 });
 
 QUnit.test("ReadMD returns memoryData2 - Alto II", function(assert) {
     Configuration.systemType = SystemType.ALTO_II;
-    MemoryBus.memoryOperationActive = false;
-    MemoryBus.memoryCycle = 6;
-    MemoryBus.memoryData = 0x1e35;
-    MemoryBus.memoryData2 = 0xa5e5;
-    MemoryBus.doubleWordMixed = true;
-    assert.strictEqual(MemoryBus.readMD(), 0xa5e5);
+    memoryBus.memoryOperationActive = false;
+    memoryBus.memoryCycle = 6;
+    memoryBus.memoryData = 0x1e35;
+    memoryBus.memoryData2 = 0xa5e5;
+    memoryBus.doubleWordMixed = true;
+    assert.strictEqual(memoryBus.readMD(), 0xa5e5);
     // Should have been set to false.
-    assert.strictEqual(MemoryBus.doubleWordMixed, false);
+    assert.strictEqual(memoryBus.doubleWordMixed, false);
 });
 
 QUnit.test("Adds main memory to bus", function(assert) {
-    MemoryBus.addDevice(Memory);
+    memoryBus.addDevice(memory);
 
     // Main memory
-    assert.equal(Memory.addresses[0].start, 0);
-    assert.equal(Memory.addresses[0].end, 0xfdff);
+    assert.equal(memory.addresses[0].start, 0);
+    assert.equal(memory.addresses[0].end, 0xfdff);
 
     // Extended memory bank registers
-    assert.equal(Memory.addresses[1].start, 0xffe0);
-    assert.equal(Memory.addresses[1].end, 0xfff0);
+    assert.equal(memory.addresses[1].start, 0xffe0);
+    assert.equal(memory.addresses[1].end, 0xfff0);
 
     // Let's just check the first 16 slots to make sure they're filled.
     for (var i = 0; i <= 0xf; i++) {
-        assert.strictEqual(MemoryBus.bus[i], Memory);
+        assert.strictEqual(memoryBus.bus[i], memory);
     }
 });
 
 QUnit.test("Writes and Reads from bus", function(assert) {
-    var MockDevice = {
+    var mockDevice = {
         writeData: 0,
         writeAddress: 0,
 
@@ -369,17 +369,17 @@ QUnit.test("Writes and Reads from bus", function(assert) {
         }
     };
 
-    MemoryBus.addDevice(Memory);
-    MemoryBus.addDevice(MockDevice);
+    memoryBus.addDevice(memory);
+    memoryBus.addDevice(mockDevice);
 
-    MemoryBus.writeToBus(0x0f1f, 0x5a5a, TaskType.EMULATOR, false);
+    memoryBus.writeToBus(0x0f1f, 0x5a5a, TaskType.EMULATOR, false);
 
-    assert.equal(MemoryBus.readFromBus(0x0f1f, TaskType.EMULATOR, false),
+    assert.equal(memoryBus.readFromBus(0x0f1f, TaskType.EMULATOR, false),
                  0x5a5a);
 
-    MemoryBus.writeToBus(0xfffe, 0xabcd, TaskType.EMULATOR, false);
-    assert.equal(MockDevice.writeData, 0xabcd);
-    assert.equal(MockDevice.writeAddress, 0xfffe);
-    assert.equal(MemoryBus.readFromBus(0xfffe, TaskType.EMULATOR, false),
+    memoryBus.writeToBus(0xfffe, 0xabcd, TaskType.EMULATOR, false);
+    assert.equal(mockDevice.writeData, 0xabcd);
+    assert.equal(mockDevice.writeAddress, 0xfffe);
+    assert.equal(memoryBus.readFromBus(0xfffe, TaskType.EMULATOR, false),
                  0xabcd);
 });

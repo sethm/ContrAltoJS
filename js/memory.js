@@ -35,7 +35,7 @@ MemoryRange.prototype.overlaps = function(other) {
             (other.end >= this.start && other.end <= this.end));
 };
 
-var Memory = {
+var memory = {
     mem: [],
     xmBanks: [],
     memTop: 0xfdff,       // 176777

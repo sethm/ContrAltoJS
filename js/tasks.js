@@ -104,7 +104,7 @@ var Task = {
     // Returns an 'InstructionCompletion' indicating whether this
     // instruction calls for a task switch or not.
     executeNext: function() {
-        var instruction = UCodeMemory.getInstruction(this.mpc, this.taskType);
+        var instruction = uCodeMemory.getInstruction(this.mpc, this.taskType);
         return this.executeInstruction(instruction);
     },
 
@@ -130,7 +130,7 @@ var Task = {
         this.busData = 0;
         this.softReset = false;
 
-        Shifter.reset();
+        shifter.reset();
 
         // TODO: Much, much more implementation.
 
@@ -142,7 +142,7 @@ var Task = {
     }
 };
 
-var EmulatorTask = extend(Task, {
+var emulatorTask = extend(Task, {
     taskType: TaskType.EMULATOR,
 
     wakeup: true,
@@ -174,12 +174,12 @@ var EmulatorTask = extend(Task, {
         switch(bs) {
         case EmulatorBusSource.READ_S_LOCATION:
             if (this.srSelect != 0) {
-                return Cpu.s[this.rb][this.srSelect];
+                return cpu.s[this.rb][this.srSelect];
             } else {
                 // "...when reading data from the S registers onto the processor bus,
                 //  the RSELECT value 0 causes the current value of the M register to
                 //  appear on the bus..."
-                 return Cpu.m;
+                 return cpu.m;
             }
             break;
             ;;
@@ -203,7 +203,7 @@ var EmulatorTask = extend(Task, {
 });
 
 
-var DiskSectorTask = extend(Task, {
+var diskSectorTask = extend(Task, {
     taskType: TaskType.DISK_SECTOR,
 
     reset: function() {
@@ -211,7 +211,7 @@ var DiskSectorTask = extend(Task, {
     }
 });
 
-var DiskWordTask = extend(Task, {
+var diskWordTask = extend(Task, {
     taskType: TaskType.DISK_WORD,
 
     reset: function() {
@@ -219,7 +219,7 @@ var DiskWordTask = extend(Task, {
     }
 });
 
-var DisplayWordTask = extend(Task, {
+var displayWordTask = extend(Task, {
     taskType: TaskType.DISPLAY_WORD,
 
     reset: function() {
@@ -227,7 +227,7 @@ var DisplayWordTask = extend(Task, {
     }
 });
 
-var DisplayHorizontalTask = extend(Task, {
+var displayHorizontalTask = extend(Task, {
     taskType: TaskType.DISPLAY_HORIZ,
 
     reset: function() {
@@ -235,7 +235,7 @@ var DisplayHorizontalTask = extend(Task, {
     }
 });
 
-var DisplayVerticalTask = extend(Task, {
+var displayVerticalTask = extend(Task, {
     taskType: TaskType.DISPLAY_VERT,
 
     reset: function() {
@@ -243,7 +243,7 @@ var DisplayVerticalTask = extend(Task, {
     }
 });
 
-var CursorTask = extend(Task, {
+var cursorTask = extend(Task, {
     taskType: TaskType.CURSOR,
 
     reset: function() {
@@ -251,7 +251,7 @@ var CursorTask = extend(Task, {
     }
 });
 
-var MemoryRefreshTask = extend(Task, {
+var memoryRefreshTask = extend(Task, {
     taskType: TaskType.MEMORY_REFRESH,
 
     reset: function() {
@@ -259,7 +259,7 @@ var MemoryRefreshTask = extend(Task, {
     }
 });
 
-var EthernetTask = extend(Task, {
+var ethernetTask = extend(Task, {
     taskType: TaskType.ETHERNET,
 
     reset: function() {
@@ -267,7 +267,7 @@ var EthernetTask = extend(Task, {
     }
 });
 
-var ParityTask = extend(Task, {
+var parityTask = extend(Task, {
     taskType: TaskType.PARITY,
 
     reset: function() {

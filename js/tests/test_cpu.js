@@ -27,152 +27,152 @@
 
 QUnit.module("ALU Tests", {
     beforeEach: function() {
-        Alu.reset();
+        alu.reset();
     }
 });
 
 QUnit.test("ALU Reset clears carry", function(assert) {
-    Alu.carry = 1;
-    assert.strictEqual(Alu.carry, 1);
+    alu.carry = 1;
+    assert.strictEqual(alu.carry, 1);
 
-    Alu.reset();
-    assert.strictEqual(Alu.carry, 0);
+    alu.reset();
+    assert.strictEqual(alu.carry, 0);
 });
 
 QUnit.test("ALU BUS", function(assert) {
-    assert.strictEqual(Alu.execute(AluFunction.BUS, 12, 0, 0), 12);
-    assert.strictEqual(Alu.carry, 0);
+    assert.strictEqual(alu.execute(AluFunction.BUS, 12, 0, 0), 12);
+    assert.strictEqual(alu.carry, 0);
 });
 
 QUnit.test("ALU T", function(assert) {
-    assert.strictEqual(Alu.execute(AluFunction.T, 0, 8, 0), 8);
-    assert.strictEqual(Alu.carry, 0);
+    assert.strictEqual(alu.execute(AluFunction.T, 0, 8, 0), 8);
+    assert.strictEqual(alu.carry, 0);
 });
 
 QUnit.test("ALU BUS_OR_T", function(assert) {
-    assert.strictEqual(Alu.execute(AluFunction.BUS_OR_T, 5, 0xa, 0), 0xf);
-    assert.strictEqual(Alu.execute(AluFunction.BUS_OR_T, 3, 0xc, 0), 0xf);
-    assert.strictEqual(Alu.execute(AluFunction.BUS_OR_T, 2, 5, 0), 7);
-    assert.strictEqual(Alu.carry, 0);
+    assert.strictEqual(alu.execute(AluFunction.BUS_OR_T, 5, 0xa, 0), 0xf);
+    assert.strictEqual(alu.execute(AluFunction.BUS_OR_T, 3, 0xc, 0), 0xf);
+    assert.strictEqual(alu.execute(AluFunction.BUS_OR_T, 2, 5, 0), 7);
+    assert.strictEqual(alu.carry, 0);
 });
 
 QUnit.test("ALU BUS_AND_T", function(assert) {
-    assert.strictEqual(Alu.execute(AluFunction.BUS_AND_T, 5, 0xa, 0), 0);
-    assert.strictEqual(Alu.execute(AluFunction.BUS_AND_T, 0xa, 5, 0), 0);
-    assert.strictEqual(Alu.execute(AluFunction.BUS_AND_T, 0xc, 7, 0), 4);
-    assert.strictEqual(Alu.execute(AluFunction.BUS_AND_T, 6, 0xf, 0), 6);
-    assert.strictEqual(Alu.carry, 0);
+    assert.strictEqual(alu.execute(AluFunction.BUS_AND_T, 5, 0xa, 0), 0);
+    assert.strictEqual(alu.execute(AluFunction.BUS_AND_T, 0xa, 5, 0), 0);
+    assert.strictEqual(alu.execute(AluFunction.BUS_AND_T, 0xc, 7, 0), 4);
+    assert.strictEqual(alu.execute(AluFunction.BUS_AND_T, 6, 0xf, 0), 6);
+    assert.strictEqual(alu.carry, 0);
 });
 
 QUnit.test("ALU ALU_BUS_AND_T", function(assert) {
-    assert.strictEqual(Alu.execute(AluFunction.ALU_BUS_AND_T, 5, 0xa, 0), 0);
-    assert.strictEqual(Alu.execute(AluFunction.ALU_BUS_AND_T, 0xa, 5, 0), 0);
-    assert.strictEqual(Alu.execute(AluFunction.ALU_BUS_AND_T, 0xc, 7, 0), 4);
-    assert.strictEqual(Alu.execute(AluFunction.ALU_BUS_AND_T, 6, 0xf, 0), 6);
-    assert.strictEqual(Alu.carry, 0);
+    assert.strictEqual(alu.execute(AluFunction.ALU_BUS_AND_T, 5, 0xa, 0), 0);
+    assert.strictEqual(alu.execute(AluFunction.ALU_BUS_AND_T, 0xa, 5, 0), 0);
+    assert.strictEqual(alu.execute(AluFunction.ALU_BUS_AND_T, 0xc, 7, 0), 4);
+    assert.strictEqual(alu.execute(AluFunction.ALU_BUS_AND_T, 6, 0xf, 0), 6);
+    assert.strictEqual(alu.carry, 0);
 });
 
 QUnit.test("ALU BUS_XOR_T", function(assert) {
-    assert.strictEqual(Alu.execute(AluFunction.BUS_XOR_T, 0xa, 0xf, 0), 5);
-    assert.strictEqual(Alu.execute(AluFunction.BUS_XOR_T, 0xf, 0xf, 0), 0);
-    assert.strictEqual(Alu.execute(AluFunction.BUS_XOR_T, 3, 7, 0), 4);
-    assert.strictEqual(Alu.execute(AluFunction.BUS_XOR_T, 7, 3, 0), 4);
-    assert.strictEqual(Alu.carry, 0);
+    assert.strictEqual(alu.execute(AluFunction.BUS_XOR_T, 0xa, 0xf, 0), 5);
+    assert.strictEqual(alu.execute(AluFunction.BUS_XOR_T, 0xf, 0xf, 0), 0);
+    assert.strictEqual(alu.execute(AluFunction.BUS_XOR_T, 3, 7, 0), 4);
+    assert.strictEqual(alu.execute(AluFunction.BUS_XOR_T, 7, 3, 0), 4);
+    assert.strictEqual(alu.carry, 0);
 });
 
 QUnit.test("ALU BUS_PLUS_1", function(assert) {
-    assert.strictEqual(Alu.execute(AluFunction.BUS_PLUS_1, 0xe, 0, 0), 0xf);
-    assert.strictEqual(Alu.carry, 0);
+    assert.strictEqual(alu.execute(AluFunction.BUS_PLUS_1, 0xe, 0, 0), 0xf);
+    assert.strictEqual(alu.carry, 0);
 
     // Carry should work.
-    assert.strictEqual(Alu.execute(AluFunction.BUS_PLUS_1, 0xfffe, 0, 0), 0xffff);
-    assert.strictEqual(Alu.carry, 0);
-    assert.strictEqual(Alu.execute(AluFunction.BUS_PLUS_1, 0xffff, 0, 0), 0);
-    assert.strictEqual(Alu.carry, 1);
+    assert.strictEqual(alu.execute(AluFunction.BUS_PLUS_1, 0xfffe, 0, 0), 0xffff);
+    assert.strictEqual(alu.carry, 0);
+    assert.strictEqual(alu.execute(AluFunction.BUS_PLUS_1, 0xffff, 0, 0), 0);
+    assert.strictEqual(alu.carry, 1);
 });
 
 QUnit.test("ALU BUS_MINUS_1", function(assert) {
-    assert.strictEqual(Alu.execute(AluFunction.BUS_MINUS_1, 0xf, 0, 0), 0xe);
+    assert.strictEqual(alu.execute(AluFunction.BUS_MINUS_1, 0xf, 0, 0), 0xe);
 
     // Subtraction carry is reversed from intuition!
-    assert.strictEqual(Alu.carry, 1);
+    assert.strictEqual(alu.carry, 1);
 
     // Carry should work.
-    assert.strictEqual(Alu.execute(AluFunction.BUS_MINUS_1, 1, 0, 0), 0);
-    assert.strictEqual(Alu.carry, 1);
-    assert.strictEqual(Alu.execute(AluFunction.BUS_MINUS_1, 0, 0, 0), 0xffff);
-    assert.strictEqual(Alu.carry, 0);
+    assert.strictEqual(alu.execute(AluFunction.BUS_MINUS_1, 1, 0, 0), 0);
+    assert.strictEqual(alu.carry, 1);
+    assert.strictEqual(alu.execute(AluFunction.BUS_MINUS_1, 0, 0, 0), 0xffff);
+    assert.strictEqual(alu.carry, 0);
 });
 
 QUnit.test("ALU BUS_PLUS_T", function(assert) {
-    assert.strictEqual(Alu.execute(AluFunction.BUS_PLUS_T, 0xe, 0xa, 0), 0x18);
-    assert.strictEqual(Alu.carry, 0);
+    assert.strictEqual(alu.execute(AluFunction.BUS_PLUS_T, 0xe, 0xa, 0), 0x18);
+    assert.strictEqual(alu.carry, 0);
 
     // Carry should work.
-    assert.strictEqual(Alu.execute(AluFunction.BUS_PLUS_T, 0xfffe, 1, 0), 0xffff);
-    assert.strictEqual(Alu.carry, 0);
-    assert.strictEqual(Alu.execute(AluFunction.BUS_PLUS_T, 0xffff, 1, 0), 0);
-    assert.strictEqual(Alu.carry, 1);
+    assert.strictEqual(alu.execute(AluFunction.BUS_PLUS_T, 0xfffe, 1, 0), 0xffff);
+    assert.strictEqual(alu.carry, 0);
+    assert.strictEqual(alu.execute(AluFunction.BUS_PLUS_T, 0xffff, 1, 0), 0);
+    assert.strictEqual(alu.carry, 1);
 });
 
 QUnit.test("ALU BUS_MINUS_T", function(assert) {
-    assert.strictEqual(Alu.execute(AluFunction.BUS_MINUS_T, 0xf, 1, 0), 0xe);
+    assert.strictEqual(alu.execute(AluFunction.BUS_MINUS_T, 0xf, 1, 0), 0xe);
 
     // Subtraction carry is reversed from intuition!
-    assert.strictEqual(Alu.carry, 1);
+    assert.strictEqual(alu.carry, 1);
 
-    assert.strictEqual(Alu.execute(AluFunction.BUS_MINUS_T, 0xffff, 0xf, 0), 0xfff0);
-    assert.strictEqual(Alu.carry, 1);
+    assert.strictEqual(alu.execute(AluFunction.BUS_MINUS_T, 0xffff, 0xf, 0), 0xfff0);
+    assert.strictEqual(alu.carry, 1);
 
     // Carry should work.
-    assert.strictEqual(Alu.execute(AluFunction.BUS_MINUS_T, 1, 1, 0), 0);
-    assert.strictEqual(Alu.carry, 1);
-    assert.strictEqual(Alu.execute(AluFunction.BUS_MINUS_T, 0, 1, 0), 0xffff);
-    assert.strictEqual(Alu.carry, 0);
+    assert.strictEqual(alu.execute(AluFunction.BUS_MINUS_T, 1, 1, 0), 0);
+    assert.strictEqual(alu.carry, 1);
+    assert.strictEqual(alu.execute(AluFunction.BUS_MINUS_T, 0, 1, 0), 0xffff);
+    assert.strictEqual(alu.carry, 0);
 });
 
 QUnit.test("ALU BUS_MINUS_T_MINUS_1", function(assert) {
-    assert.strictEqual(Alu.execute(AluFunction.BUS_MINUS_T_MINUS_1, 0xf, 1, 0), 0xd);
+    assert.strictEqual(alu.execute(AluFunction.BUS_MINUS_T_MINUS_1, 0xf, 1, 0), 0xd);
 
     // Subtraction carry is reversed from intuition!
-    assert.strictEqual(Alu.carry, 1);
-    assert.strictEqual(Alu.execute(AluFunction.BUS_MINUS_T_MINUS_1, 0xffff, 0xf, 0), 0xffef);
-    assert.strictEqual(Alu.carry, 1);
+    assert.strictEqual(alu.carry, 1);
+    assert.strictEqual(alu.execute(AluFunction.BUS_MINUS_T_MINUS_1, 0xffff, 0xf, 0), 0xffef);
+    assert.strictEqual(alu.carry, 1);
 
     // Carry should work.
-    assert.strictEqual(Alu.execute(AluFunction.BUS_MINUS_T_MINUS_1, 2, 1, 0), 0);
-    assert.strictEqual(Alu.carry, 1);
-    assert.strictEqual(Alu.execute(AluFunction.BUS_MINUS_T_MINUS_1, 1, 1, 0), 0xffff);
-    assert.strictEqual(Alu.carry, 0);
+    assert.strictEqual(alu.execute(AluFunction.BUS_MINUS_T_MINUS_1, 2, 1, 0), 0);
+    assert.strictEqual(alu.carry, 1);
+    assert.strictEqual(alu.execute(AluFunction.BUS_MINUS_T_MINUS_1, 1, 1, 0), 0xffff);
+    assert.strictEqual(alu.carry, 0);
 });
 
 QUnit.test("ALU BUS_PLUS_T_PLUS_1", function(assert) {
-    assert.strictEqual(Alu.execute(AluFunction.BUS_PLUS_T_PLUS_1, 0xe, 0xa, 0), 25);
-    assert.strictEqual(Alu.carry, 0);
+    assert.strictEqual(alu.execute(AluFunction.BUS_PLUS_T_PLUS_1, 0xe, 0xa, 0), 25);
+    assert.strictEqual(alu.carry, 0);
 
     // Carry should work.
-    assert.strictEqual(Alu.execute(AluFunction.BUS_PLUS_T_PLUS_1, 0xfffd, 1, 0), 0xffff);
-    assert.strictEqual(Alu.carry, 0);
-    assert.strictEqual(Alu.execute(AluFunction.BUS_PLUS_T_PLUS_1, 0xfffe, 1, 0), 0);
-    assert.strictEqual(Alu.carry, 1);
+    assert.strictEqual(alu.execute(AluFunction.BUS_PLUS_T_PLUS_1, 0xfffd, 1, 0), 0xffff);
+    assert.strictEqual(alu.carry, 0);
+    assert.strictEqual(alu.execute(AluFunction.BUS_PLUS_T_PLUS_1, 0xfffe, 1, 0), 0);
+    assert.strictEqual(alu.carry, 1);
 });
 
 QUnit.test("ALU BUS_PLUS_SKIP", function(assert) {
-    assert.strictEqual(Alu.execute(AluFunction.BUS_PLUS_SKIP, 0xe, 0, 0xa), 0x18);
-    assert.strictEqual(Alu.carry, 0);
+    assert.strictEqual(alu.execute(AluFunction.BUS_PLUS_SKIP, 0xe, 0, 0xa), 0x18);
+    assert.strictEqual(alu.carry, 0);
 
     // Carry should work.
-    assert.strictEqual(Alu.execute(AluFunction.BUS_PLUS_SKIP, 0xfffe, 0, 1), 0xffff);
-    assert.strictEqual(Alu.carry, 0);
-    assert.strictEqual(Alu.execute(AluFunction.BUS_PLUS_SKIP, 0xffff, 0, 1), 0);
-    assert.strictEqual(Alu.carry, 1);
+    assert.strictEqual(alu.execute(AluFunction.BUS_PLUS_SKIP, 0xfffe, 0, 1), 0xffff);
+    assert.strictEqual(alu.carry, 0);
+    assert.strictEqual(alu.execute(AluFunction.BUS_PLUS_SKIP, 0xffff, 0, 1), 0);
+    assert.strictEqual(alu.carry, 1);
 });
 
 QUnit.test("ALU BUS_AND_NOT_T", function(assert) {
-    assert.strictEqual(Alu.execute(AluFunction.BUS_AND_NOT_T, 5, 3, 0), 4);
-    assert.strictEqual(Alu.execute(AluFunction.BUS_AND_NOT_T, 0xf13a, 0x2038), 0xd102);
+    assert.strictEqual(alu.execute(AluFunction.BUS_AND_NOT_T, 5, 3, 0), 4);
+    assert.strictEqual(alu.execute(AluFunction.BUS_AND_NOT_T, 0xf13a, 0x2038), 0xd102);
 
-    assert.strictEqual(Alu.carry, 0);
+    assert.strictEqual(alu.carry, 0);
 });
 
 
@@ -180,7 +180,7 @@ QUnit.test("ALU Unimplemented Function", function(assert) {
     // '99' is not an implemented function
     assert.throws(
         function() {
-            Alu.execute(99, 12, 8, 1);
+            alu.execute(99, 12, 8, 1);
         },
             /Unimplemented Function/,
         "raised 'Unimplemented Function'"
@@ -192,51 +192,51 @@ QUnit.test("ALU Unimplemented Function", function(assert) {
 
 QUnit.module("CPU Tests", {
     beforeEach: function() {
-        Cpu.reset();
+        cpu.reset();
     }
 });
 
 QUnit.test("CPU Reset", function(assert) {
     var i, j;
 
-    assert.strictEqual(Cpu.r.length, 32);
+    assert.strictEqual(cpu.r.length, 32);
 
-    for (i = 0; i < Cpu.r.length; i++) {
-        assert.strictEqual(Cpu.r[i], 0);
+    for (i = 0; i < cpu.r.length; i++) {
+        assert.strictEqual(cpu.r[i], 0);
     }
 
-    assert.strictEqual(Cpu.s.length, 8);
+    assert.strictEqual(cpu.s.length, 8);
 
-    for (i = 0; i < Cpu.s.length; i++) {
-        assert.ok(Cpu.s[i] instanceof Array, "s[i] is an array");
-        assert.strictEqual(Cpu.s[i].length, 32);
+    for (i = 0; i < cpu.s.length; i++) {
+        assert.ok(cpu.s[i] instanceof Array, "s[i] is an array");
+        assert.strictEqual(cpu.s[i].length, 32);
 
-        for (j = 0; j < Cpu.s[i].length; j++) {
-            assert.strictEqual(Cpu.s[i][j], 0);
+        for (j = 0; j < cpu.s[i].length; j++) {
+            assert.strictEqual(cpu.s[i][j], 0);
         }
     }
 
-    assert.strictEqual(Cpu.t, 0);
-    assert.strictEqual(Cpu.l, 0);
-    assert.strictEqual(Cpu.m, 0);
-    assert.strictEqual(Cpu.ir, 0);
+    assert.strictEqual(cpu.t, 0);
+    assert.strictEqual(cpu.l, 0);
+    assert.strictEqual(cpu.m, 0);
+    assert.strictEqual(cpu.ir, 0);
 
-    assert.strictEqual(Cpu.aluC0, 0);
+    assert.strictEqual(cpu.aluC0, 0);
 
-    assert.strictEqual(Cpu.rmr, 0xffff);
+    assert.strictEqual(cpu.rmr, 0xffff);
 
     // We should have switched in a current task.
-    assert.ok(Cpu.currentTask);
-    assert.notOk(Cpu.nextTask);
+    assert.ok(cpu.currentTask);
+    assert.notOk(cpu.nextTask);
 });
 
 QUnit.test("CPU Reset calls taskSwitch", function(assert) {
     var taskSwitchCalled = false;
 
-    doWithMock(Cpu, "taskSwitch", function() {
+    doWithMock(cpu, "taskSwitch", function() {
         taskSwitchCalled = true;
     }, function() {
-        Cpu.reset();
+        cpu.reset();
         assert.strictEqual(taskSwitchCalled, true);
     });
 });
@@ -244,11 +244,11 @@ QUnit.test("CPU Reset calls taskSwitch", function(assert) {
 QUnit.test("CPU Clock", function(assert) {
     var executeNextCalled = false;
 
-    doWithMock(EmulatorTask, "executeNext", function() {
+    doWithMock(emulatorTask, "executeNext", function() {
         executeNextCalled = true;
     }, function() {
-        Cpu.reset();
-        Cpu.clock();
+        cpu.reset();
+        cpu.clock();
         assert.strictEqual(executeNextCalled, true);
     });
 });

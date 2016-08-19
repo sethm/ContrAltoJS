@@ -17,7 +17,7 @@
  <http://www.gnu.org/licenses/>.
 */
 
-var Shifter = {
+var shifter = {
     reset: function() {
         // TODO: Implement. This is just a stub for now
     }

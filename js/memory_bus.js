@@ -27,7 +27,7 @@ var MemoryOperation = {
     STORE:         3
 };
 
-var MemoryBus = {
+var memoryBus = {
     memoryCycle: 0,
     memoryAddress: 0,
     memoryData: 0,
@@ -46,7 +46,7 @@ var MemoryBus = {
 
         var ranges = dev.addresses;
 
-        if (dev === Memory) {
+        if (dev === memory) {
             console.log("Adding main memory to bus.");
             this.mainMemory = dev;
         }
@@ -340,7 +340,7 @@ var MemoryBus = {
     },
 
     readFromBus: function(address, task, extendedMemoryReference) {
-        if (address <= Memory.memTop) {
+        if (address <= memory.memTop) {
             return this.mainMemory.read(address, task, extendedMemoryReference);
         }
 
@@ -354,7 +354,7 @@ var MemoryBus = {
     },
 
     writeToBus: function(address, data, task, extendedMemoryReference) {
-        if (address <= Memory.memTop) {
+        if (address <= memory.memTop) {
             this.mainMemory.load(address, data, task, extendedMemoryReference);
             return;
         }

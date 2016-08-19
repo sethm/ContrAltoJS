@@ -19,45 +19,45 @@
 
 QUnit.module("Emulator Task Tests", {
     beforeEach: function() {
-        Alu.reset();
-        Cpu.reset();
-        EmulatorTask.reset();
+        alu.reset();
+        cpu.reset();
+        emulatorTask.reset();
     }
 });
 
 QUnit.test("EmulatorTask Reset", function(assert) {
-    assert.equal(EmulatorTask.rb, 0);
-    assert.equal(EmulatorTask.srSelect, 0);
-    assert.notOk(EmulatorTask.loadS);
+    assert.equal(emulatorTask.rb, 0);
+    assert.equal(emulatorTask.srSelect, 0);
+    assert.notOk(emulatorTask.loadS);
 
-    EmulatorTask.wakeup = false;
-    EmulatorTask.reset();
-    assert.ok(EmulatorTask.wakeup, "wakeup == true");
+    emulatorTask.wakeup = false;
+    emulatorTask.reset();
+    assert.ok(emulatorTask.wakeup, "wakeup == true");
 });
 
 QUnit.test("EmulatorTask getBusSource", function(assert) {
     // Set up the CPU
-    Cpu.s[1][5] = 0x5a;
-    Cpu.m = 0xf0;
+    cpu.s[1][5] = 0x5a;
+    cpu.m = 0xf0;
 
-    EmulatorTask.rb = 1;
-    EmulatorTask.srSelect = 5;
+    emulatorTask.rb = 1;
+    emulatorTask.srSelect = 5;
 
-    assert.equal(EmulatorTask.getBusSource(EmulatorBusSource.READ_S_LOCATION), 0x5a);
-    assert.notOk(EmulatorTask.loadS);
+    assert.equal(emulatorTask.getBusSource(EmulatorBusSource.READ_S_LOCATION), 0x5a);
+    assert.notOk(emulatorTask.loadS);
 
     // Load should return ffff and set loadS to true
-    assert.ok(EmulatorTask.getBusSource(EmulatorBusSource.LOAD_S_LOCATION), 0xffff);
-    assert.ok(EmulatorTask.loadS);
+    assert.ok(emulatorTask.getBusSource(EmulatorBusSource.LOAD_S_LOCATION), 0xffff);
+    assert.ok(emulatorTask.loadS);
 
-    EmulatorTask.srSelect = 0;
-    assert.ok(EmulatorTask.getBusSource(EmulatorBusSource.READ_S_LOCATION), 0xf0);
+    emulatorTask.srSelect = 0;
+    assert.ok(emulatorTask.getBusSource(EmulatorBusSource.READ_S_LOCATION), 0xf0);
 });
 
 QUnit.test("Unimplemented functions", function(assert) {
     assert.throws(
         function() {
-            EmulatorTask.blockTask();
+            emulatorTask.blockTask();
         },
             /The emulator task cannot be blocked/,
         "raises"
@@ -65,7 +65,7 @@ QUnit.test("Unimplemented functions", function(assert) {
 
     assert.throws(
         function() {
-            EmulatorTask.wakeupTask();
+            emulatorTask.wakeupTask();
         },
             /The emulator task is always in wakeup state/,
         "raises"
@@ -88,7 +88,7 @@ QUnit.test("Base Task resets shifter on exec", function(assert) {
 
     var called = false;
 
-    doWithMock(Shifter, "reset", function() {
+    doWithMock(shifter, "reset", function() {
         called = true;
     }, function() {
         Task.executeInstruction(u);
