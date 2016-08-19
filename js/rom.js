@@ -93,9 +93,22 @@ var ACSROM = [0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x01,
               0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x06, 0x0f];
 
 
-var UcodeMemory = {
+var MicrocodeBank = {
+    ROM0: 0,
+    ROM1: 1,
+    RAM0: 2,
+    RAM1: 3,
+    RAM2: 4
+};
+
+var UCodeMemory = {
     getInstruction: function() {
         // TODO: Implement
         return new MicroInstruction(0);
+    },
+
+    loadBanksFromRMR: function(rmr) {
+        // TODO: Implement
+        return;
     }
 };

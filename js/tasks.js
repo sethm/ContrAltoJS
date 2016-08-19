@@ -104,7 +104,7 @@ var Task = {
     // Returns an 'InstructionCompletion' indicating whether this
     // instruction calls for a task switch or not.
     executeNext: function() {
-        var instruction = UcodeMemory.getInstruction(this.mpc, this.taskType);
+        var instruction = UCodeMemory.getInstruction(this.mpc, this.taskType);
         return this.executeInstruction(instruction);
     },
 

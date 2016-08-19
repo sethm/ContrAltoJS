@@ -335,6 +335,50 @@ var Cpu = {
 
     softReset: function() {
         console.log("Soft Reset.");
+
+        for (var i = 0; i < this.tasks.length; i++) {
+            if (this.tasks[i] != undefined) {
+                this.tasks[i].softReset();
+            }
+        }
+
+        console.log("Silent Boot: microcode banks initialized " +
+                    "to " + this.rmr.toString(8));
+        UCodeMemory.loadBanksFromRMR(this.rmr);
+
+        this.rmr = 0;
+        this.currentTask = this.tasks[TaskType.EMULATOR];
+
+
+        // TODO: This is a hack of sorts, it ensures that the sector
+        // task initializes itself as soon as the Emulator task yields
+        // after the reset. (CopyDisk is broken otherwise due to the
+        // sector task stomping over the KBLK CopyDisk sets up after
+        // the reset. This is a race of sorts.) Unsure if there is a
+        // deeper issue here or if there are other reset semantics in
+        // play that are not understood.
+
+        this.wakeupTask(TaskType.DISK_SECTOR);
+    },
+
+    wakeupTask: function(task) {
+        if (this.tasks[task] != undefined) {
+            this.tasks[task].wakeupTask();
+        }
+    },
+
+    blockTask: function(task) {
+        if (this.tasks[task] != undefined) {
+            this.tasks[task].blockTask();
+        }
+    },
+
+    isBlocked: function(task) {
+        if (this.tasks[task] == undefined) {
+            return false;
+        }
+
+        return this.tasks[task].wakeup;
     },
 
     // Switch tasks
