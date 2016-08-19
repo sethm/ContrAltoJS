@@ -287,7 +287,7 @@ int load_urom(char *dir) {
         printf("0x%08x", rom[i]);
 
         if (i < U_LEN - 1) {
-            if ((i+1) % 4 == 0) {
+            if ((i+1) % 8 == 0) {
                 printf(",\n            ");
             } else {
                 printf(", ");

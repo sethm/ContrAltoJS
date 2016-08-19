@@ -19,10 +19,12 @@
 
 
 var SystemType = {
-    ALTO_I:  0,
-    ALTO_II: 1
+    ALTO_I:      0,
+    ONE_K_ROM:   1,
+    TWO_K_ROM:   2,
+    THREE_K_RAM: 3
 };
 
 var Configuration = {
-    systemType: SystemType.ALTO_II
+    systemType: SystemType.TWO_K_ROM
 };

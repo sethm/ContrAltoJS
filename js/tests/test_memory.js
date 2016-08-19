@@ -47,7 +47,7 @@ QUnit.test("Memory should be inittable - Alto I", function(assert) {
 });
 
 QUnit.test("Memory should be inittable - Alto II", function(assert) {
-    Configuration.systemType = SystemType.ALTO_II;
+    Configuration.systemType = SystemType.TWO_K_ROM;
     memory.init();
     memory.reset();
     assert.strictEqual(memory.addresses.length, 2);
@@ -95,7 +95,7 @@ QUnit.test("Read and Write Meory", function(assert) {
 
 QUnit.module("memoryBus Tests", {
     beforeEach: function() {
-        Configuration.systemType = SystemType.ALTO_II;
+        Configuration.systemType = SystemType.TWO_K_ROM;
         memory.init();
         memory.reset();
         memoryBus.reset();
@@ -160,7 +160,7 @@ QUnit.test("Ready returns false if Store with memorycycle <= 4 during active (Al
 
 QUnit.test("Ready returns false if Store with memorycycle <= 2 during active (Alto II)", function(assert) {
     memoryBus.memoryOperationActive = true;
-    Configuration.systemType = SystemType.ALTO_II;
+    Configuration.systemType = SystemType.TWO_K_ROM;
 
     memoryBus.memoryCycle = 0;
     assert.strictEqual(memoryBus.ready(MemoryOperation.STORE), false);
@@ -263,7 +263,7 @@ QUnit.test("ReadMD returns memoryData2 - Alto I", function(assert) {
 });
 
 QUnit.test("ReadMD throws if memorycycle too low - Alto II", function(assert) {
-    Configuration.systemType = SystemType.ALTO_II;
+    Configuration.systemType = SystemType.TWO_K_ROM;
     memoryBus.memoryOperationActive = true;
 
     memoryBus.memoryCycle = 1;
@@ -291,7 +291,7 @@ QUnit.test("ReadMD throws if memorycycle is 6 - Alto II", function(assert) {
     // Unlike the Alto I, if memoryOperationActive is true and we reach
     // memory cycle 6, we should error.
 
-    Configuration.systemType = SystemType.ALTO_II;
+    Configuration.systemType = SystemType.TWO_K_ROM;
     memoryBus.memoryOperationActive = true;
     memoryBus.memoryCycle = 6;
 
@@ -301,7 +301,7 @@ QUnit.test("ReadMD throws if memorycycle is 6 - Alto II", function(assert) {
 });
 
 QUnit.test("ReadMD returns memoryData - Alto II", function(assert) {
-    Configuration.systemType = SystemType.ALTO_II;
+    Configuration.systemType = SystemType.TWO_K_ROM;
     memoryBus.memoryOperationActive = true;
     memoryBus.memoryCycle = 5;
     memoryBus.memoryData = 0x1e35;
@@ -309,7 +309,7 @@ QUnit.test("ReadMD returns memoryData - Alto II", function(assert) {
 });
 
 QUnit.test("ReadMD returns memoryData2 doubleWordMixed - Alto II", function(assert) {
-    Configuration.systemType = SystemType.ALTO_II;
+    Configuration.systemType = SystemType.TWO_K_ROM;
     memoryBus.memoryOperationActive = false;
     memoryBus.memoryCycle = 5;
     memoryBus.memoryData = 0x1e35;
@@ -322,7 +322,7 @@ QUnit.test("ReadMD returns memoryData2 doubleWordMixed - Alto II", function(asse
 });
 
 QUnit.test("ReadMD returns memoryData2 - Alto II", function(assert) {
-    Configuration.systemType = SystemType.ALTO_II;
+    Configuration.systemType = SystemType.TWO_K_ROM;
     memoryBus.memoryOperationActive = false;
     memoryBus.memoryCycle = 6;
     memoryBus.memoryData = 0x1e35;
