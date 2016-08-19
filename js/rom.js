@@ -450,6 +450,9 @@ var uCodeMemory = {
 
     URAM_LENGTH: 0xc00,
 
+    bitMask: 0x0008840,
+    invertedBitMask: 0xfff77bff,
+
     // Microcode RAM (up to 3KB -- three 1KB banks)
     uCodeRam: [],
 
@@ -605,19 +608,9 @@ var uCodeMemory = {
         this.decodeCache[2048 + address] = new MicroInstruction(instructionWord);
     },
 
-    // Decode and cache microcode
-    cacheMicrocodeRom: function() {
-        for (var i = 0; i < UROM.length; i++) {
-            this.decodeCache[i] = new MicroInstruction(UROM[i]);
-        }
+    getInstruction: function(address, task) {
+        return this.decodeCache[address + this.microcodeBank[task] * 1024];
     },
-
-    getInstruction: function() {
-        return new MicroInstruction(0);
-    },
-
-    bitMask: 0x0008840,
-    invertedBitMask: 0xfff77bff,
 
     mapWord: function(word) {
         var masked = word & ~this.invertedBitMask;
@@ -626,5 +619,12 @@ var uCodeMemory = {
 
     mapRamWord: function(word) {
         return word ^ this.bitMask;
+    },
+
+    // Decode and cache microcode
+    cacheMicrocodeRom: function() {
+        for (var i = 0; i < UROM.length; i++) {
+            this.decodeCache[i] = new MicroInstruction(UROM[i]);
+        }
     }
 };
