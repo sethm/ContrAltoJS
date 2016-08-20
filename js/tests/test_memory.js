@@ -93,7 +93,7 @@ QUnit.test("Read and Write Meory", function(assert) {
     assert.strictEqual(memory.mem[0x20000], 0xabcd);
 });
 
-QUnit.module("memoryBus Tests", {
+QUnit.module("Memory Bus Tests", {
     beforeEach: function() {
         Configuration.systemType = SystemType.TWO_K_ROM;
         memory.init();
