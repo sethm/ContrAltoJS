@@ -19,10 +19,14 @@
 
 // Scheduler
 
-var event = function(timestampNsec, context, callback) {
+var Event = function(timestampNsec, context, callback) {
     this.timeStepNsec = timestampNsec;
     this.context = context;
     this.callback = callback;
+};
+
+Event.prototype.toString = function() {
+    return "[Event: timeStepNsec = " + this.timeStepNsec + "]";
 };
 
 Array.prototype.peek = function() {
@@ -55,13 +59,11 @@ var scheduler = {
     clock: function() {
         this.currentTimeNsec += this.timeStepNsec;
 
-        var event = scheduler.peek();
-
-        while (event != undefined &&
-               (this.currentTimeNsec >= event.timestampNsec)) {
-            event = scheduler.pop();
+        while (this.queue.peek() !== undefined &&
+               (this.currentTimeNsec >= this.queue.peek().timeStepNsec)) {
+            var event = this.queue.pop();
             event.callback(this.currentTimeNsec,
-                           this.currentTimeNsec - event.timestampNsec,
+                           this.currentTimeNsec - event.timeStepNsec,
                            event.context);
         }
     },

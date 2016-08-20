@@ -39,3 +39,20 @@ QUnit.test("Can cancel an event", function(assert) {
     scheduler.cancelEvent(event);
     assert.strictEqual(scheduler.queue.length, 0);
 });
+
+QUnit.test("Clocks", function(assert) {
+
+    var callbackCalled = false;
+
+    var event = new Event(0, {}, function() {
+        callbackCalled = true;
+    });
+
+    assert.strictEqual(scheduler.queue.length, 0);
+    scheduler.schedule(event);
+
+    scheduler.clock();
+
+    assert.strictEqual(scheduler.queue.length, 0);
+    assert.strictEqual(callbackCalled, true);
+});

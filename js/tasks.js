@@ -182,18 +182,16 @@ var emulatorTask = extend(Task, {
                  return cpu.m;
             }
             break;
-            ;;
         case EmulatorBusSource.LOAD_S_LOCATION:
             this.loadS = true;
             return 0xffff;
             break;
-            ;;
         default:
             throw "Unhandled bus source " + bs;
         }
     },
 
-    executeSpecialFunctionEarly(instruction) {
+    executeSpecialFunctionEarly: function(instruction) {
 
     },
 
