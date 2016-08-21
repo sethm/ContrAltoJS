@@ -21,11 +21,47 @@
 // An Alto System
 //
 
-var altoSystem = {
-    reset: function() {
-        scheduler.reset();
+var altoSystem = (function() {
 
-        memoryBus.reset();
-        memory.reset();
-    }
-};
+    memoryBus.addDevice(memory);
+
+    var system = {
+        clockedDevices:  [
+            memoryBus,
+            cpu
+        ],
+
+        reset: function() {
+            scheduler.reset();
+
+            memoryBus.reset();
+            memory.reset();
+            alu.reset();
+            shifter.reset();
+            cpu.reset();
+            uCodeMemory.reset();
+        },
+
+        step: function() {
+            for (var i = 0; i < this.clockedDevices.length; i++) {
+                this.clockedDevices[i].clock();
+            }
+            scheduler.clock();
+            this.clocks++;
+        },
+
+        run: function(count) {
+            for (var i = 0; i < count; i++) {
+                this.step();
+            }
+        },
+
+        stop: function() {
+            this.run = false;
+        }
+    };
+
+    system.reset();
+
+    return system;
+})();

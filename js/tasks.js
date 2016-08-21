@@ -116,7 +116,6 @@ var Task = {
     // Returns an InstructionCompletion indicating whether this
     // instruction calls for a task switch or not.
     baseExecuteInstruction: function(instruction) {
-        console.log("execute instruction (base)");
         var completion = InstructionCompletion.NORMAL;
 
         var swMode = false;
@@ -510,6 +509,14 @@ var Task = {
         return completion;
     },
 
+    executeBlock: function() {
+        // Nothing by default
+    },
+
+    onTaskSwitch: function() {
+        // Nothing by default
+    },
+
     executeInstruction: function(instruction) {
         return this.baseExecuteInstruction(instruction);
     },
@@ -518,23 +525,18 @@ var Task = {
     // overriding objects.
 
     executeSpecialFunction1Early: function(instruction) {
-        console.log("executeSpecialFunction1Early (base)");
     },
 
     executeSpecialFunction1: function(instrcution) {
-        console.log("executeSpecialFunction1 (base)");
     },
 
     executeSpecialFunction2Early: function(instruction) {
-        console.log("executeSpecialFunction2Early (base)");
     },
 
     executeSpecialFunction2: function(instruction) {
-        console.log("executeSpecialFunction2 (base)");
     },
 
     executeSpecialFunction2Late: function(instruction) {
-        console.log("executeSpecialFunction2Late (base)");
     }
 
 };
@@ -564,11 +566,11 @@ var emulatorTask = extend(Task, {
     },
 
     executeNext: function() {
-        return InstructionCompletion.NORMAL;
+        instruction = uCodeMemory.getInstruction(this.mpc, this.taskType);
+        return this.executeInstruction(instruction);
     },
 
     getBusSource: function(bs) {
-        console.log("getBusSource (Emulator)");
         switch(bs) {
         case EmulatorBusSource.READ_S_LOCATION:
             if (this.srSelect != 0) {
@@ -590,7 +592,6 @@ var emulatorTask = extend(Task, {
     },
 
     executeSpecialFunction1Early: function(instruction) {
-        console.log("executeSpecialFunction1Early (Emulator)");
         switch(instruction.f1) {
         case EmulatorF1.RSNF:
             //
@@ -606,7 +607,6 @@ var emulatorTask = extend(Task, {
     },
 
     executeSpecialFunction1: function(instruction) {
-        console.log("executeSpecialFunction1 (Emulator)");
         switch(instruction.f1) {
         case EmulatorF1.LOAD_RMR:
             //

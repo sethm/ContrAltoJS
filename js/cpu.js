@@ -330,11 +330,11 @@ var cpu = {
             // (no task switch even if one is pending) in this case.
             break;
         }
+
+        console.log("AFTER STEP: cpu=" + this.toString());
     },
 
     softReset: function() {
-        console.log("Soft Reset.");
-
         for (var i = 0; i < this.tasks.length; i++) {
             if (this.tasks[i] != undefined) {
                 this.tasks[i].softReset();
@@ -384,11 +384,18 @@ var cpu = {
     taskSwitch: function() {
         for (var i = this.tasks.length - 1; i >= 0; i--) {
             if (this.tasks[i] !== undefined && this.tasks[i].wakeup) {
-                console.log("Switching to task: " + this.tasks[i]);
                 this.nextTask = this.tasks[i];
                 this.nextTask.firstInstructionAfterSwitch = true;
                 break;
             }
         }
+    },
+
+    toString: function() {
+        return "[CPU: t=" + this.t.toString(8)
+            + ", l=" + this.l.toString(8)
+            + ", r=" + this.r.toString(8)
+            + ", ir=" + this.ir.toString(8)
+            + "]";
     }
 };

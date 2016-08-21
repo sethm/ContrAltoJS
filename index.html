@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Gamedev Canvas Workshop</title>
+    <title>Xerox Alto Emulator</title>
     <style>
         * { padding: 0; margin: 0; }
         canvas { background: #eee; display: block; margin: 0 auto; }
@@ -17,18 +17,22 @@
   <canvas id="altoDisplay" width="768" height="1024"></canvas>
 </div>
 
-<script>
-    // JavaScript code goes here
-    var canvas = document.getElementById("altoDisplay");
-    var ctx = canvas.getContext("2d");
-    ctx.font="20px Courier";
-    ctx.fillText("Display not yet connected",240,50);
-</script>
-
 <div id="controls">
-   <button name="start" id="startButton">Start</button>
-   <button name="stop" id="stopButton">Stop</button>
+   <button name="start" id="startButton" onclick="startRunning()">Start</button>
+   <button name="stop" id="stopButton" onclick="stopRunning()">Stop</button>
 </div>
+
+<script src="js/config.js"></script>
+<script src="js/scheduler.js"></script>
+<script src="js/shifter.js"></script>
+<script src="js/rom.js"></script>
+<script src="js/memory.js"></script>
+<script src="js/memory_bus.js"></script>
+<script src="js/tasks.js"></script>
+<script src="js/cpu.js"></script>
+<script src="js/mouse.js"></script>
+<script src="js/system.js"></script>
+<script src="js/main.js"></script>
 
 </body>
 </html>
