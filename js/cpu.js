@@ -119,7 +119,6 @@ var alu = {
     // Functions
 
     reset: function() {
-        console.log("Resetting ALU.");
         this.carry = 0;
     },
 

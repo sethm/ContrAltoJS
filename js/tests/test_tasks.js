@@ -22,6 +22,7 @@ QUnit.module("Emulator Task Tests", {
         alu.reset();
         cpu.reset();
         emulatorTask.reset();
+        memoryBus.reset();
     }
 });
 
@@ -85,13 +86,28 @@ QUnit.test("Base Task resets shifter on exec", function(assert) {
     var u;
 
     u = new MicroInstruction(0);
+    memoryBus.memoryOperationActive = true;
+    u.memoryAccess = true;
+    u.memoryOperation = MemoryOperation.LOAD_ADDRESS;
 
-    var called = false;
+    assert.strictEqual(Task.executeInstruction(u), InstructionCompletion.MEMORY_WAIT);
+});
 
-    doWithMock(shifter, "reset", function() {
-        called = true;
-    }, function() {
-        Task.executeInstruction(u);
-        assert.strictEqual(called, true);
-    });
+QUnit.test("Base Task executes", function(assert) {
+    var u;
+
+    u = new MicroInstruction(0);
+
+    assert.strictEqual(Task.executeInstruction(u), InstructionCompletion.NORMAL);
+});
+
+// TODO: We need a whole heaping pile of tests for
+// 'executeInstruction', but the logic is fairly intimidating.
+
+QUnit.test("Stepping the Emulator Task", function(assert) {
+
+    u = new MicroInstruction(0x2811c552);
+
+    assert.strictEqual(emulatorTask.executeInstruction(u), InstructionCompletion.NORMAL);
+
 });

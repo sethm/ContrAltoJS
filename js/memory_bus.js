@@ -47,7 +47,6 @@ var memoryBus = {
         var ranges = dev.addresses;
 
         if (dev === memory) {
-            console.log("Adding main memory to bus.");
             this.mainMemory = dev;
         }
 
