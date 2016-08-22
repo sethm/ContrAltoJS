@@ -53,12 +53,12 @@ var shifter = {
         this.dnsCarry = 0;
     },
 
-    setOperation(op, count) {
+    setOperation: function(op, count) {
         this.op = op;
         this.count = count;
     },
 
-    setDns(dns, carry) {
+    setDns: function(dns, carry) {
         this.dns = dns;
         this.carry = carry;
     },

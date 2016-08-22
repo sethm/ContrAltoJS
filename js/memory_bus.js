@@ -280,7 +280,7 @@ var memoryBus = {
         }
     },
 
-    loadMDAltoI(data) {
+    loadMDAltoI: function(data) {
         switch(this.memoryCycle) {
         case 1:
         case 2:
@@ -311,7 +311,7 @@ var memoryBus = {
         }
     },
 
-    loadMDAltoII(data) {
+    loadMDAltoII: function(data) {
         switch(this.memoryCycle) {
         case 1:
         case 2:

@@ -103,7 +103,7 @@ var MemoryOperation = {
     LOAD_ADDRESS: 1,
     READ:         2,
     STORE:        3
-}
+};
 
 //
 // This implements the stripped-down version of the 74181 ALU
