@@ -361,6 +361,7 @@ var MicroInstruction = function(code) {
 
     // Decode fields
 
+    this.code    = code;
     this.rselect = (code >>> 27) & 0x1f;
     this.aluf    = (code >>> 23) & 0x0f;   // ALU Function
     this.bs      = (code >>> 20) & 0x07;   // Bus Source

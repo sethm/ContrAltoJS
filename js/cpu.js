@@ -330,8 +330,6 @@ var cpu = {
             // (no task switch even if one is pending) in this case.
             break;
         }
-
-        console.log("AFTER STEP: cpu=" + this.toString());
     },
 
     softReset: function() {
@@ -394,8 +392,9 @@ var cpu = {
     toString: function() {
         return "[CPU: t=" + this.t.toString(8)
             + ", l=" + this.l.toString(8)
-            + ", r=" + this.r.toString(8)
             + ", ir=" + this.ir.toString(8)
+            + ", currentTask=" + this.currentTask
+            + ", nextTask=" + this.nextTask
             + "]";
     }
 };

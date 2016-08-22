@@ -8,11 +8,9 @@ ctx.fillText("Display not yet connected",240,50);
 function stopRunning() {
     var startButton = document.getElementById("startButton");
     startButton.disabled = false;
-    console.log("Stop Running clicked.");
 }
 
 function startRunning() {
     var startButton = document.getElementById("startButton");
     startButton.disabled = true;
-    console.log("Start Running clicked.");
 }

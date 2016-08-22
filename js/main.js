@@ -15,29 +15,37 @@ var animFrame = window.requestAnimationFrame ||
         window.msRequestAnimationFrame       ||
         null;
 
-var running = false;
-var started = false;
 var frameId = 0;
 
 // Main loop
 function runMainLoop() {
-    console.log("Updating and drawing...");
     frameId = animFrame(runMainLoop);
-    altoSystem.run(20);
+    // altoSystem.run(90039);
+    altoSystem.run(10);
 }
 
 function stopRunning() {
-    running = false;
-    started = false;
     cancelAnimationFrame(frameId);
     var startButton = document.getElementById("startButton");
+    var stepButton = document.getElementById("stepButton");
+    console.log("Stopping simulator.");
     startButton.disabled = false;
-    console.log("Stop Running clicked.");
+    stepButton.disabled = false;
+}
+
+function stepSimulator() {
+    var startButton = document.getElementById("startButton");
+    startButton.disabled = true;
+    console.log("Starting simulator.");
+    altoSystem.step();
+    startButton.disabled = false;
 }
 
 function startRunning() {
     var startButton = document.getElementById("startButton");
+    var stepButton = document.getElementById("stepButton");
     startButton.disabled = true;
-    console.log("Start Running clicked.");
+    stepButton.disabled = true;
+    console.log("Starting simulator.");
     runMainLoop();
 }
