@@ -39,6 +39,7 @@ var altoSystem = (function() {
             alu.reset();
             shifter.reset();
             cpu.reset();
+            diskController.reset();
             uCodeMemory.reset();
         },
 

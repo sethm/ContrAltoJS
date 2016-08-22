@@ -19,8 +19,8 @@
 
 // Scheduler
 
-var Event = function(timestampNsec, context, callback) {
-    this.timeStepNsec = timestampNsec;
+var Event = function(timeStepNsec, context, callback) {
+    this.timeStepNsec = timeStepNsec;
     this.context = context;
     this.callback = callback;
 };
@@ -69,7 +69,7 @@ var scheduler = {
     },
 
     schedule: function(event) {
-        event.timestampNsec += this.currentTimeNsec;
+        event.timeStepNsec += this.currentTimeNsec;
         this.queue.push(event);
 
         return event;
