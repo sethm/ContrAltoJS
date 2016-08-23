@@ -22,15 +22,19 @@ var conversion = {
     usecToNsec: 1000
 };
 
-var Drive = function() {
-    this.headerOffset = 44;
+var Drive = function() {};
 
-    this.sectorWordCount = 269 + this.headerOffset + 34;
+Drive.headerOffset = 44;
 
-    this.reset = function() {};
-    this.isLoaded = function() {
+Drive.sectorWordCount = 269 + Drive.headerOffset + 34;
+
+Drive.prototype = {
+    reset: function() {
+    },
+
+    isLoaded: function() {
         return true;
-    };
+    }
 };
 
 var DiskActivityType = {
@@ -83,7 +87,9 @@ var diskController = {
 
     sectorDuration: (40.0 / 12.0) * conversion.msecToNsec,
 
-    wordDuration: this.sectorDuration / Drive.sectorWordCount,
+    wordDuration: function() {
+        return this.sectorDuration / Drive.sectorWordCount;
+    },
 
     seclateDuration: 86.0 * conversion.usecToNsec,
 
@@ -111,6 +117,7 @@ var diskController = {
     },
 
     setKadr: function(value) {
+        console.log("setKadr");
         this.kAdr = value;
         this.recNo = 0;
         this.syncWordWritten = false;
@@ -127,7 +134,7 @@ var diskController = {
         // The HW reference claims that the drive is selected by bit
         // 14 of KDATA XOR'd with bit 15 of KADR but I can find no
         // evidence in the schematics that this is actually so. Page
-        // 18 of the controller schematic ("DISK ADDRESSING") shows
+9        // 18 of the controller schematic ("DISK ADDRESSING") shows
         // that the current DATA(14) (KDATA bit 14) value is gated
         // into the DISK select lines (running to the drive) whenever
         // a KADR<- F1 is executed. It is possible that the HW ref is
@@ -219,7 +226,7 @@ var diskController = {
         this.drives[1].reset();
 
         this.sectorEvent = new Event(0, null, this.sectorCallback);
-        this.wordEvent = new Event(this.wordDuration, null, this.wordCallback);
+        this.wordEvent = new Event(this.wordDuration(), null, this.wordCallback);
         this.seclateEvent = new Event(this.seclateDuration, null, this.seclateCallback);
         this.seekEvent = new Event(this.seekDuration, null, this.seekCallback);
 
@@ -237,9 +244,14 @@ var diskController = {
         this.seclateEnable = false;
     },
 
+    spinDisk: function() {
+
+    },
+
     // Callbacks
 
     sectorCallback: function(timeNsec, skewNsec, context) {
+       console.log("DiskController: sectorCallback");
         var d = diskController;
 
         d.sector = (d.sector + 1) % 12;
@@ -260,13 +272,18 @@ var diskController = {
         d.selectedDrive().sector = d.sector;
 
         if ((d.kStat & d.STROBE) == 0) {
+            console.log("Waking up sector task for C/H/S "
+                        + d.selectedDrive().cylinder + "/"
+                        + d.selectedDrive().head + "/"
+                        + d.sector);
             cpu.wakeupTask(TaskType.DISK_SECTOR);
 
             d.seclate = false;
             d.seclateEnable = true;
             d.kStat &= (~(d.SECLATE) & 0xffff);
 
-            d.wordEvent.timestampNsec = d.wordDuration;
+            // Schedule a disk word wakup to spin the disk
+            d.wordEvent.timestampNsec = d.wordDuration();
             scheduler.schedule(d.wordEvent);
 
             // Schedule SECLATE trigger
@@ -280,6 +297,17 @@ var diskController = {
 
     wordCallback: function(timeNsec, skewNsec, context) {
         console.log("DiskController: wordCallback");
+        var d = diskController;
+
+        d.spinDisk();
+
+        if(d.sectorWodIndex < Drive.sectorWordCount) {
+            d.wordEvent.timestampNsec = d.wordDuration - skewNsec;
+            scheduler.schedule(d.wordEvent);
+        } else {
+            d.sectorEvent.timestampNsec = skewNsec;
+            scheduler.schedule(d.sectorEvent);
+        }
     },
 
     seclateCallback: function(timeNsec, skewNsec, context) {
@@ -288,7 +316,7 @@ var diskController = {
 
         if (d.seclateEnable) {
             d.seclate = true;
-            d.kStat |= this.SECLATE;
+            d.kStat |= d.SECLATE;
             console.log("SECLATE for sector " + d.sector);
         }
     },

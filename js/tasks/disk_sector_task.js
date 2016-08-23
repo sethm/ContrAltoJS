@@ -47,7 +47,6 @@ var diskSectorTask = extend(Task, {
     taskType: TaskType.DISK_SECTOR,
 
     onTaskSwitch: function() {
-        console.log("Switching to DiskSectorTask");
         diskController.disableSeclate();
     },
 
@@ -63,26 +62,20 @@ var diskSectorTask = extend(Task, {
     },
 
     executeSpecialFunction1: function(instruction) {
-        console.log("DiskSectorTask executeSpecialFunction1");
-
         switch (instruction.f1) {
         case DiskF1.LOAD_KDATA:
-            console.log("Loading KDATA");
             diskController.setKdata(this.busData);
             break;
 
         case DiskF1.LOAD_KADR:
-            console.log("Loading KADR");
             diskController.setKadr(this.busData & 0xff);
             break;
 
         case DiskF1.LOAD_KCOMM:
-            console.log("Loading KCOMM");
             diskController.setKcom(this.busData & 0x7c00 >>> 10);
             break;
 
         case DiskF1.CLRSTAT:
-            console.log("Clearing Status");
             diskController.clearStatus();
             break;
 
@@ -91,7 +84,6 @@ var diskSectorTask = extend(Task, {
             break;
 
         case DiskF1.LOAD_KSTAT:
-            console.log("LOAD KSTAT");
             var modifiedBusData = (this.busData & 0xb) | ((~this.busData & 0x4));
             diskController.setKstat((diskController.getKstat() & 0xfff4) | modifiedBusData);
             break;
@@ -103,7 +95,109 @@ var diskSectorTask = extend(Task, {
         default:
             throw "Unhandled disk special function 1 " + instruction.f1;
         }
+    },
 
+    executeSpecialFunction2: function(instruction) {
+        switch(instruction.f2) {
+        case DiskF2.INIT:
+            this.nextModifier |= this.getInitModifier(instruction);
+            break;
+
+        case DiskF2.RWC:
+            var command = (this.diskController.kadr & 0x00c0) >>> 6;
+            this.nextModifier |= this.getInitModifier(instruction);
+
+            switch(command) {
+            case 0:
+                // read, no modification
+                break;
+            case 1:
+                // check, OR in 2
+                this.nextModifier |= 0x2;
+                break;
+
+            case 2:
+            case 3:
+                // write, OR in 3
+                this.nextModifier |= 0x3;
+                break;
+            };
+            break;
+
+        case DiskF2.XFRDAT:
+            this.nextModifier |= this.getInitModifier(instruction);
+
+            if (this.diskController.dataXfer) {
+                this.nextModifier |= 0x1;
+            }
+            break;
+
+        case DiskF2.RECNO:
+            this.nextModifier |= this.getInitModifier(instruction);
+            this.nextModifier |= diskController.recno();
+            break;
+
+        case DiskF2.NFER:
+            this.nextModifier |= this.getInitModifier(instruction);
+
+            if (!diskController.fatalError()) {
+                this.nextModifier |= 0x1;
+            }
+            break;
+
+        case DiskF2.STROBON:
+            this.nextModifier |= this.getInitModifier(instruction);
+            if ((diskController.getKstat() & diskController.STROBE) !=  0) {
+                this.nextModifier |= 0x1;
+            }
+            break;
+
+        case DiskF2.SWRNRDY:
+            this.nextModifier |= this.getInitModifier(instruction);
+
+            if (!diskController.ready()) {
+                this.nextModifier |= 0x1;
+            }
+            break;
+        }
+    },
+
+    executeBlock: function() {
+        if (this.taskType == TaskType.DISK_WORD) {
+            diskController.wdInit = false;
+        }
+    },
+
+    getInitModifier: function(instruction) {
+        //
+        // "NEXT<-NEXT OR (if WDTASKACT AND WDINIT) then 37B else 0."
+        //
+
+        //
+        // A brief discussion of the INIT signal since it isn't really
+        // covered in the Alto Hardware docs in any depth (and in fact
+        // is completely skipped over in the description of RWC, a
+        // rather important detail!) This is where the Alto ref's
+        // suggestion to have the uCode *and* the schematic on hand is
+        // really quite a valid recommendation.
+        //
+        // WDINIT is initially set whenever the WDINHIB bit (set via
+        // KCOM<-) is cleared (this is the WDALLOW signal). This
+        // signals that the microcode is "INITializing" a data
+        // transfer (so to speak). During this period, INIT or RWC
+        // instructions in the Disk Word task will OR in 37B to the
+        // Next field, causing the uCode to jump to the requisite
+        // initialization paths. WDINIT is cleared whenever a BLOCK
+        // instruction occurs during the Disk Word task, causing INIT
+        // to OR in 0 and RWC to or in 0, 2 or 3 (For read, check, or
+        // write respectively.)
+        //
+
+        if (this.taskType == TaskType.DISK_WORD && diskController.WDINIT) {
+            return 0x1f;
+        } else {
+            return 0x0;
+        }
     },
 
     reset: function() {
