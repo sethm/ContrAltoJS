@@ -22,14 +22,38 @@ var conversion = {
     usecToNsec: 1000
 };
 
-var Drive = function() {};
+var CellType = {
+    DATA: 0,
+    GAP:  1,
+    SYNC: 2
+};
 
-Drive.headerOffset = 44;
+var DiabloDrive = function() {
+    this.reset();
+};
 
-Drive.sectorWordCount = 269 + Drive.headerOffset + 34;
+DiabloDrive.headerOffset = 44;
+DiabloDrive.labelOffset = DiabloDrive.headerOffset + 14;
+DiabloDrive.dataOffset = DiabloDrive.labelOffset + 20;
+DiabloDrive.sectorWordCount = 269 + DiabloDrive.headerOffset + 34;
 
-Drive.prototype = {
+DiabloDrive.prototype = {
     reset: function() {
+        this.sector = 0;
+        this.cylinder = 0;
+        this.head = 0;
+
+        this.sectorModified = false;
+        this.initSector();
+        this.loadSector();
+    },
+
+    initSector: function() {
+        console.log("DiabloDiabloDrive: InitSector");
+    },
+
+    loadSector: function() {
+        console.log("DiabloDiabloDrive: loadSector");
     },
 
     isLoaded: function() {
@@ -88,7 +112,7 @@ var diskController = {
     sectorDuration: (40.0 / 12.0) * conversion.msecToNsec,
 
     wordDuration: function() {
-        return this.sectorDuration / Drive.sectorWordCount;
+        return this.sectorDuration / DiabloDrive.sectorWordCount;
     },
 
     seclateDuration: 86.0 * conversion.usecToNsec,
@@ -96,7 +120,7 @@ var diskController = {
     // Variable, and updated depending on current sector / seek sector
     seekDuration: 0,
 
-    drives: [new Drive(), new Drive()],
+    drives: [new DiabloDrive(), new DiabloDrive()],
 
     getKdata: function() {
         this.debugRead = false;
@@ -134,7 +158,7 @@ var diskController = {
         // The HW reference claims that the drive is selected by bit
         // 14 of KDATA XOR'd with bit 15 of KADR but I can find no
         // evidence in the schematics that this is actually so. Page
-9        // 18 of the controller schematic ("DISK ADDRESSING") shows
+        // 18 of the controller schematic ("DISK ADDRESSING") shows
         // that the current DATA(14) (KDATA bit 14) value is gated
         // into the DISK select lines (running to the drive) whenever
         // a KADR<- F1 is executed. It is possible that the HW ref is
@@ -301,7 +325,7 @@ var diskController = {
 
         d.spinDisk();
 
-        if(d.sectorWodIndex < Drive.sectorWordCount) {
+        if(d.sectorWodIndex < DiabloDrive.sectorWordCount) {
             d.wordEvent.timestampNsec = d.wordDuration - skewNsec;
             scheduler.schedule(d.wordEvent);
         } else {
