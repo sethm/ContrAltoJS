@@ -39,7 +39,7 @@ function extend(src, dst) {
 var TaskType = {
     INVALID:        -1,
     EMULATOR:        0,
-    DISK_SECTOR:     1,
+    DISK_SECTOR:     4,
     ETHERNET:        7,
     MEMORY_REFRESH:  8,
     DISPLAY_WORD:    9,
@@ -541,14 +541,6 @@ var Task = {
     }
 
 };
-
-var diskSectorTask = extend(Task, {
-    taskType: TaskType.DISK_SECTOR,
-
-    reset: function() {
-        this.baseReset();
-    }
-});
 
 var diskWordTask = extend(Task, {
     taskType: TaskType.DISK_WORD,

@@ -52,10 +52,16 @@ function stopRunning() {
     stepButton.disabled = false;
 }
 
+function resetSimulator() {
+    this.stopRunning();
+    console.log("Resetting simulator");
+    altoSystem.reset();
+};
+
 function stepSimulator() {
     var startButton = document.getElementById("startButton");
     startButton.disabled = true;
-    console.log("Starting simulator.");
+    console.log("Stepping simulator.");
     altoSystem.step();
     startButton.disabled = false;
 }
