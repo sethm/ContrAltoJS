@@ -263,7 +263,7 @@ var cpu = {
         displayHorizontalTask,   // 11
         displayVerticalTask,     // 12
         parityTask,              // 13
-        diskWordTask,            // 14
+        diskWordTask             // 14
     ],
 
     // Functions

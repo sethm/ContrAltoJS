@@ -22,45 +22,6 @@ var conversion = {
     usecToNsec: 1000
 };
 
-var CellType = {
-    DATA: 0,
-    GAP:  1,
-    SYNC: 2
-};
-
-var DiabloDrive = function() {
-    this.reset();
-};
-
-DiabloDrive.headerOffset = 44;
-DiabloDrive.labelOffset = DiabloDrive.headerOffset + 14;
-DiabloDrive.dataOffset = DiabloDrive.labelOffset + 20;
-DiabloDrive.sectorWordCount = 269 + DiabloDrive.headerOffset + 34;
-
-DiabloDrive.prototype = {
-    reset: function() {
-        this.sector = 0;
-        this.cylinder = 0;
-        this.head = 0;
-
-        this.sectorModified = false;
-        this.initSector();
-        this.loadSector();
-    },
-
-    initSector: function() {
-        console.log("DiabloDiabloDrive: InitSector");
-    },
-
-    loadSector: function() {
-        console.log("DiabloDiabloDrive: loadSector");
-    },
-
-    isLoaded: function() {
-        return true;
-    }
-};
-
 var DiskActivityType = {
     IDLE:  0,
     READ:  1,
