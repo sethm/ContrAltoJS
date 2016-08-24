@@ -36,6 +36,11 @@ var EmptyDataCell = new DataCell(0, CellType.DATA);
 
 var DiabloDrive = function() {
     this.reset();
+
+    for (var i = 0; i < DiabloDrive.sectorWordCount; i++) {
+        this.sectorData[i] = new DataCell(0, CellType.DATA);
+    }
+
 };
 
 DiabloDrive.headerOffset = 44;

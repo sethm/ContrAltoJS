@@ -61,7 +61,7 @@ DiabloDiskSector.prototype = {
 var DiabloPack = function(type) {
     this.diskType = type;
     this.packName = null;
-    if (this.type === DiabloDiskType.DIABLO_31) {
+    if (this.diskType == DiabloDiskType.DIABLO_31) {
         this.geometry = new DiskGeometry(203, 2, 12);
     } else {
         this.geometry = new DiskGeometry(406, 2, 12);
@@ -73,9 +73,11 @@ var DiabloPack = function(type) {
 };
 
 DiabloPack.prototype = {
-    load: function(url, reverseByteOrder) {
+    loaded: false,
 
-        var cyl, track, sec, offset;
+    load: function(url, reverseByteOrder, loadedCallback) {
+
+        var cyl, track, sec, offset, secNum;
 
         console.log("Requesting " + url);
         var req = new XMLHttpRequest();
@@ -85,38 +87,60 @@ DiabloPack.prototype = {
         var pack = this;
 
         req.onload = function(event) {
-            console.log("Data fetched.");
             var arrayBuffer = req.response;
             if (arrayBuffer) {
-
-                console.log("In callback, pack=" + pack);
                 var byteArray = new Uint8Array(arrayBuffer);
 
                 // Great, we have a raw byte stream of the disk image now.
                 pack.packName = "TODOFIXME";
 
                 offset = 0;
+                secNum = 0;
                 for (cyl = 0; cyl < pack.geometry.cylinders; cyl++) {
                     for (track = 0; track < pack.geometry.heads; track++) {
                         for (sec = 0; sec < pack.geometry.sectors; sec++) {
 
                             // We're reading a single sector of data out of the image.
 
-                            var header = new Uint8Array(4);
-                            var label = new Uint8Array(16);
-                            var data = new Uint8Array(512);
+                            var header = byteArray.slice(offset + 2, offset + 6);
+                            var label = byteArray.slice(offset + 6, offset + 22);
+                            var data = byteArray.slice(offset + 22, offset + 534);
 
-                            // TODO: Fill in data
+                            if (reverseByteOrder) {
+                                this.swapBytes(header);
+                                this.swapBytes(label);
+                                this.swapBytes(data);
+                            }
 
-                            console.log("Made sector C/H/S=" + cyl + "/" + track + "/" + sec);
-                            pack.sectors = new DiabloDiskSector(header, label, data);
+                            pack.sectors[secNum++] = new DiabloDiskSector(header, label, data);
 
-                            offset += 532;
+                            offset += 534;
                         }
                     }
                 }
             }
-        }
+
+            console.log("Loaded disk image from " + url);
+            loadedCallback();
+        };
+
         req.send();
+    },
+
+    save: function() {
+        // No-op for now, until we come up with a better solution.
+    },
+
+    getSector: function(cylinder, track, sector) {
+        return this.sectors[cylinder * track * sector];
+    },
+
+    swapBytes: function(data) {
+        for (var i = 0; i < data.length; i += 2) {
+            var t = data[i];
+            data[i] = data[i + 1];
+            data[i + 1] = t;
+        }
     }
+
 };

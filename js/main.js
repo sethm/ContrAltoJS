@@ -36,11 +36,13 @@ var animFrame = window.requestAnimationFrame ||
 
 var frameId = 0;
 
+var system = new altoSystem("http://www.loomcom.com/jsalto/images/games.dsk");
+
 // Main loop
 function runMainLoop() {
     frameId = animFrame(runMainLoop);
     // altoSystem.run(90039);
-    altoSystem.run(10);
+    system.run(10);
 }
 
 function stopRunning() {
@@ -55,14 +57,14 @@ function stopRunning() {
 function resetSimulator() {
     this.stopRunning();
     console.log("Resetting simulator");
-    altoSystem.reset();
+    system.reset();
 };
 
 function stepSimulator() {
     var startButton = document.getElementById("startButton");
     startButton.disabled = true;
     console.log("Stepping simulator.");
-    altoSystem.step();
+    system.step();
     startButton.disabled = false;
 }
 

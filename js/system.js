@@ -21,12 +21,23 @@
 // An Alto System
 //
 
-var altoSystem = (function() {
+var altoSystem = function(url) {
+
+    // Optionally load the system from the URL
 
     memoryBus.addDevice(memory);
 
+    var pack = null;
+
+    if (url) {
+        pack = new DiabloPack(DiabloDiskType.DIABLO_31);
+        pack.load(url, false, function() {
+            diskController.drives[0].loadPack(pack);
+        });
+    }
+
     var system = {
-        clockedDevices:  [
+        clockedDevices: [
             memoryBus,
             cpu
         ],
@@ -65,4 +76,4 @@ var altoSystem = (function() {
     system.reset();
 
     return system;
-})();
+};
