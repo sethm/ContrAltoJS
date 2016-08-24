@@ -542,14 +542,6 @@ var Task = {
 
 };
 
-var diskWordTask = extend(Task, {
-    taskType: TaskType.DISK_WORD,
-
-    reset: function() {
-        this.baseReset();
-    }
-});
-
 var displayWordTask = extend(Task, {
     taskType: TaskType.DISPLAY_WORD,
 

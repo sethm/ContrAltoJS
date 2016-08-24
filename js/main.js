@@ -36,13 +36,13 @@ var animFrame = window.requestAnimationFrame ||
 
 var frameId = 0;
 
-var system = new altoSystem("http://www.loomcom.com/jsalto/images/games.dsk");
+var system = new altoSystem("http://www.loomcom.com/jsalto/images/diag.dsk");
 
 // Main loop
 function runMainLoop() {
     frameId = animFrame(runMainLoop);
     // altoSystem.run(90039);
-    system.run(10);
+    system.run(90039);
 }
 
 function stopRunning() {

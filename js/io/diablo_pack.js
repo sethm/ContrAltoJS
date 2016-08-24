@@ -36,7 +36,7 @@ var DiabloDiskSector = function(header, label, data) {
 
     this.header = this.getUshortArray(header);
     this.label = this.getUshortArray(label);
-    this.data = this.getUshortArray(label);
+    this.data = this.getUshortArray(data);
 };
 
 DiabloDiskSector.prototype = {
@@ -132,6 +132,7 @@ DiabloPack.prototype = {
     },
 
     getSector: function(cylinder, track, sector) {
+        console.log("GET SECTOR: C/H/S=" + cylinder + "/" + track + "/" + sector);
         return this.sectors[cylinder * track * sector];
     },
 

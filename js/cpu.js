@@ -359,7 +359,6 @@ var cpu = {
     },
 
     wakeupTask: function(task) {
-        console.log("WAKEUP TASK: " + task);
         if (this.tasks[task] != undefined) {
             this.tasks[task].wakeupTask();
         }

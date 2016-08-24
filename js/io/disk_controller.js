@@ -56,6 +56,8 @@ var diskController = {
     // Current Sector
     sector: 0,
 
+    lastDiskActivity: DiskActivityType.READ,
+
     destCylinder: 0,
     seekDuration: 0,
     seeking: false,
@@ -230,13 +232,115 @@ var diskController = {
     },
 
     spinDisk: function() {
+        //
+        // Roughly:  If transfer is enabled:
+        //   Select data word based on elapsed time in this sector.
+        //   On a new word, wake up the disk word task if not inhibited.
+        //
+        // If transfer is not enabled BUT the disk word task is enabled,
+        // we will still wake up the disk word task if the appropriate clock
+        // source is selected.
+        //
+        // We simulate the movement of a sector under the heads by dividing
+        // the sector into word-sized timeslices.  Not all of these slices
+        // will actually contain valid data -- some are empty, used by the microcode
+        // for lead-in or inter-record delays, but the slices are still used to
+        // keep things in line time-wise; the real hardware uses a crystal-controlled clock
+        // to generate these slices during these periods (and the clock comes from the
+        // drive itself when actual data is present).  For our purposes, the two clocks
+        // are one and the same.
+        //
 
+        //
+        // Pick out the word that just passed under the head.  This may not be
+        // actual data (it could be the pre-header delay, inter-record gaps or sync words)
+        // and we may not actually end up doing anything with it, but we may
+        // need it to decide whether to do anything at all.
+        //
+
+        var diskWord = this.selectedDrive().readWord(this.sectorWordIndex);
+
+        var bWakeup = false;
+
+        //
+        // If the word task is enabled AND the write ("crystal") clock is enabled
+        // then we will wake up the word task now.
+        //
+
+        if (!this.seclate && !this.wdInhib && !this.bClkSource) {
+            bWakeup = true;
+        }
+
+        //
+        // If the clock is enabled OR the WFFO bit is set (go ahead and run the bit clock)
+        // and we weren't late reading this sector,  then we will wake up the word task
+        // and read in the data if transfers are not inhibited.
+        //
+        if (!this.seclate && (!this.wffo || this.diskBitCounterEnable)) {
+            if (!this.xferOff) {
+                if (this.isWrite()) {
+                    // Write
+                    if (this.kDataWriteLatch) {
+                        this.kDataRead = this.kDataWrite;
+                        thsi.kDataWriteLatch = false;
+                    }
+
+                    if (this.syncWordWritten) {
+                        // Commit actual data to disk now that the sync word has been laid down.
+                        this.selectedDrive().writeWord(this.sectorWordIndex, this.kDataWrite);
+                        this.lastDiskActivity = DiskActivityType.WRITE;
+                    }
+                } else {
+                    // Read
+                    this.kDataRead = diskWord.data;
+                    this.lastDiskActivity = DiskActivityType.READ;
+                }
+            }
+
+            if (!this.wdInhib) {
+                bWakeup = true;
+            }
+        }
+
+        //
+        // If the WFFO bit is cleared (wait for the sync word to be read)
+        // then we check the word for a "1" (the sync word) to enable
+        // the clock.  This occurs late in the cycle so that the NEXT word
+        // (not the sync word) is actually read.
+        //
+
+        if (!this.isWrite() && !this.wffo && diskWord.data == 1) {
+            this.diskBitCounterEnable = true;
+        } else if (this.isWrite() && this.wffo && this.kDataWrite == 1 && !this.syncWordWritten) {
+            // "Adjust" the write index to the start of the data area
+            // for our current record. This is cheating.
+            switch(this.recNo) {
+                case 0:
+                    this.sectorWordIndex = DiabloDrive.headerOffset;
+                    break;
+                case 1:
+                    this.sectorWordIndex = DiabloDrive.labelOffset;
+                    break;
+                case 2:
+                    this.sectorWordIndex = DiabloDrive.dataOffset;
+                    break;
+            }
+        }
+
+        if (bWakeup) {
+            console.log("Waking up word task for word " + this.sectorWordIndex);
+            cpu.wakeupTask(TaskType.DISK_WORD);
+        }
+
+    },
+
+    isWrite: function() {
+        return ((this.kAdr & 0x00c0) >>> 6) == 2 || ((this.kAdr & 0x00c0) >>> 6) == 3;
     },
 
     // Callbacks
 
     sectorCallback: function(timeNsec, skewNsec, context) {
-       console.log("DiskController: sectorCallback");
         var d = diskController;
 
         d.sector = (d.sector + 1) % 12;
@@ -257,10 +361,6 @@ var diskController = {
         d.selectedDrive().sector = d.sector;
 
         if ((d.kStat & d.STROBE) == 0) {
-            console.log("Waking up sector task for C/H/S "
-                        + d.selectedDrive().cylinder + "/"
-                        + d.selectedDrive().head + "/"
-                        + d.sector);
             cpu.wakeupTask(TaskType.DISK_SECTOR);
 
             d.seclate = false;
@@ -281,7 +381,6 @@ var diskController = {
     },
 
     wordCallback: function(timeNsec, skewNsec, context) {
-        console.log("DiskController: wordCallback");
         var d = diskController;
 
         d.spinDisk();
@@ -296,18 +395,16 @@ var diskController = {
     },
 
     seclateCallback: function(timeNsec, skewNsec, context) {
-        console.log("DiskController: seclateCallback");
         var d = diskController;
 
         if (d.seclateEnable) {
             d.seclate = true;
             d.kStat |= d.SECLATE;
-            console.log("SECLATE for sector " + d.sector);
         }
     },
 
     seekCallback: function(timeNsec, skewNsec, context) {
-        console.log("DiskController: seekCallback");
+        console.log("DiskController: SEEKING");
     }
 
 };
