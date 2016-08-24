@@ -90,7 +90,7 @@ var Task = {
 
     // Removes the Wakeup signal for this task
     blockTask: function () {
-        this.wakeup = true;
+        this.wakeup = false;
     },
 
     // Sets the wakeup signal for this task
@@ -116,6 +116,7 @@ var Task = {
     // Returns an InstructionCompletion indicating whether this
     // instruction calls for a task switch or not.
     baseExecuteInstruction: function (instruction) {
+        console.log("Base Execute Instruction. instruction: " + instruction);
         var completion = InstructionCompletion.NORMAL;
 
         var swMode = false;
@@ -148,18 +149,22 @@ var Task = {
         this.executeSpecialFunction2Early(instruction);
 
         // Select BUS data.
-        if (!instruction.constantAccess) {
+        if (instruction.constantAccess) {
+            this.busData = instruction.constantValue;
+        } else {
             // Normal BUS data (not constant ROM access).
             switch (instruction.bs) {
                 case BusSource.READ_R:
                     this.busData = cpu.r[this.rSelect];
                     break;
+
                 case BusSource.LOAD_R:
                     // "Loading R forces the BUS to 0 so that an ALU
                     // function of 0 and T may be executed simultaneously"
                     this.busData = 0;
                     this.loadR = true;
                     break;
+
                 case BusSource.NONE:
                     // "Enables no source to the BUS, leaving it all ones"
                     this.busData = 0xffff;
@@ -203,8 +208,6 @@ var Task = {
                 default:
                     throw "Unhandled bus source " + instruction.bs;
             }
-        } else {
-            this.busData = instruction.constantValue;
         }
 
 
@@ -442,7 +445,7 @@ var Task = {
 
         // Do writeback to selected S register from M
         if (this.loadS) {
-            cpu.s[rb][srSelect] = cpu.m;
+            cpu.s[this.rb][this.srSelect] = cpu.m;
         }
 
         // Load T

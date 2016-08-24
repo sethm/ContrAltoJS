@@ -96,7 +96,6 @@ var diskController = {
     },
 
     setKadr: function(value) {
-        console.log("setKadr");
         this.kAdr = value;
         this.recNo = 0;
         this.syncWordWritten = false;

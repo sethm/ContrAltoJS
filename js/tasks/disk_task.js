@@ -66,6 +66,7 @@ var DiskTask = function(taskType) {
         },
 
         executeSpecialFunction1: function (instruction) {
+            console.log("Execute Special Function One. instruction: " + instruction);
             switch (instruction.f1) {
                 case DiskF1.LOAD_KDATA:
                     diskController.setKdata(this.busData);
@@ -76,7 +77,6 @@ var DiskTask = function(taskType) {
                     break;
 
                 case DiskF1.LOAD_KCOMM:
-                    console.log("LOAD KCOM. busData = " + this.busData);
                     diskController.setKcom(this.busData & 0x7c00 >>> 10);
                     break;
 
@@ -103,9 +103,9 @@ var DiskTask = function(taskType) {
         },
 
         executeSpecialFunction2: function (instruction) {
+            console.log("Execute Special Function Two. instruction: " + instruction);
             switch (instruction.f2) {
                 case DiskF2.INIT:
-                    console.log("DISK TASK F2 = INIT.");
                     this.nextModifier |= this.getInitModifier(instruction);
                     break;
 
@@ -131,7 +131,6 @@ var DiskTask = function(taskType) {
                     break;
 
                 case DiskF2.XFRDAT:
-                    console.log("DISK TASK F2 = XFRDAT.");
                     this.nextModifier |= this.getInitModifier(instruction);
 
                     if (this.diskController.dataXfer) {
@@ -202,7 +201,6 @@ var DiskTask = function(taskType) {
             // write respectively.)
             //
 
-            console.log("getInitModifier. taskType = " + this.taskType + ", diskController.wdInit = " + diskController.wdInit);
             if (this.taskType == TaskType.DISK_WORD && diskController.wdInit) {
                 return 0x1f;
             } else {
