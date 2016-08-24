@@ -95,14 +95,6 @@ var diskController = {
         this.kDataWriteLatch = true;
     },
 
-    getKadr: function() {
-        return this.kAdr;
-    },
-
-    getKstat: function() {
-        return this.kstat;
-    },
-
     setKadr: function(value) {
         console.log("setKadr");
         this.kAdr = value;
@@ -138,10 +130,6 @@ var diskController = {
         }
     },
 
-    getKcom: function() {
-        return this.kCom;
-    },
-
     setKcom: function(value) {
         this.kCom = value;
 
@@ -151,7 +139,7 @@ var diskController = {
         this.wffo = (this.kCom & 0x02) === 0x02;
         this.sendAdr = (this.kCom & 0x01) === 0x01;
 
-        this.diskBitounterEnable = this.wffo;
+        this.diskBitCounterEnable = this.wffo;
 
         // Update WDINIT state based on wdInhib
         if (this.wdInhib) {
@@ -167,16 +155,12 @@ var diskController = {
         return (this.kStat | 0x0f00);
     },
 
-    setKstat: function(value) {
-        this.kStat = value;
-    },
-
     recno: function() {
         return this.recMap[this.recNo];
     },
 
     ready: function() {
-        return this.drives[this.disk].isLoaded &&  !this.seeking;
+        return this.drives[this.disk].isLoaded() && !this.seeking;
     },
 
     fatalError: function() {
@@ -385,7 +369,7 @@ var diskController = {
 
         d.spinDisk();
 
-        if(d.sectorWodIndex < DiabloDrive.sectorWordCount) {
+        if(d.sectorWordIndex < DiabloDrive.sectorWordCount) {
             d.wordEvent.timestampNsec = d.wordDuration - skewNsec;
             scheduler.schedule(d.wordEvent);
         } else {

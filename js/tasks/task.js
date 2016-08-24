@@ -15,14 +15,13 @@
  You should have received a copy of the GNU Affero General Public License
  along with this program.  If not, see
  <http://www.gnu.org/licenses/>.
-*/
+ */
 
 // Microcode Tasks
 
 function extend(src, dst) {
 
     var sourceKeys = Object.keys(src);
-    var destKeys = Object.keys(dst);
 
     for (var i = 0; i < sourceKeys.length; i++) {
         var name = sourceKeys[i];
@@ -37,21 +36,21 @@ function extend(src, dst) {
 
 // Also serves as priority
 var TaskType = {
-    INVALID:        -1,
-    EMULATOR:        0,
-    DISK_SECTOR:     4,
-    ETHERNET:        7,
-    MEMORY_REFRESH:  8,
-    DISPLAY_WORD:    9,
-    CURSOR:         10,
-    DISPLAY_HORIZ:  11,
-    DISPLAY_VERT:   12,
-    PARITY:         13,
-    DISK_WORD:      14
+    INVALID: -1,
+    EMULATOR: 0,
+    DISK_SECTOR: 4,
+    ETHERNET: 7,
+    MEMORY_REFRESH: 8,
+    DISPLAY_WORD: 9,
+    CURSOR: 10,
+    DISPLAY_HORIZ: 11,
+    DISPLAY_VERT: 12,
+    PARITY: 13,
+    DISK_WORD: 14
 };
 
 var InstructionCompletion = {
-    NORMAL:      0,
+    NORMAL: 0,
     TASK_SWITCH: 1,
     MEMORY_WAIT: 2
 };
@@ -66,7 +65,7 @@ var EmulatorBusSource = {
 //
 
 var Task = {
-    baseReset: function() {
+    baseReset: function () {
         this.mpc = this.taskType;
         this.rdRam = false;
         this.rb = 0;
@@ -77,25 +76,25 @@ var Task = {
         this.skip = 0;
     },
 
-    reset: function() {
+    reset: function () {
         return this.baseReset();
     },
 
-    priority: function() {
+    priority: function () {
         return this.taskType;
     },
 
-    softReset: function() {
+    softReset: function () {
         this.mpc = this.taskType;
     },
 
     // Removes the Wakeup signal for this task
-    blockTask: function() {
+    blockTask: function () {
         this.wakeup = true;
     },
 
     // Sets the wakeup signal for this task
-    wakeupTask: function() {
+    wakeupTask: function () {
         this.wakeup = true;
     },
 
@@ -103,9 +102,9 @@ var Task = {
     //
     // Returns an 'InstructionCompletion' indicating whether this
     // instruction calls for a task switch or not.
-    executeNext: function() {
+    executeNext: function () {
         var instruction = uCodeMemory.getInstruction(this.mpc,
-                                                     this.taskType);
+            this.taskType);
         return this.executeInstruction(instruction);
     },
 
@@ -116,13 +115,12 @@ var Task = {
     //
     // Returns an InstructionCompletion indicating whether this
     // instruction calls for a task switch or not.
-    baseExecuteInstruction: function(instruction) {
+    baseExecuteInstruction: function (instruction) {
         var completion = InstructionCompletion.NORMAL;
 
         var swMode = false;
         var block = false;
         var aluData = 0;
-        var nextModifier = 0;
 
         this.loadR = false;
         this.loadS = false;
@@ -141,7 +139,7 @@ var Task = {
         }
 
         // If we have a modified next field from the last instruction, make sure it gets applied to this one.
-        nextModifier = this.nextModifier;
+        var nextModifier = this.nextModifier;
         this.nextModifier = 0;
 
         this.srSelect = this.rSelect = instruction.rselect;
@@ -153,57 +151,57 @@ var Task = {
         if (!instruction.constantAccess) {
             // Normal BUS data (not constant ROM access).
             switch (instruction.bs) {
-            case BusSource.READ_R:
-                this.busData = cpu.r[this.rSelect];
-                break;
-            case BusSource.LOAD_R:
-                // "Loading R forces the BUS to 0 so that an ALU
-                // function of 0 and T may be executed simultaneously"
-                this.busData = 0;
-                this.loadR = true;
-                break;
-            case BusSource.NONE:
-                // "Enables no source to the BUS, leaving it all ones"
-                this.busData = 0xffff;
-                break;
+                case BusSource.READ_R:
+                    this.busData = cpu.r[this.rSelect];
+                    break;
+                case BusSource.LOAD_R:
+                    // "Loading R forces the BUS to 0 so that an ALU
+                    // function of 0 and T may be executed simultaneously"
+                    this.busData = 0;
+                    this.loadR = true;
+                    break;
+                case BusSource.NONE:
+                    // "Enables no source to the BUS, leaving it all ones"
+                    this.busData = 0xffff;
+                    break;
 
-            case BusSource.TASK_SPECIFIC_1:
-            case BusSource.TASK_SPECIFIC_2:
-                this.busData = this.getBusSource(instruction.bs);
-                break;
+                case BusSource.TASK_SPECIFIC_1:
+                case BusSource.TASK_SPECIFIC_2:
+                    this.busData = this.getBusSource(instruction.bs);
+                    break;
 
-            case BusSource.READ_MD:
-                this.busData = memoryBus.readMD();
-                break;
+                case BusSource.READ_MD:
+                    this.busData = memoryBus.readMD();
+                    break;
 
-            case BusSource.READ_MOUSE:
-                this.busData = mouse.pollMouseBits();
-                break;
+                case BusSource.READ_MOUSE:
+                    this.busData = mouse.pollMouseBits();
+                    break;
 
-            case BusSource.READ_DISP:
-                // "The high-order bits of IR cannot be read directly,
-                // but the displacement field of IR (8 low order
-                // bits), may be read with the <-DISP bus source. If
-                // the X field of the instruction is zero (i.e. it
-                // specifies page 0 addressing) then the DISP field of
-                // the instruction is put on BUS[8-15] and BUS[0-7] is
-                // zeroed. If the X field of the instruction is
-                // nonzero (i.e. it specifies PC-relative or
-                // base-register addressing) then the DISP field is
-                // sign-extended and put on the bus." NB: the "X"
-                // field of the NOVA instruction is IR[6-7]
+                case BusSource.READ_DISP:
+                    // "The high-order bits of IR cannot be read directly,
+                    // but the displacement field of IR (8 low order
+                    // bits), may be read with the <-DISP bus source. If
+                    // the X field of the instruction is zero (i.e. it
+                    // specifies page 0 addressing) then the DISP field of
+                    // the instruction is put on BUS[8-15] and BUS[0-7] is
+                    // zeroed. If the X field of the instruction is
+                    // nonzero (i.e. it specifies PC-relative or
+                    // base-register addressing) then the DISP field is
+                    // sign-extended and put on the bus." NB: the "X"
+                    // field of the NOVA instruction is IR[6-7]
 
-                this.busData = cpu.ir & 0xff;
+                    this.busData = cpu.ir & 0xff;
 
-                if ((cpu.ir & 0x300) != 0) {
-                    if ((cpu.ir & 0x80) == 0x80) {
-                        this.busData |= 0xff00;
+                    if ((cpu.ir & 0x300) != 0) {
+                        if ((cpu.ir & 0x80) == 0x80) {
+                            this.busData |= 0xff00;
+                        }
                     }
-                }
-                break;
+                    break;
 
-            default:
-                throw "Unhandled bus source " + instruction.bs;
+                default:
+                    throw "Unhandled bus source " + instruction.bs;
             }
         } else {
             this.busData = instruction.constantValue;
@@ -268,8 +266,7 @@ var Task = {
         // If there was an SWMODE operation last cycle, we set the
         // flag to ensure it takes effect at the end of this cycle.
         //
-        if (this.swMode)
-        {
+        if (this.swMode) {
             this.swMode = false;
             swMode = true;
         }
@@ -278,113 +275,114 @@ var Task = {
         // Do Special Functions
         //
         switch (instruction.f1) {
-        case SpecialFunction1.NONE:
-            // Do nothing
-            break;
+            case SpecialFunction1.NONE:
+                // Do nothing
+                break;
 
-        case SpecialFunction1.LOAD_MAR:
-            memoryBus.loadMAR(aluData,
-                              this.taskType,
-                              (Configuration.systemType == SystemType.ALTO_I) ?
-                              false : instruction.f2 == SpecialFunction2.STORE_MD);
-            break;
+            case SpecialFunction1.LOAD_MAR:
+                memoryBus.loadMAR(aluData,
+                    this.taskType,
+                    (Configuration.systemType == SystemType.ALTO_I) ?
+                        false : instruction.f2 == SpecialFunction2.STORE_MD);
+                break;
 
-        case SpecialFunction1.TASK:
-            //
-            // If the first uOp executed after a task switch contains
-            // a TASK F1, it does not take effect. This is observed on
-            // the real hardware, and does not appear to be
-            // documented. It also doensn't appear to affect the
-            // execution of the standard Alto uCode in any significant
-            // way, but is included here for correctness.
-            //
-            if (!this.firstInstructionAfterSwitch)
-            {
-                // Yield to other more important tasks
-                completion = InstructionCompletion.TASK_SWITCH;
-            }
-            break;
+            case SpecialFunction1.TASK:
+                //
+                // If the first uOp executed after a task switch contains
+                // a TASK F1, it does not take effect. This is observed on
+                // the real hardware, and does not appear to be
+                // documented. It also doensn't appear to affect the
+                // execution of the standard Alto uCode in any significant
+                // way, but is included here for correctness.
+                //
+                if (!this.firstInstructionAfterSwitch) {
+                    // Yield to other more important tasks
+                    completion = InstructionCompletion.TASK_SWITCH;
+                }
+                break;
 
-        case SpecialFunction1.BLOCK:
-            // Technically this is to be invoked by the hardware
-            // device associated with a task. That logic would be
-            // circuituous and unless there's a good reason not to
-            // that is discovered later, I'm just going to directly
-            // block the current task here.
-            cpu.blockTask(this.taskType);
+            case SpecialFunction1.BLOCK:
+                // Technically this is to be invoked by the hardware
+                // device associated with a task. That logic would be
+                // circuituous and unless there's a good reason not to
+                // that is discovered later, I'm just going to directly
+                // block the current task here.
+                cpu.blockTask(this.taskType);
 
-            block = true;
-            break;
+                block = true;
+                break;
 
-        case SpecialFunction1.LLSH1:
-            shifter.setOperation(ShifterOp.SHIFT_LEFT, 1);
-            break;
+            case SpecialFunction1.LLSH1:
+                shifter.setOperation(ShifterOp.SHIFT_LEFT, 1);
+                break;
 
-        case SpecialFunction1.LRSH1:
-            shifter.setOperation(ShifterOp.SHIFT_RIGHT, 1);
-            break;
+            case SpecialFunction1.LRSH1:
+                shifter.setOperation(ShifterOp.SHIFT_RIGHT, 1);
+                break;
 
-        case SpecialFunction1.LLCY8:
-            shifter.setOperation(ShifterOp.ROTATE_LEFT, 8);
-            break;
+            case SpecialFunction1.LLCY8:
+                shifter.setOperation(ShifterOp.ROTATE_LEFT, 8);
+                break;
 
-        case SpecialFunction1.CONSTANT:
-            // Ignored here; handled by constant ROM access logic above.
-            break;
+            case SpecialFunction1.CONSTANT:
+                // Ignored here; handled by constant ROM access logic above.
+                break;
 
-        default:
-            this.executeSpecialFunction1(instruction);
-            break;
+            default:
+                this.executeSpecialFunction1(instruction);
+                break;
         }
 
         switch (instruction.f2) {
-        case SpecialFunction2.NONE:
-            // Nothing
-            break;
-        case SpecialFunction2.BUSEQ0:
-            if (this.busData == 0) {
-                this.nextModifier = 1;
-            }
-            break;
+            case SpecialFunction2.NONE:
+                // Nothing
+                break;
+            case SpecialFunction2.BUSEQ0:
+                if (this.busData == 0) {
+                    this.nextModifier = 1;
+                }
+                break;
 
-        case SpecialFunction2.SHLT0:
-            // Handled below, after the shifter runs
-            break;
+            case SpecialFunction2.SHLT0:
+                // Handled below, after the shifter runs
+                break;
 
-        case SpecialFunction2.SHEQ0:
-            // Same as above
-            break;
+            case SpecialFunction2.SHEQ0:
+                // Same as above
+                break;
 
-        case SpecialFunction2.BUS:
-            // Select bits 6-15 (bits 0-9 in modern parlance) of the bus
-            this.nextModifier = this.busData & 0x3ff;
-            break;
+            case SpecialFunction2.BUS:
+                // Select bits 6-15 (bits 0-9 in modern parlance) of the bus
+                this.nextModifier = this.busData & 0x3ff;
+                break;
 
-        case SpecialFunction2.ALUCY:
-            // ALUC0 is the carry produced by the ALU during the most
-            // recent microinstruction that loaded L. It is *not* the
-            // carry produced during the execution of the
-            // microinstruction that contains the ALUCY function.
-            this.nextModifier = cpu.aluC0;
-            break;
+            case SpecialFunction2.ALUCY:
+                // ALUC0 is the carry produced by the ALU during the most
+                // recent microinstruction that loaded L. It is *not* the
+                // carry produced during the execution of the
+                // microinstruction that contains the ALUCY function.
+                this.nextModifier = cpu.aluC0;
+                break;
 
-        case SpecialFunction2.STORE_MD:
-            // Special case for XMAR on non-Alto I machines: if F1 is
-            // a LoadMAR we do nothing here; the handler for LoadMAR
-            // will load the correct bank.
-            if (Configuration.systemType == SystemType.ALTO_I) {
-                memoryBus.loadMD(this.busData);
-            } else if(instruction.F1 != SpecialFunction1.LoadMAR) {
-                memoryBus.loadMD(this.busData);
-            }
-            break;
-        case SpecialFunction2.CONSTANT:
-            // Ignored here; handled by Constant ROM access logic above
-            break;
-        default:
-            // Let the specific task implementation handle it.
-            this.executeSpecialFunction2(instruction);
-            break;
+            case SpecialFunction2.STORE_MD:
+                // Special case for XMAR on non-Alto I machines: if F1 is
+                // a LoadMAR we do nothing here; the handler for LoadMAR
+                // will load the correct bank.
+                if (Configuration.systemType == SystemType.ALTO_I) {
+                    memoryBus.loadMD(this.busData);
+                } else if (instruction.F1 != SpecialFunction1.LoadMAR) {
+                    memoryBus.loadMD(this.busData);
+                }
+                break;
+
+            case SpecialFunction2.CONSTANT:
+                // Ignored here; handled by Constant ROM access logic above
+                break;
+
+            default:
+                // Let the specific task implementation handle it.
+                this.executeSpecialFunction2(instruction);
+                break;
         }
 
         //
@@ -405,32 +403,32 @@ var Task = {
         //
         // Handle NEXT modifiers that rely on the Shifter output.
         //
-        switch(instruction.f2) {
-        case SpecialFunction2.SHLT0:
-            //
-            // Note:
-            // "the value of SHIFTER OUTPUT is determined by the value
-            // of L as the microinstruction *begins* execution and the
-            // shifter function specified during the *current*
-            // microinstruction.
-            //
-            // Since we haven't modifed L yet, and we've calculated
-            // the shifter output above, we're good to go here.
-            //
+        switch (instruction.f2) {
+            case SpecialFunction2.SHLT0:
+                //
+                // Note:
+                // "the value of SHIFTER OUTPUT is determined by the value
+                // of L as the microinstruction *begins* execution and the
+                // shifter function specified during the *current*
+                // microinstruction.
+                //
+                // Since we haven't modifed L yet, and we've calculated
+                // the shifter output above, we're good to go here.
+                //
 
-            // Originally: 'if (shifter.output < 0)', but JavaScript
-            // has no 16-bit types, wheeee.
-            if ((shifter.output & 0x8000) == 0x8000)  {
-                this.nextModifier = 1;
-            }
-            break;
+                // Originally: 'if (shifter.output < 0)', but JavaScript
+                // has no 16-bit signed types, wheeee.
+                if ((shifter.output & 0x8000) == 0x8000) {
+                    this.nextModifier = 1;
+                }
+                break;
 
-        case SpecialFunction2.SHEQ0:
-            // See note above.
-            if (shifter.output == 0) {
-                this.nextModifier = 1;
-            }
-            break;
+            case SpecialFunction2.SHEQ0:
+                // See note above.
+                if (shifter.output == 0) {
+                    this.nextModifier = 1;
+                }
+                break;
         }
 
         //
@@ -485,6 +483,8 @@ var Task = {
         // (And apparently the modifier applied to NEXT in this
         // instruction -- MADTEST expects this.)
         //
+
+        // Note we're using the local 'nextModifier' here intentionally, not the global one.
         if (swMode) {
             uCodeMemory.switchMode((instruction.next | nextModifier), this.taskType);
         }
@@ -501,6 +501,7 @@ var Task = {
         // last instruction. (Unless a soft reset occurred during this
         // instruction)
         //
+        // Note we're using the local 'nextModifier' here intentionally, not the global one.
         if (!this.softReset) {
             this.mpc = (instruction.next | nextModifier);
         }
@@ -510,34 +511,34 @@ var Task = {
         return completion;
     },
 
-    executeBlock: function() {
+    executeBlock: function () {
         // Nothing by default
     },
 
-    onTaskSwitch: function() {
+    onTaskSwitch: function () {
         // Nothing by default
     },
 
-    executeInstruction: function(instruction) {
+    executeInstruction: function (instruction) {
         return this.baseExecuteInstruction(instruction);
     },
 
     // Stub functions that will do nothing, if not implemented by
     // overriding objects.
 
-    executeSpecialFunction1Early: function(instruction) {
+    executeSpecialFunction1Early: function (instruction) {
     },
 
-    executeSpecialFunction1: function(instrcution) {
+    executeSpecialFunction1: function (instrcution) {
     },
 
-    executeSpecialFunction2Early: function(instruction) {
+    executeSpecialFunction2Early: function (instruction) {
     },
 
-    executeSpecialFunction2: function(instruction) {
+    executeSpecialFunction2: function (instruction) {
     },
 
-    executeSpecialFunction2Late: function(instruction) {
+    executeSpecialFunction2Late: function (instruction) {
     }
 
 };
@@ -545,7 +546,7 @@ var Task = {
 var displayWordTask = extend(Task, {
     taskType: TaskType.DISPLAY_WORD,
 
-    reset: function() {
+    reset: function () {
         this.baseReset();
     }
 });
@@ -553,7 +554,7 @@ var displayWordTask = extend(Task, {
 var displayHorizontalTask = extend(Task, {
     taskType: TaskType.DISPLAY_HORIZ,
 
-    reset: function() {
+    reset: function () {
         this.baseReset();
     }
 });
@@ -561,7 +562,7 @@ var displayHorizontalTask = extend(Task, {
 var displayVerticalTask = extend(Task, {
     taskType: TaskType.DISPLAY_VERT,
 
-    reset: function() {
+    reset: function () {
         this.baseReset();
     }
 });
@@ -569,7 +570,7 @@ var displayVerticalTask = extend(Task, {
 var cursorTask = extend(Task, {
     taskType: TaskType.CURSOR,
 
-    reset: function() {
+    reset: function () {
         this.baseReset();
     }
 });
@@ -577,7 +578,7 @@ var cursorTask = extend(Task, {
 var memoryRefreshTask = extend(Task, {
     taskType: TaskType.MEMORY_REFRESH,
 
-    reset: function() {
+    reset: function () {
         this.baseReset();
     }
 });
@@ -585,7 +586,7 @@ var memoryRefreshTask = extend(Task, {
 var ethernetTask = extend(Task, {
     taskType: TaskType.ETHERNET,
 
-    reset: function() {
+    reset: function () {
         this.baseReset();
     }
 });
@@ -593,7 +594,7 @@ var ethernetTask = extend(Task, {
 var parityTask = extend(Task, {
     taskType: TaskType.PARITY,
 
-    reset: function() {
+    reset: function () {
         this.baseReset();
     }
 });
