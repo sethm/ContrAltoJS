@@ -99,8 +99,7 @@ var Task = {
     // Returns an 'InstructionCompletion' indicating whether this
     // instruction calls for a task switch or not.
     executeNext: function () {
-        var instruction = uCodeMemory.getInstruction(this.mpc,
-            this.taskType);
+        var instruction = uCodeMemory.getInstruction(this.mpc, this.taskType);
         return this.executeInstruction(instruction);
     },
 
@@ -112,7 +111,6 @@ var Task = {
     // Returns an InstructionCompletion indicating whether this
     // instruction calls for a task switch or not.
     baseExecuteInstruction: function (instruction) {
-        console.log("EXECUTE INSTRUCTION: " + instruction);
         var completion = InstructionCompletion.NORMAL;
 
         var swMode = false;
@@ -485,7 +483,7 @@ var Task = {
 
         // Note we're using the local 'nextModifier' here intentionally, not the global one.
         if (swMode) {
-            uCodeMemory.switchMode((instruction.next | nextModifier), this.taskType);
+            uCodeMemory.switchMode((instruction.next | nextModifier) & 0xffff, this.taskType);
         }
 
         //
@@ -502,7 +500,7 @@ var Task = {
         //
         // Note we're using the local 'nextModifier' here intentionally, not the global one.
         if (!this.softReset) {
-            this.mpc = (instruction.next | nextModifier);
+            this.mpc = (instruction.next | nextModifier) & 0xffff;
         }
 
         this.firstInstructionAfterSwitch = false;

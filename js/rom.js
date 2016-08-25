@@ -440,7 +440,7 @@ var MicroInstruction = function (code) {
     }
 };
 
-MicroInstructig: rototype = {
+MicroInstruction.prototype = {
     toString: function () {
         return ("RSELECT=" + this.rselect.toString(8) +
         " ALUF=" + this.aluf +
@@ -457,7 +457,7 @@ var uCodeMemory = {
 
     URAM_LENGTH: 0xc00,
 
-    bitMask: 0x0008840,
+    bitMask: 0x00088400,
     invertedBitMask: 0xfff77bff,
 
     // Microcode RAM (up to 3KB -- three 1KB banks)
@@ -585,6 +585,7 @@ var uCodeMemory = {
                             break;
                     }
                 }
+                break;
             default:
                 throw "Unknown system type " + Configuration.systemType;
         }
@@ -622,12 +623,12 @@ var uCodeMemory = {
     },
 
     mapWord: function (word) {
-        var masked = word & ~this.invertedBitMask;
+        var masked = (word & ~this.invertedBitMask) & 0xffffffff;
         return ((~word) & this.invertedBitMask) | masked;
     },
 
     mapRamWord: function (word) {
-        return word ^ this.bitMask;
+        return (word ^ this.bitMask) & 0xffffffff;
     },
 
     // Decode and cache microcode

@@ -106,9 +106,9 @@ var emulatorTask = extend(Task, {
                 break;
 
             case EmulatorF1.STARTF:
-                console.log("Soft Boot");
                 // Dispatch function to Ethernet I/O based on contents of AC0.
                 if ((this.busData & 0x8000) != 0) {
+                    console.log("*** Soft Boot CPU ***");
                     //
                     // BOOT (soft-reset) operation. Reset the CPU using
                     // the current RMR (start tasks in RAM or ROM as
@@ -122,6 +122,7 @@ var emulatorTask = extend(Task, {
                     // this instruction.
                     this.softReset = true;
                 } else if (this.busData != 0) {
+                    console.log("*** Ethernet STARTF ***");
                     //
                     // Dispatch to the appropriate device. The Ethernet
                     // controller is the only common device that is
