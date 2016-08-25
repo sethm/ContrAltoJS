@@ -116,7 +116,6 @@ var Task = {
     // Returns an InstructionCompletion indicating whether this
     // instruction calls for a task switch or not.
     baseExecuteInstruction: function (instruction) {
-        console.log("Base Execute Instruction. instruction: " + instruction);
         var completion = InstructionCompletion.NORMAL;
 
         var swMode = false;
@@ -549,6 +548,10 @@ var Task = {
 var displayWordTask = extend(Task, {
     taskType: TaskType.DISPLAY_WORD,
 
+    onTaskSwitch: function() {
+        console.log("ON TASK SWITCH: Display Word Task");
+    },
+
     reset: function () {
         this.baseReset();
     }
@@ -556,6 +559,10 @@ var displayWordTask = extend(Task, {
 
 var displayHorizontalTask = extend(Task, {
     taskType: TaskType.DISPLAY_HORIZ,
+
+    onTaskSwitch: function() {
+        console.log("ON TASK SWITCH: Display Horizontal Task");
+    },
 
     reset: function () {
         this.baseReset();
@@ -565,6 +572,10 @@ var displayHorizontalTask = extend(Task, {
 var displayVerticalTask = extend(Task, {
     taskType: TaskType.DISPLAY_VERT,
 
+    onTaskSwitch: function() {
+        console.log("ON TASK SWITCH: Display Vertical Task");
+    },
+
     reset: function () {
         this.baseReset();
     }
@@ -573,6 +584,10 @@ var displayVerticalTask = extend(Task, {
 var cursorTask = extend(Task, {
     taskType: TaskType.CURSOR,
 
+    onTaskSwitch: function() {
+        console.log("ON TASK SWITCH: Cursor Task");
+    },
+
     reset: function () {
         this.baseReset();
     }
@@ -580,6 +595,10 @@ var cursorTask = extend(Task, {
 
 var memoryRefreshTask = extend(Task, {
     taskType: TaskType.MEMORY_REFRESH,
+
+    onTaskSwitch: function() {
+        console.log("ON TASK SWITCH: Memory Refresh Task");
+    },
 
     reset: function () {
         this.baseReset();

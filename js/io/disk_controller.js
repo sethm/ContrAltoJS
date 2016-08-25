@@ -295,6 +295,9 @@ var diskController = {
         if (!this.isWrite() && !this.wffo && diskWord.data == 1) {
             this.diskBitCounterEnable = true;
         } else if (this.isWrite() && this.wffo && this.kDataWrite == 1 && !this.syncWordWritten) {
+
+            this.syncWordWritten = true;
+
             // "Adjust" the write index to the start of the data area
             // for our current record. This is cheating.
             switch(this.recNo) {
@@ -315,6 +318,8 @@ var diskController = {
             cpu.wakeupTask(TaskType.DISK_WORD);
         }
 
+        console.log("Incrementing word index");
+        this.sectorWordIndex++;
     },
 
     isWrite: function() {
@@ -387,7 +392,7 @@ var diskController = {
     },
 
     seekCallback: function(timeNsec, skewNsec, context) {
-        console.log("DiskController: SEEKING");
+        console.log("DiskController: SEEK CALLBACK");
     }
 
 };

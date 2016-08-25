@@ -65,8 +65,13 @@ var DiskTask = function(taskType) {
             }
         },
 
+        executeInstruction: function(instruction) {
+            console.log("DISK TASK: Execute Instruction: " + instruction);
+            return this.baseExecuteInstruction(instruction);
+        },
+
         executeSpecialFunction1: function (instruction) {
-            console.log("Execute Special Function One. instruction: " + instruction);
+            console.log("DISK TASK: Execute Special Function One. instruction: " + instruction);
             switch (instruction.f1) {
                 case DiskF1.LOAD_KDATA:
                     diskController.setKdata(this.busData);
@@ -77,7 +82,7 @@ var DiskTask = function(taskType) {
                     break;
 
                 case DiskF1.LOAD_KCOMM:
-                    diskController.setKcom(this.busData & 0x7c00 >>> 10);
+                    diskController.setKcom((this.busData & 0x7c00) >>> 10);
                     break;
 
                 case DiskF1.CLRSTAT:
@@ -89,11 +94,20 @@ var DiskTask = function(taskType) {
                     break;
 
                 case DiskF1.LOAD_KSTAT:
-                    var modifiedBusData = (this.busData & 0xb) | ((~this.busData & 0x4));
+                    // "KSTAT[12-15] are loaded from BUS[12-15].  (Actually BUS[13] is ORed onto
+                    //  KSTAT[13].)"
+
+                    // From the schematic (and ucode source, based on the values it actually uses for BUS[13]), BUS[13]
+                    // is also inverted.  So there's that, too.
+
+                    // build BUS[12-15] with bit 13 flipped.
+
+                    var modifiedBusData = (this.busData & 0xb) | ((~this.busData) & 0x4);
                     diskController.kStat = (diskController.getKstat() & 0xfff4) | modifiedBusData;
                     break;
 
                 case DiskF1.STROBE:
+                    console.log("DiskF1.STROBE");
                     diskController.strobe();
                     break;
 
@@ -103,13 +117,15 @@ var DiskTask = function(taskType) {
         },
 
         executeSpecialFunction2: function (instruction) {
-            console.log("Execute Special Function Two. instruction: " + instruction);
+            console.log("DISK TASK: Execute Special Function Two. instruction: " + instruction);
             switch (instruction.f2) {
                 case DiskF2.INIT:
+                    console.log("DiskF2.INIT");
                     this.nextModifier |= this.getInitModifier(instruction);
                     break;
 
                 case DiskF2.RWC:
+                    console.log("DiskF2.RWC");
                     var command = (diskController.kAdr & 0x00c0) >>> 6;
                     this.nextModifier |= this.getInitModifier(instruction);
 
@@ -131,6 +147,7 @@ var DiskTask = function(taskType) {
                     break;
 
                 case DiskF2.XFRDAT:
+                    console.log("DiskF2.XFRDAT");
                     this.nextModifier |= this.getInitModifier(instruction);
 
                     if (this.diskController.dataXfer) {
@@ -139,6 +156,7 @@ var DiskTask = function(taskType) {
                     break;
 
                 case DiskF2.RECNO:
+                    console.log("DiskF2.RECNO");
                     this.nextModifier |= this.getInitModifier(instruction);
                     this.nextModifier |= diskController.recno();
                     break;

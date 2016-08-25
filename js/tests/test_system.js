@@ -57,7 +57,9 @@ QUnit.test("System can be reset", function(assert) {
         schedulerWasReset = true;
     };
 
-    altoSystem.reset();
+    system = new altoSystem();
+
+    system.reset();
 
     assert.strictEqual(schedulerWasReset, true);
     assert.strictEqual(memoryWasReset, true);
