@@ -141,7 +141,6 @@ DiabloDrive.prototype = {
         var i, j, checksum;
 
         if (this.pack == null || this.pack == undefined) {
-            console.log("No pack loaded.");
             return;
         }
 
@@ -174,7 +173,6 @@ DiabloDrive.prototype = {
         var i, j, checksum;
 
         if (this.pack == null || this.pack == undefined) {
-            console.log("No pack loaded.");
             return;
         }
 
@@ -245,9 +243,5 @@ DiabloDrive.prototype = {
         }
 
         return checksum;
-    },
-
-    isLoaded: function() {
-        return true;
     }
 };

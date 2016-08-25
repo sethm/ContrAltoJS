@@ -51,6 +51,7 @@ var altoSystem = function(url) {
             shifter.reset();
             cpu.reset();
             diskController.reset();
+            displayController.reset();
             uCodeMemory.reset();
         },
 

@@ -80,10 +80,6 @@ var Task = {
         return this.baseReset();
     },
 
-    priority: function () {
-        return this.taskType;
-    },
-
     softReset: function () {
         this.mpc = this.taskType;
     },
@@ -116,6 +112,7 @@ var Task = {
     // Returns an InstructionCompletion indicating whether this
     // instruction calls for a task switch or not.
     baseExecuteInstruction: function (instruction) {
+        console.log("EXECUTE INSTRUCTION: " + instruction);
         var completion = InstructionCompletion.NORMAL;
 
         var swMode = false;
@@ -247,7 +244,7 @@ var Task = {
         // Small optimization: if we're just taking bus data across
         // the ALU, we won't go through the alu.execute call; this is
         // a decent performance gain for a bit more ugly code...
-        if (instruction.ALUF != AluFunction.Bus) {
+        if (instruction.aluf != AluFunction.BUS) {
             aluData = alu.execute(instruction.aluf, this.busData, cpu.t, this.skip);
         } else {
             aluData = this.busData;
@@ -372,7 +369,7 @@ var Task = {
                 // will load the correct bank.
                 if (Configuration.systemType == SystemType.ALTO_I) {
                     memoryBus.loadMD(this.busData);
-                } else if (instruction.F1 != SpecialFunction1.LoadMAR) {
+                } else if (instruction.f1 != SpecialFunction1.LOAD_MAR) {
                     memoryBus.loadMD(this.busData);
                 }
                 break;
@@ -448,7 +445,7 @@ var Task = {
         }
 
         // Load T
-        if (instruction.LoadT) {
+        if (instruction.loadT) {
             // Does this operation change the source for T?
             cpu.t = instruction.loadTFromALU ? aluData : this.busData;
 

@@ -66,12 +66,10 @@ var DiskTask = function(taskType) {
         },
 
         executeInstruction: function(instruction) {
-            console.log("DISK TASK: Execute Instruction: " + instruction);
             return this.baseExecuteInstruction(instruction);
         },
 
         executeSpecialFunction1: function (instruction) {
-            console.log("DISK TASK: Execute Special Function One. instruction: " + instruction);
             switch (instruction.f1) {
                 case DiskF1.LOAD_KDATA:
                     diskController.setKdata(this.busData);
@@ -107,7 +105,6 @@ var DiskTask = function(taskType) {
                     break;
 
                 case DiskF1.STROBE:
-                    console.log("DiskF1.STROBE");
                     diskController.strobe();
                     break;
 
@@ -117,15 +114,12 @@ var DiskTask = function(taskType) {
         },
 
         executeSpecialFunction2: function (instruction) {
-            console.log("DISK TASK: Execute Special Function Two. instruction: " + instruction);
             switch (instruction.f2) {
                 case DiskF2.INIT:
-                    console.log("DiskF2.INIT");
                     this.nextModifier |= this.getInitModifier(instruction);
                     break;
 
                 case DiskF2.RWC:
-                    console.log("DiskF2.RWC");
                     var command = (diskController.kAdr & 0x00c0) >>> 6;
                     this.nextModifier |= this.getInitModifier(instruction);
 
@@ -147,7 +141,6 @@ var DiskTask = function(taskType) {
                     break;
 
                 case DiskF2.XFRDAT:
-                    console.log("DiskF2.XFRDAT");
                     this.nextModifier |= this.getInitModifier(instruction);
 
                     if (this.diskController.dataXfer) {
@@ -156,7 +149,6 @@ var DiskTask = function(taskType) {
                     break;
 
                 case DiskF2.RECNO:
-                    console.log("DiskF2.RECNO");
                     this.nextModifier |= this.getInitModifier(instruction);
                     this.nextModifier |= diskController.recno();
                     break;

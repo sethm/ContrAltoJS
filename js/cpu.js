@@ -201,6 +201,8 @@ var alu = {
             throw("Unimplemented Function");
         }
 
+        console.log("RETURNING FROM ALU: " + (r & 0xffff));
+
         return r & 0xffff;
     }
 };

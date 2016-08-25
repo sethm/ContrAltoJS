@@ -78,11 +78,8 @@ var emulatorTask = extend(Task, {
     },
 
     executeSpecialFunction1: function (instruction) {
-        console.log("Emulator executeSpecialFunction1");
         switch (instruction.f1) {
             case EmulatorF1.LOAD_RMR:
-                console.log("F1 LOAD_RMR");
-
                 //
                 // "The emulator F1 RMR<- causes the reset mode register
                 // to be loaded from the processor bus. The 16 bits of the
@@ -105,7 +102,6 @@ var emulatorTask = extend(Task, {
                 break;
 
             case EmulatorF1.RSNF:
-                console.log("F1 RSNF");
                 // Handled in the Early handler.
                 break;
 
@@ -144,22 +140,18 @@ var emulatorTask = extend(Task, {
                 break;
 
             case EmulatorF1.SWMODE:
-                console.log("F1 SWMODE");
                 this.swMode = true;
                 break;
 
             case EmulatorF1.RDRAM:
-                console.log("F1 RDRAM");
                 this.rdRam = true;
                 break;
 
             case EmulatorF1.WRTRAM:
-                console.log("F1 WRTRAM");
                 this.wrtRam = true;
                 break;
 
             case EmulatorF1.LOAD_ESRB:
-                console.log("F1 LOAD_ESRB");
                 this.rb = (this.busData & 0xe) >>> 1;
 
                 if (this.rb != 0 &&
@@ -177,7 +169,6 @@ var emulatorTask = extend(Task, {
     executeSpecialFunction2Early: function (instruction) {
         switch (instruction.f2) {
             case EmulatorF2.ACSOURCE:
-                console.log("EmulatorF2.ACSOURCE");
                 // Early: modify R select field: "...it replaces the
                 // two-low order bits of the R select field with the
                 // complement of the SrcAC field of IR, (IR[1-2] XOR 3),
@@ -195,7 +186,6 @@ var emulatorTask = extend(Task, {
 
             // (Fall through intentional...)
             case EmulatorF2.LOAD_DNS:
-                console.log("EmulatorF2.ACDEST|LOAD_DNS");
                 //
                 // "...DNS also addresses R from (3-IR[3 - 4])..."
                 //

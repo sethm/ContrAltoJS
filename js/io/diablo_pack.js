@@ -45,7 +45,7 @@ DiabloDiskSector.prototype = {
             throw "Array length must be even";
         }
 
-        ushortArray = [];
+        var ushortArray = [];
 
         var offset = 0;
 
@@ -132,7 +132,6 @@ DiabloPack.prototype = {
     },
 
     getSector: function(cylinder, track, sector) {
-        console.log("GET SECTOR: C/H/S=" + cylinder + "/" + track + "/" + sector);
         return this.sectors[cylinder * track * sector];
     },
 
