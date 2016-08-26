@@ -12,6 +12,13 @@ your web browser.
 This code is incomplete and in active development. It is NOT YET
 USABLE.
 
+# Credits
+
+This project would not have been possible without The Living Computer Museum's
+[ContrAlto](https://github.com/livingcomputermuseum/ContrAlto) project, of
+which this is a direct port. The architecture and design is theirs; I merely
+translated the project from C# to JavaScript.
+
 # License
 
 This software is distributed under the terms of the GNU Affero General
