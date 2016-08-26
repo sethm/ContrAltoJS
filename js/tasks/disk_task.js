@@ -44,13 +44,16 @@ var DiskF2 = {
 };
 
 var DiskTask = function(taskType) {
-
     return {
         taskType: taskType,
 
         onTaskSwitch: function () {
+            console.log("[*** DISK TASK ***] Switching to Disk Task");
             if (this.taskType == TaskType.DISK_SECTOR) {
+                console.log("[DISK TASK] Switching to disk task : Disk Sector");
                 diskController.disableSeclate();
+            } else {
+                console.log("[DISK TASK] Switching to disk task : Disk Word");
             }
         },
 
@@ -70,6 +73,7 @@ var DiskTask = function(taskType) {
         },
 
         executeSpecialFunction1: function (instruction) {
+            console.log("[DISK TASK] Executing special function 1");
             switch (instruction.f1) {
                 case DiskF1.LOAD_KDATA:
                     diskController.setKdata(this.busData);
@@ -80,6 +84,7 @@ var DiskTask = function(taskType) {
                     break;
 
                 case DiskF1.LOAD_KCOMM:
+                    console.log("SETTING KCOM: " + ((this.busData & 0x7c00) >>> 10).toString(16));
                     diskController.setKcom((this.busData & 0x7c00) >>> 10);
                     break;
 
@@ -223,7 +228,6 @@ var DiskTask = function(taskType) {
         }
     }
 };
-
 
 var diskSectorTask = extend(Task, new DiskTask(TaskType.DISK_SECTOR));
 var diskWordTask = extend(Task, new DiskTask(TaskType.DISK_WORD));

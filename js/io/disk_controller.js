@@ -74,7 +74,7 @@ var diskController = {
     sectorDuration: (40.0 / 12.0) * conversion.msecToNsec,
 
     wordDuration: function() {
-        return this.sectorDuration / DiabloDrive.sectorWordCount;
+        return this.sectorDuration / SECTOR_WORD_COUNT;
     },
 
     seclateDuration: 86.0 * conversion.usecToNsec,
@@ -98,6 +98,9 @@ var diskController = {
         // from KDATA[13]."
         this.selectedDrive().head = (this.kDataWrite & 0x4) >>> 2;
 
+        // "0 normally, 1 if the command is to terminate immediately
+        // after the correct cylinder position is reached (before
+        // any data is transferred)."
         this.dataXfer = (this.kAdr & 0x2) != 0x2;
 
         //
@@ -163,6 +166,7 @@ var diskController = {
     },
 
     reset: function() {
+        console.log("[DISK CONTROLLER] Resetting");
         this.clearStatus();
 
         this.recNo = 0;
@@ -188,23 +192,99 @@ var diskController = {
         this.drives[0].reset();
         this.drives[1].reset();
 
+        //Create events to be reused during execution
         this.sectorEvent = new Event(0, null, this.sectorCallback);
         this.wordEvent = new Event(this.wordDuration(), null, this.wordCallback);
         this.seclateEvent = new Event(this.seclateDuration, null, this.seclateCallback);
         this.seekEvent = new Event(this.seekDuration, null, this.seekCallback);
 
+        // And schedule the first sector pulse
         scheduler.schedule(this.sectorEvent);
     },
 
-    clearStatus: function() {
-    },
-
-    selectedDrive: function() {
-        return this.drives[this.disk];
-    },
-
     disableSeclate: function() {
+        console.log("[DISK CONTROLLER] Disabling seclate");
         this.seclateEnable = false;
+    },
+
+    sectorCallback: function(timeNsec, skewNsec, context) {
+        var d = diskController;
+
+        d.sector = (d.sector + 1) % 12;
+
+        d.kStat = (d.kStat & 0xffff) | (d.sector << 12);
+
+        if (d.drives[d.disk].isLoaded) {
+            d.kStat &= (~(d.NOTREADY) & 0xffff);
+        } else {
+            d.kStat |= d.NOTREADY;
+        }
+
+        d.sectorWordIndex = 0;
+        d.sectorWordWritten = false;
+
+        d.kDataRead = 0;
+
+        d.selectedDrive().sector = d.sector;
+
+        if ((d.kStat & d.STROBE) == 0) {
+            cpu.wakeupTask(TaskType.DISK_SECTOR);
+
+            d.seclate = false;
+            d.seclateEnable = true;
+            d.kStat &= (~(d.SECLATE) & 0xffff);
+
+            // Schedule a disk word wakeup to spin the disk
+            d.wordEvent.timestampNsec = d.wordDuration();
+            scheduler.schedule(d.wordEvent);
+
+            // Schedule SECLATE trigger
+            d.seclateEvent.timestampNsec = d.seclateDuration;
+            scheduler.schedule(d.seclateEvent);
+        } else {
+            d.sectorEvent.timestampNsec = d.sectorDuration - skewNsec;
+            scheduler.schedule(d.sectorEvent);
+        }
+    },
+
+    wordCallback: function(timeNsec, skewNsec, context) {
+        var d = diskController;
+
+        d.spinDisk();
+
+        if(d.sectorWordIndex < SECTOR_WORD_COUNT) {
+            d.wordEvent.timestampNsec = d.wordDuration() - skewNsec;
+            scheduler.schedule(d.wordEvent);
+        } else {
+            d.sectorEvent.timestampNsec = skewNsec;
+            scheduler.schedule(d.sectorEvent);
+        }
+    },
+
+    seclateCallback: function(timeNsec, skewNsec, context) {
+        var d = diskController;
+
+        if (d.seclateEnable) {
+            d.seclate = true;
+            d.kStat |= d.SECLATE;
+        }
+    },
+
+    clearStatus: function() {
+        this.kStat &= 0xff4b;
+        this.seclate = false;
+    },
+
+    incrementRecord: function() {
+        throw "Not yet implemented";
+    },
+
+    strobe: function() {
+        throw "Not Implemented";
+    },
+
+    initSeek: function(destCylinder) {
+        throw "Not Implemented"
     },
 
     spinDisk: function() {
@@ -268,6 +348,7 @@ var diskController = {
                     }
                 } else {
                     // Read
+                    console.log("READING DATA: " + diskWord.data);
                     this.kDataRead = diskWord.data;
                     this.lastDiskActivity = DiskActivityType.READ;
                 }
@@ -295,13 +376,13 @@ var diskController = {
             // for our current record. This is cheating.
             switch(this.recNo) {
                 case 0:
-                    this.sectorWordIndex = DiabloDrive.headerOffset;
+                    this.sectorWordIndex = HEADER_OFFSET;
                     break;
                 case 1:
-                    this.sectorWordIndex = DiabloDrive.labelOffset;
+                    this.sectorWordIndex = LABEL_OFFSET;
                     break;
                 case 2:
-                    this.sectorWordIndex = DiabloDrive.dataOffset;
+                    this.sectorWordIndex = DATA_OFFSET;
                     break;
             }
         }
@@ -318,81 +399,13 @@ var diskController = {
         return ((this.kAdr & 0x00c0) >>> 6) == 2 || ((this.kAdr & 0x00c0) >>> 6) == 3;
     },
 
-    // Callbacks
-
-    sectorCallback: function(timeNsec, skewNsec, context) {
-        var d = diskController;
-
-        d.sector = (d.sector + 1) % 12;
-
-        d.kStat = (d.kStat & 0xffff) | (d.sector << 12);
-
-        if (d.drives[d.disk].isLoaded) {
-            d.kStat &= (~(d.NOTREADY) & 0xffff);
-        } else {
-            d.kStat |= d.NOTREADY;
-        }
-
-        d.sectorWordIndex = 0;
-        d.sectorWordWritten = false;
-
-        d.kDataRead = 0;
-
-        d.selectedDrive().sector = d.sector;
-
-        if ((d.kStat & d.STROBE) == 0) {
-            cpu.wakeupTask(TaskType.DISK_SECTOR);
-
-            d.seclate = false;
-            d.seclateEnable = true;
-            d.kStat &= (~(d.SECLATE) & 0xffff);
-
-            // Schedule a disk word wakeup to spin the disk
-            d.wordEvent.timestampNsec = d.wordDuration();
-            scheduler.schedule(d.wordEvent);
-
-            // Schedule SECLATE trigger
-            d.seclateEvent.timestampNsec = d.seclateDuration;
-            scheduler.schedule(d.seclateEvent);
-        } else {
-            d.sectorEvent.timestampNsec = d.sectorDuration - skewNsec;
-            scheduler.schedule(d.sectorEvent);
-        }
-    },
-
-    wordCallback: function(timeNsec, skewNsec, context) {
-        var d = diskController;
-
-        d.spinDisk();
-
-        if(d.sectorWordIndex < DiabloDrive.sectorWordCount) {
-            d.wordEvent.timestampNsec = d.wordDuration - skewNsec;
-            scheduler.schedule(d.wordEvent);
-        } else {
-            d.sectorEvent.timestampNsec = skewNsec;
-            scheduler.schedule(d.sectorEvent);
-        }
-    },
-
-    seclateCallback: function(timeNsec, skewNsec, context) {
-        var d = diskController;
-
-        if (d.seclateEnable) {
-            d.seclate = true;
-            d.kStat |= d.SECLATE;
-        }
-    },
-
     seekCallback: function(timeNsec, skewNsec, context) {
         console.log("DiskController: SEEK CALLBACK");
     },
 
-    strobe: function() {
-        throw "Not Implemented";
+    selectedDrive: function() {
+        return this.drives[this.disk];
     },
 
-    initSeek: function(destCylinder) {
-        throw "Not Implemented"
-    }
 
 };

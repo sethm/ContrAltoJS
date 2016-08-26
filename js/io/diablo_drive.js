@@ -17,6 +17,11 @@
  <http://www.gnu.org/licenses/>.
 */
 
+const HEADER_OFFSET = 44;
+const LABEL_OFFSET = HEADER_OFFSET + 14;
+const DATA_OFFSET = LABEL_OFFSET + 20;
+const SECTOR_WORD_COUNT = 269 + HEADER_OFFSET + 34;
+
 var CellType = {
     DATA: 0,
     GAP:  1,
@@ -37,16 +42,10 @@ var EmptyDataCell = new DataCell(0, CellType.DATA);
 var DiabloDrive = function() {
     this.reset();
 
-    for (var i = 0; i < DiabloDrive.sectorWordCount; i++) {
+    for (var i = 0; i < SECTOR_WORD_COUNT; i++) {
         this.sectorData[i] = new DataCell(0, CellType.DATA);
     }
-
 };
-
-DiabloDrive.headerOffset = 44;
-DiabloDrive.labelOffset = DiabloDrive.headerOffset + 14;
-DiabloDrive.dataOffset = DiabloDrive.labelOffset + 20;
-DiabloDrive.sectorWordCount = 269 + DiabloDrive.headerOffset + 34;
 
 DiabloDrive.prototype = {
     sectorData: [],
@@ -147,25 +146,25 @@ DiabloDrive.prototype = {
         var sec = this.pack.getSector(this.cylinder, this.head, this.sector);
 
         // Header (2 words data, 1 word checksum)
-        for (i = DiabloDrive.headerOffset + 1, j = 1; i < DiabloDrive.headerOffset + 3; i++, j--) {
+        for (i = HEADER_OFFSET + 1, j = 1; i < HEADER_OFFSET + 3; i++, j--) {
             this.sectorData[i] = new DataCell(sec.header[j], CellType.DATA);
         }
-        checksum = this.calculateChecksum(this.sectorData, DiabloDrive.headerOffset + 1, 2);
-        this.sectorData[DiabloDrive.headerOffset + 3].data = checksum;
+        checksum = this.calculateChecksum(this.sectorData, HEADER_OFFSET + 1, 2);
+        this.sectorData[HEADER_OFFSET + 3].data = checksum;
 
         // Label (8 words data, 1 word checksum)
-        for (i = DiabloDrive.labelOffset + 1, j = 7; i < DiabloDrive.labelOffset + 9; i++, j--) {
+        for (i = LABEL_OFFSET + 1, j = 7; i < LABEL_OFFSET + 9; i++, j--) {
             this.sectorData[i] = new DataCell(sec.label[j], CellType.DATA);
         }
-        checksum = this.calculateChecksum(this.sectorData, DiabloDrive.labelOffset + 1, 8);
-        this.sectorData[DiabloDrive.labelOffset + 9].data = checksum;
+        checksum = this.calculateChecksum(this.sectorData, LABEL_OFFSET + 1, 8);
+        this.sectorData[LABEL_OFFSET + 9].data = checksum;
 
         // Sector data (256 words data, 1 word checksum)
-        for (i = DiabloDrive.dataOffset + 1, j = 255; i < DiabloDrive.dataOffset + 257; i++, j--) {
+        for (i = DATA_OFFSET + 1, j = 255; i < DATA_OFFSET + 257; i++, j--) {
             this.sectorData[i] = new DataCell(sec.data[j], CellType.DATA);
         }
-        checksum = this.calculateChecksum(this.sectorData, DiabloDrive.dataOffset + 1, 256);
-        this.sectorData[DiabloDrive.dataOffset + 257].data = checksum;
+        checksum = this.calculateChecksum(this.sectorData, DATA_OFFSET + 1, 256);
+        this.sectorData[DATA_OFFSET + 257].data = checksum;
     },
 
     commitSector: function() {
@@ -179,17 +178,17 @@ DiabloDrive.prototype = {
         var sec = this.pack.getSector(this.cylinder, this.head, this.sector);
 
         // Header (2 words data, 1 word checksum)
-        for (i = DiabloDrive.headerOffset + 1, j = 1; i < DiabloDrive.headerOffset + 3; i++, j--) {
+        for (i = HEADER_OFFSET + 1, j = 1; i < HEADER_OFFSET + 3; i++, j--) {
             sec.header[j] = this.sectorData[i].data;
         }
 
         // Label (8 words data, 1 word checksum)
-        for (i = DiabloDrive.labelOffset + 1, j = 7; i < DiabloDrive.labelOffset + 9; i++, j--) {
+        for (i = LABEL_OFFSET + 1, j = 7; i < LABEL_OFFSET + 9; i++, j--) {
             sec.label[j] = this.sectorData[i].data;
         }
 
         // Sector data (256 words data, 1 word checksum)
-        for (i = DiabloDrive.dataOffset + 1, j = 255; i < DiabloDrive.dataOffset + 257; i++, j--) {
+        for (i = DATA_OFFSET + 1, j = 255; i < DATA_OFFSET + 257; i++, j--) {
             sec.data[j] = this.sectorData[i].data;
         }
 
@@ -200,25 +199,25 @@ DiabloDrive.prototype = {
         var i;
 
         // Header delay, 22 words
-        for (i = 0; i < DiabloDrive.headerOffset; i++) {
+        for (i = 0; i < HEADER_OFFSET; i++) {
             this.sectorData[i] = new DataCell(0, CellType.GAP);
         }
-        this.sectorData[DiabloDrive.headerOffset] = new DataCell(1, CellType.Sync);
+        this.sectorData[HEADER_OFFSET] = new DataCell(1, CellType.Sync);
 
         // inter-record delay between header & label (10 words)
-        for (i = DiabloDrive.headerOffset + 4; i < DiabloDrive.labelOffset; i++) {
+        for (i = HEADER_OFFSET + 4; i < LABEL_OFFSET; i++) {
             this.sectorData[i] = new DataCell(0, CellType.GAP);
         }
-        this.sectorData[DiabloDrive.labelOffset] = new DataCell(1, CellType.Sync);
+        this.sectorData[LABEL_OFFSET] = new DataCell(1, CellType.Sync);
 
         // inter-record delay between label & data (10 words)
-        for (i = DiabloDrive.labelOffset + 10; i < DiabloDrive.dataOffset; i++) {
+        for (i = LABEL_OFFSET + 10; i < DATA_OFFSET; i++) {
             this.sectorData[i] = new DataCell(0, CellType.GAP);
         }
-        this.sectorData[DiabloDrive.dataOffset] = new DataCell(1, CellType.Sync);
+        this.sectorData[DATA_OFFSET] = new DataCell(1, CellType.Sync);
 
         // read-postamble
-        for (i = DiabloDrive.dataOffset + 258; i < DiabloDrive.sectorWordCount; i++) {
+        for (i = DATA_OFFSET + 258; i < SECTOR_WORD_COUNT; i++) {
             this.sectorData[i] = new DataCell(0, CellType.GAP);
         }
     },

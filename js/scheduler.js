@@ -17,6 +17,56 @@
  <http://www.gnu.org/licenses/>.
 */
 
+
+// Queue
+
+var SchedulerQueue = function () {
+    var q = [];
+
+    this.push = function(event) {
+        if (q.length === 0 || q.peek().timestampNsec >= event.timestampNsec) {
+            q.push(event);
+            return;
+        }
+
+        var newIndex = 0;
+
+        // Do a linear search to find a place to put the event
+        for (var i = 0; i < q.length; i++) {
+            if (q[i].timestampNsec >= event.timestampNsec) {
+                newIndex = i;
+                break;
+            }
+        }
+
+        q.splice(newIndex, 0, event);
+    };
+
+    this.peek = function() {
+        return q.peek();
+    };
+
+    this.pop = function() {
+        return q.pop();
+    };
+
+    this.remove = function(event) {
+        return q.remove(event);
+    };
+
+    this.clear = function() {
+        q = [];
+    };
+
+    this.length = function() {
+        return q.length;
+    };
+
+    this.getQueue = function() {
+        return q;
+    }
+};
+
 // Scheduler
 
 var Event = function(timestampNsec, context, callback) {
@@ -45,14 +95,14 @@ Array.prototype.remove = function(element) {
 
 var scheduler = {
 
-    queue: [],
+    queue: new SchedulerQueue(),
 
     timeStepNsec: 170,
 
     currentTimeNsec: 0,
 
     reset: function() {
-        this.queue = [];
+        this.queue.clear();
         this.currentTimeNsec = 0;
     },
 

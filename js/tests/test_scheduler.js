@@ -25,19 +25,20 @@ QUnit.module("Scheduler Tests", {
 
 QUnit.test("Can schedule an event", function(assert) {
     var event = {};
-    assert.strictEqual(scheduler.queue.length, 0);
+    assert.strictEqual(scheduler.queue.length(), 0);
     scheduler.schedule(event);
-    assert.strictEqual(scheduler.queue.length, 1);
+    console.log("scheduler.queue.q = " + scheduler.queue.getQueue());
+    assert.strictEqual(scheduler.queue.length(), 1);
 });
 
 QUnit.test("Can cancel an event", function(assert) {
     var event = {};
 
-    assert.strictEqual(scheduler.queue.length, 0);
+    assert.strictEqual(scheduler.queue.length(), 0);
     scheduler.schedule(event);
-    assert.strictEqual(scheduler.queue.length, 1);
+    assert.strictEqual(scheduler.queue.length(), 1);
     scheduler.cancelEvent(event);
-    assert.strictEqual(scheduler.queue.length, 0);
+    assert.strictEqual(scheduler.queue.length(), 0);
 });
 
 QUnit.test("Clocks", function(assert) {
@@ -48,11 +49,11 @@ QUnit.test("Clocks", function(assert) {
         callbackCalled = true;
     });
 
-    assert.strictEqual(scheduler.queue.length, 0);
+    assert.strictEqual(scheduler.queue.length(), 0);
     scheduler.schedule(event);
 
     scheduler.clock();
 
-    assert.strictEqual(scheduler.queue.length, 0);
+    assert.strictEqual(scheduler.queue.length(), 0);
     assert.strictEqual(callbackCalled, true);
 });
