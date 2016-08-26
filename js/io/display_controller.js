@@ -200,6 +200,7 @@ var displayController = {
 
             // Draw cursor for this scanline first.
             if (d.cursorXLatched < 606) {
+                console.log("Going to draw cursor.");
                 altoDisplay.drawCursorWord(d.scanLine, d.cursorXLatched, d.whiteOnBlack, d.cursorRegLatched);
             }
 
@@ -257,10 +258,10 @@ var displayController = {
     },
 
     loadDdr: function(word) {
-        dataBuffer.push(word & 0xffff);
+        this.dataBuffer.push(word & 0xffff);
 
-        if (dataBuffer > 16) {
-            dataBuffer.shift();
+        if (this.dataBuffer.length > 16) {
+            this.dataBuffer.shift();
         }
 
         this.checkWordWakeup();

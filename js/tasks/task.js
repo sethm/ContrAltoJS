@@ -60,6 +60,24 @@ var EmulatorBusSource = {
     LOAD_S_LOCATION: 4
 };
 
+var DisplayWordF2 = {
+    LOAD_DDR:   8
+};
+
+var DisplayHorizontalF2 = {
+    EVENTFIELD: 8,
+    SETMODE:    9
+};
+
+var DisplayVerticalF2 = {
+    EVENFIELD:  8
+};
+
+var CursorF2 = {
+    LOAD_XPREG: 8,
+    LOAD_CSR:   9
+};
+
 //
 // Base Task implementation used by all tasks
 //
@@ -545,10 +563,26 @@ var displayWordTask = extend(Task, {
     taskType: TaskType.DISPLAY_WORD,
 
     onTaskSwitch: function() {
+        // Go to sleep again right away.
+        this.wakeup = false;
+    },
+
+    executeSpecialFunction2: function(instruction) {
+        switch(instruction.f2) {
+            case DisplayWordF2.LOAD_DDR:
+                displayController.loadDdr(this.busData);
+                break;
+            default:
+                throw "Unhandled display word F2 " + instruction.f2;
+         }
     },
 
     executeBlock: function() {
-        console.log("DISPLAY WORD TASK: EXECUTING BLOCK");
+        displayController.setDwtBlock(true);
+
+        if (!displayController.dhtBlocked) {
+            cpu.wakeupTask(TaskType.DISPLAY_HORIZ);
+        }
     },
 
     reset: function () {
@@ -560,6 +594,28 @@ var displayHorizontalTask = extend(Task, {
     taskType: TaskType.DISPLAY_HORIZ,
 
     onTaskSwitch: function() {
+        this.wakeup = false;
+    },
+
+    executeSpecialFunction2: function(instruction) {
+        switch(instruction.f2) {
+            case DisplayHorizontalF2.EVENTFIELD:
+                this.nextModifier |= (displayController.evenField ? 1 : 0);
+                break;
+            case DisplayHorizontalF2.SETMODE:
+                displayController.setMode(this.busData);
+
+                if ((this.busData & 0x8000) != 0) {
+                    this.nextModifier |= 1;
+                }
+                break;
+            default:
+                throw "Unhandled display horizontal F2 " + instruction.f2;
+        }
+    },
+
+    executeBlock: function() {
+        displayController.setDhtBlock(true);
     },
 
     reset: function () {
@@ -571,6 +627,17 @@ var displayVerticalTask = extend(Task, {
     taskType: TaskType.DISPLAY_VERT,
 
     onTaskSwitch: function() {
+        this.wakeup = false;
+    },
+
+    executeSpecialFunction2: function(instruction) {
+        switch(instruction.f2) {
+            case DisplayVerticalF2.EVENFIELD:
+                this.nextModifier |= displayController.evenField ? 1 : 0;
+                break;
+            default:
+                throw "Unandled display vertical f2 " + instruction.f2;
+        }
     },
 
     reset: function () {
@@ -582,6 +649,21 @@ var cursorTask = extend(Task, {
     taskType: TaskType.CURSOR,
 
     onTaskSwitch: function() {
+        this.wakeup = false;
+    },
+
+    executeSpecialFunction2: function(instruction) {
+        switch(instruction.f2) {
+            case CursorF2.LOAD_XPREG:
+                displayController.loadXpreg(this.busData);
+                break;
+            case CursorF2.LOAD_CSR:
+                displayController.loadCsr(this.busData);
+                break;
+            default:
+                throw "Unhandled cursor F2 " + instruction.f2;
+        }
+
     },
 
     reset: function () {
