@@ -17,11 +17,6 @@
  <http://www.gnu.org/licenses/>.
 */
 
-var canvas = document.getElementById("altoDisplay");
-var ctx = canvas.getContext("2d");
-ctx.font="20px Courier";
-ctx.fillText("Display not yet connected",240,50);
-
 // The general strategy here is to allow the back end of the processor
 // to progress for 1/60th of a second worth of steps for each frame of
 // animation we draw. At 170ns per step, that equals 98039 clock
@@ -41,8 +36,8 @@ var system = new altoSystem("http://www.loomcom.com/jsalto/images/diag.dsk");
 // Main loop
 function runMainLoop() {
     frameId = animFrame(runMainLoop);
-    // system.run(90039);
-    system.run(10);
+    altoDisplay.displayLastFrame();
+    system.run(20000);
 }
 
 function stopRunning() {

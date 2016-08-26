@@ -76,24 +76,6 @@ var memoryBus = {
         this.extendedMemoryReference = false;
     },
 
-    // A few short name aliases
-
-    mar: function() {
-        return this.memoryAddress;
-    },
-
-    md: function() {
-        return this.memoryData;
-    },
-
-    cycle: function() {
-        return this.memoryCycle;
-    },
-
-    active: function() {
-        return this.memoryOperationActive;
-    },
-
     clock: function() {
         this.memoryCycle++;
 
@@ -262,7 +244,7 @@ var memoryBus = {
                 this.doubleWordMixed = false;
                 return this.memoryData2;
             } else {
-                this.doubleWordMised = false;
+                this.doubleWordMixed = false;
                 return this.memoryData;
             }
         }

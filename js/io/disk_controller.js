@@ -59,7 +59,6 @@ var diskController = {
     lastDiskActivity: DiskActivityType.READ,
 
     destCylinder: 0,
-    seekDuration: 0,
     seeking: false,
 
     // Selected disk
@@ -85,11 +84,6 @@ var diskController = {
 
     drives: [new DiabloDrive(), new DiabloDrive()],
 
-    getKdata: function() {
-        this.debugRead = false;
-        return this.kDataRead;
-    },
-
     setKdata: function(value) {
         this.kDataWrite = value;
         this.kDataWriteLatch = true;
@@ -102,8 +96,7 @@ var diskController = {
 
         // "In addition, it causes the head address bit to be loaded
         // from KDATA[13]."
-        var newHead = (this.kDataWrite & 0x4) >>> 2;
-        this.selectedDrive().head = newHead;
+        this.selectedDrive().head = (this.kDataWrite & 0x4) >>> 2;
 
         this.dataXfer = (this.kAdr & 0x2) != 0x2;
 
@@ -145,7 +138,7 @@ var diskController = {
             this.wdInit = true;
         }
 
-        if (this.sendAdr & (this.kDataWrite & 0x2) != 0) {
+        if ((this.sendAdr & (this.kDataWrite & 0x2)) != 0) {
             this.seeking = false;
         }
     },
@@ -165,7 +158,7 @@ var diskController = {
     fatalError: function() {
         return ((this.kStat & this.SECLATE) != 0 ||
                 (this.kStat & this.SEEKFAIL) != 0 ||
-                (this.kStat & this.NTREADY) != 0 ||
+                (this.kStat & this.NOTREADY) != 0 ||
                 (!this.ready()));
     },
 
@@ -265,7 +258,7 @@ var diskController = {
                     // Write
                     if (this.kDataWriteLatch) {
                         this.kDataRead = this.kDataWrite;
-                        thsi.kDataWriteLatch = false;
+                        this.kDataWriteLatch = false;
                     }
 
                     if (this.syncWordWritten) {
@@ -318,7 +311,6 @@ var diskController = {
             cpu.wakeupTask(TaskType.DISK_WORD);
         }
 
-        console.log("Incrementing word index");
         this.sectorWordIndex++;
     },
 
@@ -355,7 +347,7 @@ var diskController = {
             d.seclateEnable = true;
             d.kStat &= (~(d.SECLATE) & 0xffff);
 
-            // Schedule a disk word wakup to spin the disk
+            // Schedule a disk word wakeup to spin the disk
             d.wordEvent.timestampNsec = d.wordDuration();
             scheduler.schedule(d.wordEvent);
 
@@ -363,7 +355,7 @@ var diskController = {
             d.seclateEvent.timestampNsec = d.seclateDuration;
             scheduler.schedule(d.seclateEvent);
         } else {
-            d.sectorEvent.timestampNsec = d.secturDuration - skewNsec;
+            d.sectorEvent.timestampNsec = d.sectorDuration - skewNsec;
             scheduler.schedule(d.sectorEvent);
         }
     },
@@ -393,6 +385,14 @@ var diskController = {
 
     seekCallback: function(timeNsec, skewNsec, context) {
         console.log("DiskController: SEEK CALLBACK");
+    },
+
+    strobe: function() {
+        throw "Not Implemented";
+    },
+
+    initSeek: function(destCylinder) {
+        throw "Not Implemented"
     }
 
 };

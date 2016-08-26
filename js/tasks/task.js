@@ -277,10 +277,10 @@ var Task = {
                 break;
 
             case SpecialFunction1.LOAD_MAR:
-                memoryBus.loadMAR(aluData,
-                    this.taskType,
+                // Do MAR or XMAR reference based on whether F2 is MD<- (for Alto IIs), indicating an extended memory reference.
+                memoryBus.loadMAR(aluData, this.taskType,
                     (Configuration.systemType == SystemType.ALTO_I) ?
-                        false : instruction.f2 == SpecialFunction2.STORE_MD);
+                        false : (instruction.f2 == SpecialFunction2.STORE_MD));
                 break;
 
             case SpecialFunction1.TASK:
@@ -481,7 +481,8 @@ var Task = {
         // instruction -- MADTEST expects this.)
         //
 
-        // Note we're using the local 'nextModifier' here intentionally, not the global one.
+        // Note we're using the local 'swMode' and 'nextModifier' here intentionally,
+        // not the global ones.
         if (swMode) {
             uCodeMemory.switchMode((instruction.next | nextModifier) & 0xffff, this.taskType);
         }
@@ -526,7 +527,7 @@ var Task = {
     executeSpecialFunction1Early: function (instruction) {
     },
 
-    executeSpecialFunction1: function (instrcution) {
+    executeSpecialFunction1: function (instruction) {
     },
 
     executeSpecialFunction2Early: function (instruction) {
@@ -544,7 +545,10 @@ var displayWordTask = extend(Task, {
     taskType: TaskType.DISPLAY_WORD,
 
     onTaskSwitch: function() {
-        console.log("ON TASK SWITCH: Display Word Task");
+    },
+
+    executeBlock: function() {
+        console.log("DISPLAY WORD TASK: EXECUTING BLOCK");
     },
 
     reset: function () {
@@ -556,7 +560,6 @@ var displayHorizontalTask = extend(Task, {
     taskType: TaskType.DISPLAY_HORIZ,
 
     onTaskSwitch: function() {
-        console.log("ON TASK SWITCH: Display Horizontal Task");
     },
 
     reset: function () {
@@ -568,7 +571,6 @@ var displayVerticalTask = extend(Task, {
     taskType: TaskType.DISPLAY_VERT,
 
     onTaskSwitch: function() {
-        console.log("ON TASK SWITCH: Display Vertical Task");
     },
 
     reset: function () {
@@ -580,7 +582,6 @@ var cursorTask = extend(Task, {
     taskType: TaskType.CURSOR,
 
     onTaskSwitch: function() {
-        console.log("ON TASK SWITCH: Cursor Task");
     },
 
     reset: function () {
@@ -592,7 +593,6 @@ var memoryRefreshTask = extend(Task, {
     taskType: TaskType.MEMORY_REFRESH,
 
     onTaskSwitch: function() {
-        console.log("ON TASK SWITCH: Memory Refresh Task");
     },
 
     reset: function () {

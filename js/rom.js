@@ -622,11 +622,6 @@ var uCodeMemory = {
         return this.decodeCache[address + this.microcodeBank[task] * 1024];
     },
 
-    mapWord: function (word) {
-        var masked = (word & ~this.invertedBitMask) & 0xffffffff;
-        return ((~word) & this.invertedBitMask) | masked;
-    },
-
     mapRamWord: function (word) {
         return (word ^ this.bitMask) & 0xffffffff;
     },

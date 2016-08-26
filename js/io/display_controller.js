@@ -89,6 +89,9 @@ var displayController = {
         this.verticalBlankScanlineWakeup = new Event(VERTICAL_BLANK_DURATION, null, this.verticalBlankScanlineCallback);
         this.horizontalWakeup = new Event(HORIZONTAL_BLANK_DURATION, null, this.horizontalBlankEndCallback);
         this.wordWakeup = new Event(WORD_DURATION, null, this.wordCallback);
+
+        // Kick things off
+        scheduler.schedule(this.verticalBlankScanlineWakeup);
     },
 
     // Begins the next display field.
@@ -114,8 +117,6 @@ var displayController = {
     },
 
     verticalBlankScanlineCallback: function(timeNsec, skewNsec, context) {
-        console.log("Vertical Blank Scanline Callback");
-
         var d = displayController;
 
         // End of VBlank scanline
@@ -153,8 +154,6 @@ var displayController = {
     },
 
     horizontalBlankEndCallback: function(timeNsec, skewNsec, context) {
-        console.log("Horizontal Blank End Callback");
-
         var d = displayController;
 
         d.word = 0;
@@ -178,18 +177,16 @@ var displayController = {
     },
 
     wordCallback: function(timeNsec, skewNsec, context) {
-        console.log("Display Word Callback");
-
         var d = displayController;
 
         var displayWord = d.whiteOnBlack ? 0 : 0xffff;
 
-        if (dataBuffer.length > 0) {
+        if (d.dataBuffer.length > 0) {
             var word = d.dataBuffer.shift();
             displayWord = d.whiteOnBlack ? word : (~word) & 0xffff;
         }
 
-        altoDisplay.drawWord(d.scanline, d.word, displayWord, d.lowRes);
+        altoDisplay.drawWord(d.scanLine, d.word, displayWord, d.lowRes);
 
         // // Merge in cursor word.a
         // TODO: This local variable is unused in ContrAlto, investigate.
@@ -203,12 +200,12 @@ var displayController = {
 
             // Draw cursor for this scanline first.
             if (d.cursorXLatched < 606) {
-                altoDisplay.drawCursorWord(d.scanline, d.cursorXLatched, d.whiteOnBlack, d.cursorRegLatched);
+                altoDisplay.drawCursorWord(d.scanLine, d.cursorXLatched, d.whiteOnBlack, d.cursorRegLatched);
             }
 
-            d.scanline += 2;
+            d.scanLine += 2;
 
-            if (d.scanline >= 808) {
+            if (d.scanLine >= 808) {
                 // Done with field.
                 // Draw completed field to the emulated display
                 altoDisplay.render();
