@@ -81,7 +81,7 @@ var EmulatorF1 = {
     WRTRAM:    9,
     RDRAM:     10,
     LOAD_RMR:  11,
-    Unused:    12,
+    UNUSED:    12,
     LOAD_ESRB: 13,
     RSNF:      14,
     STARTF:    15

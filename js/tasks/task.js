@@ -36,21 +36,21 @@ function extend(src, dst) {
 
 // Also serves as priority
 var TaskType = {
-    INVALID: -1,
-    EMULATOR: 0,
-    DISK_SECTOR: 4,
-    ETHERNET: 7,
-    MEMORY_REFRESH: 8,
-    DISPLAY_WORD: 9,
-    CURSOR: 10,
-    DISPLAY_HORIZ: 11,
-    DISPLAY_VERT: 12,
-    PARITY: 13,
-    DISK_WORD: 14
+    INVALID:        -1,
+    EMULATOR:        0,
+    DISK_SECTOR:     4,
+    ETHERNET:        7,
+    MEMORY_REFRESH:  8,
+    DISPLAY_WORD:    9,
+    CURSOR:         10,
+    DISPLAY_HORIZ:  11,
+    DISPLAY_VERT:   12,
+    PARITY:         13,
+    DISK_WORD:      14
 };
 
 var InstructionCompletion = {
-    NORMAL: 0,
+    NORMAL:      0,
     TASK_SWITCH: 1,
     MEMORY_WAIT: 2
 };
@@ -306,7 +306,7 @@ var Task = {
                 // If the first uOp executed after a task switch contains
                 // a TASK F1, it does not take effect. This is observed on
                 // the real hardware, and does not appear to be
-                // documented. It also doensn't appear to affect the
+                // documented. It also doesn't appear to affect the
                 // execution of the standard Alto uCode in any significant
                 // way, but is included here for correctness.
                 //
@@ -689,9 +689,6 @@ var cursorTask = extend(Task, {
 
 var memoryRefreshTask = extend(Task, {
     taskType: TaskType.MEMORY_REFRESH,
-
-    onTaskSwitch: function() {
-    },
 
     executeSpecialFunction1Early: function(instruction) {
         if (Configuration.systemType == SystemType.ALTO_I &&

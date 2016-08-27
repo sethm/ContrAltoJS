@@ -127,15 +127,12 @@ var diskController = {
 
     setKcom: function(value) {
         this.kCom = value;
-        console.log("Setting kcom value to: " + value);
 
         this.xferOff = (this.kCom & 0x10) === 0x10;
         this.wdInhib = (this.kCom & 0x08) === 0x08;
         this.bClkSource = (this.kCom & 0x04) === 0x04;
         this.wffo = (this.kCom & 0x02) === 0x02;
         this.sendAdr = (this.kCom & 0x01) === 0x01;
-
-        console.log("[DiskController] Set xferOff = " + this.xferOff);
 
         this.diskBitCounterEnable = this.wffo;
 

@@ -36,7 +36,7 @@ var system = new altoSystem("http://www.loomcom.com/jsalto/images/diag.dsk");
 // Main loop
 function runMainLoop() {
     frameId = animFrame(runMainLoop);
-    system.run(1000);
+    system.run(25000);
     altoDisplay.displayLastFrame();
 }
 

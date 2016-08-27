@@ -49,10 +49,7 @@ var DiskTask = function(taskType) {
 
         onTaskSwitch: function () {
             if (this.taskType == TaskType.DISK_SECTOR) {
-                console.log("[DISK TASK] Switching to disk task: Disk Sector");
                 diskController.disableSeclate();
-            } else {
-                console.log("[DISK TASK] Switching to disk task: Disk Word");
             }
         },
 
@@ -61,14 +58,10 @@ var DiskTask = function(taskType) {
                 case DiskBusSource.READ_KSTAT:
                     return diskController.getKstat();
                 case DiskBusSource.READ_KDATA:
-                    return diskController.getKdata();
+                    return diskController.kDataRead;
                 default:
                     throw "Unhandled bus source " + bs;
             }
-        },
-
-        executeInstruction: function(instruction) {
-            return this.baseExecuteInstruction(instruction);
         },
 
         executeSpecialFunction1: function (instruction) {
@@ -116,6 +109,7 @@ var DiskTask = function(taskType) {
         },
 
         executeSpecialFunction2: function (instruction) {
+            console.log("*** disk task execute special function 2. this=" + this);
             switch (instruction.f2) {
                 case DiskF2.INIT:
                     this.nextModifier |= this.getInitModifier(instruction);

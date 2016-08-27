@@ -31,7 +31,6 @@ var altoDisplay = {
     },
 
     drawCursorWord: function(scanline, xoffset, whiteOnBlack, cursorWord) {
-        console.log("Draw cursor word. scanline=" + scanline);
         var ctx = this.buffer.getContext("2d");
         if (cursorWord != 0) {
             console.log("cursorWord=" + cursorWord.toString(16));
