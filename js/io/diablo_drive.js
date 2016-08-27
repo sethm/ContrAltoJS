@@ -202,19 +202,19 @@ DiabloDrive.prototype = {
         for (i = 0; i < HEADER_OFFSET; i++) {
             this.sectorData[i] = new DataCell(0, CellType.GAP);
         }
-        this.sectorData[HEADER_OFFSET] = new DataCell(1, CellType.Sync);
+        this.sectorData[HEADER_OFFSET] = new DataCell(1, CellType.SYNC);
 
         // inter-record delay between header & label (10 words)
         for (i = HEADER_OFFSET + 4; i < LABEL_OFFSET; i++) {
             this.sectorData[i] = new DataCell(0, CellType.GAP);
         }
-        this.sectorData[LABEL_OFFSET] = new DataCell(1, CellType.Sync);
+        this.sectorData[LABEL_OFFSET] = new DataCell(1, CellType.SYNC);
 
         // inter-record delay between label & data (10 words)
         for (i = LABEL_OFFSET + 10; i < DATA_OFFSET; i++) {
             this.sectorData[i] = new DataCell(0, CellType.GAP);
         }
-        this.sectorData[DATA_OFFSET] = new DataCell(1, CellType.Sync);
+        this.sectorData[DATA_OFFSET] = new DataCell(1, CellType.SYNC);
 
         // read-postamble
         for (i = DATA_OFFSET + 258; i < SECTOR_WORD_COUNT; i++) {

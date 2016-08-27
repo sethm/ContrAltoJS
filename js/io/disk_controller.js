@@ -45,7 +45,7 @@ var diskController = {
     kCom: 0,
     kStat: 0,
     xferOff: false,
-    wdInhib: false,
+    wdInhib: true,
     bClkSource: false,
     wffo: false,
     sendAdr: false,
@@ -127,12 +127,15 @@ var diskController = {
 
     setKcom: function(value) {
         this.kCom = value;
+        console.log("Setting kcom value to: " + value);
 
         this.xferOff = (this.kCom & 0x10) === 0x10;
         this.wdInhib = (this.kCom & 0x08) === 0x08;
         this.bClkSource = (this.kCom & 0x04) === 0x04;
         this.wffo = (this.kCom & 0x02) === 0x02;
         this.sendAdr = (this.kCom & 0x01) === 0x01;
+
+        console.log("[DiskController] Set xferOff = " + this.xferOff);
 
         this.diskBitCounterEnable = this.wffo;
 
@@ -166,7 +169,6 @@ var diskController = {
     },
 
     reset: function() {
-        console.log("[DISK CONTROLLER] Resetting");
         this.clearStatus();
 
         this.recNo = 0;
@@ -203,7 +205,6 @@ var diskController = {
     },
 
     disableSeclate: function() {
-        console.log("[DISK CONTROLLER] Disabling seclate");
         this.seclateEnable = false;
     },
 
@@ -348,7 +349,6 @@ var diskController = {
                     }
                 } else {
                     // Read
-                    console.log("READING DATA: " + diskWord.data);
                     this.kDataRead = diskWord.data;
                     this.lastDiskActivity = DiskActivityType.READ;
                 }

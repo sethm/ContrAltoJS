@@ -140,7 +140,7 @@ var Task = {
         this.rSelect = 0;
         this.srSelect = 0;
         this.busData = 0;
-        this.softReset = false;
+        this.wasSoftReset = false;
 
         shifter.reset();
 
@@ -518,7 +518,7 @@ var Task = {
         // instruction)
         //
         // Note we're using the local 'nextModifier' here intentionally, not the global one.
-        if (!this.softReset) {
+        if (!this.wasSoftReset) {
             this.mpc = (instruction.next | nextModifier) & 0xffff;
         }
 
@@ -585,6 +585,10 @@ var displayWordTask = extend(Task, {
         }
     },
 
+    toString: function() {
+        return "Display Word Task";
+    },
+
     reset: function () {
         this.baseReset();
     }
@@ -618,6 +622,10 @@ var displayHorizontalTask = extend(Task, {
         displayController.setDhtBlock(true);
     },
 
+    toString: function() {
+        return "Display Horizontal Task";
+    },
+
     reset: function () {
         this.baseReset();
     }
@@ -638,6 +646,10 @@ var displayVerticalTask = extend(Task, {
             default:
                 throw "Unandled display vertical f2 " + instruction.f2;
         }
+    },
+
+    toString: function() {
+        return "Display Vertical Task";
     },
 
     reset: function () {
@@ -666,6 +678,10 @@ var cursorTask = extend(Task, {
 
     },
 
+    toString: function() {
+        return "Cursor Task";
+    },
+
     reset: function () {
         this.baseReset();
     }
@@ -675,6 +691,18 @@ var memoryRefreshTask = extend(Task, {
     taskType: TaskType.MEMORY_REFRESH,
 
     onTaskSwitch: function() {
+    },
+
+    executeSpecialFunction1Early: function(instruction) {
+        if (Configuration.systemType == SystemType.ALTO_I &&
+            instruction.f1 == SpecialFunction1.LOAD_MAR &&
+            this.rSelect == 31) {
+            this.blockTask();
+        }
+    },
+
+    toString: function() {
+        return "Memory Refresh Task";
     },
 
     reset: function () {
