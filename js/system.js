@@ -23,11 +23,14 @@
 
 var altoSystem = function(url) {
 
-    // Optionally load the system from the URL
-
     memoryBus.addDevice(memory);
+    memoryBus.addDevice(keyboard);
+    memoryBus.addDevice(mouse);
+    memoryBus.addDevice(musicInterface);
 
     var pack = null;
+
+    // Optionally load the system from the URL
 
     if (url) {
         pack = new DiabloPack(DiabloDiskType.DIABLO_31);
@@ -55,6 +58,9 @@ var altoSystem = function(url) {
             displayController.reset();
             uCodeMemory.reset();
             altoDisplay.reset();
+            mouse.reset();
+            keyboard.reset();
+            musicInterface.reset();
         },
 
         step: function() {

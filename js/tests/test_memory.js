@@ -192,10 +192,10 @@ QUnit.test("LoadMAR throws if memory operation active", function(assert) {
 
 QUnit.test("LoadMAR sets extendedMemoryReference", function(assert) {
     memoryBus.memoryOperationActive = false;
-
     memoryBus.loadMAR(0, TaskType.EMULATOR, true);
     assert.strictEqual(memoryBus.extendedMemoryReference, true);
 
+    memoryBus.memoryOperationActive = false;
     memoryBus.loadMAR(0, TaskType.EMULATOR, false);
     assert.strictEqual(memoryBus.extendedMemoryReference, false);
 });

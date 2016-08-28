@@ -127,6 +127,7 @@ var diskController = {
 
     setKcom: function(value) {
         this.kCom = value;
+        console.log("*** Just set kcom to " + this.kCom);
 
         this.xferOff = (this.kCom & 0x10) === 0x10;
         this.wdInhib = (this.kCom & 0x08) === 0x08;

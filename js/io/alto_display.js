@@ -7,9 +7,11 @@ var altoDisplay = {
         this.buffer.width = 606;
         this.buffer.height = 808;
         var canvas = document.getElementById("altoDisplay");
-        var ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, 606, 808);
-        ctx.drawImage(this.buffer, 0, 0);
+        if (canvas) {
+            var ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, 606, 808);
+            ctx.drawImage(this.buffer, 0, 0);
+        }
     },
 
     drawWord: function(scanline, word, displayWord, lowRes) {

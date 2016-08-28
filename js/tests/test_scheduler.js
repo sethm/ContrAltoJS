@@ -27,7 +27,6 @@ QUnit.test("Can schedule an event", function(assert) {
     var event = {};
     assert.strictEqual(scheduler.queue.length(), 0);
     scheduler.schedule(event);
-    console.log("scheduler.queue.q = " + scheduler.queue.getQueue());
     assert.strictEqual(scheduler.queue.length(), 1);
 });
 

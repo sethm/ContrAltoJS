@@ -378,7 +378,7 @@ var MicroInstruction = function (code) {
     // Whether this instruction references constant memory
 
     this.constantAccess = (this.f1 == SpecialFunction1.CONSTANT ||
-    this.f2 == SpecialFunction2.CONSTANT);
+                           this.f2 == SpecialFunction2.CONSTANT);
 
     this.constantAccessOrBS4 = (this.constantAccess || this.bs > 4);
 
@@ -443,13 +443,13 @@ var MicroInstruction = function (code) {
 MicroInstruction.prototype = {
     toString: function () {
         return ("RSELECT=" + this.rselect.toString(8) +
-        " ALUF=" + this.aluf +
-        " BS=" + this.bs +
-        " F1=" + this.f1 +
-        " F2=" + this.f2 +
-        " LoadT=" + (this.loadT ? "1" : "0") +
-        " LoadL=" + (this.loadL ? "1" : "0") +
-        " NEXT=" + this.next.toString(8));
+                " ALUF=" + this.aluf +
+                " BS=" + this.bs +
+                " F1=" + this.f1 +
+                " F2=" + this.f2 +
+                " LoadT=" + (this.loadT ? "1" : "0") +
+                " LoadL=" + (this.loadL ? "1" : "0") +
+                " NEXT=" + this.next.toString(8));
     }
 };
 

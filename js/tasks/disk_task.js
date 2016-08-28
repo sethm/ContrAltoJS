@@ -49,7 +49,10 @@ var DiskTask = function(taskType) {
 
         onTaskSwitch: function () {
             if (this.taskType == TaskType.DISK_SECTOR) {
+                console.log("Switching to Disk Sector task");
                 diskController.disableSeclate();
+            } else {
+                console.log("Switching to Disk Word task");
             }
         },
 
@@ -109,7 +112,6 @@ var DiskTask = function(taskType) {
         },
 
         executeSpecialFunction2: function (instruction) {
-            console.log("*** disk task execute special function 2. this=" + this);
             switch (instruction.f2) {
                 case DiskF2.INIT:
                     this.nextModifier |= this.getInitModifier(instruction);

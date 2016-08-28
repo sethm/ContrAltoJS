@@ -98,5 +98,9 @@ var memory = {
         return extendedMemory ?
             (this.xmBanks[task] & 0x3) :
             (this.xmBanks[task] & 0xc) >>> 2;
+    },
+
+    toString: function() {
+        return "Memory";
     }
 };

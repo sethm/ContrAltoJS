@@ -83,6 +83,15 @@ var CursorF2 = {
 //
 
 var Task = {
+
+    rdRam: false,
+    rb: 0,
+    swMode: false,
+    wrtMode: false,
+    wakeup: false,
+    nextModifier: 0,
+    skip: 0,
+
     baseReset: function () {
         this.mpc = this.taskType;
         this.rdRam = false;
@@ -91,6 +100,7 @@ var Task = {
         this.swMode = false;
         this.wrtRam = false;
         this.wakeup = false;
+        this.nextModifier = 0;
         this.skip = 0;
     },
 
@@ -129,6 +139,7 @@ var Task = {
     // Returns an InstructionCompletion indicating whether this
     // instruction calls for a task switch or not.
     baseExecuteInstruction: function (instruction) {
+        console.log("Executing instruction: " + instruction);
         var completion = InstructionCompletion.NORMAL;
 
         var swMode = false;
@@ -587,10 +598,6 @@ var displayWordTask = extend(Task, {
 
     toString: function() {
         return "Display Word Task";
-    },
-
-    reset: function () {
-        this.baseReset();
     }
 });
 
@@ -624,10 +631,6 @@ var displayHorizontalTask = extend(Task, {
 
     toString: function() {
         return "Display Horizontal Task";
-    },
-
-    reset: function () {
-        this.baseReset();
     }
 });
 
@@ -650,10 +653,6 @@ var displayVerticalTask = extend(Task, {
 
     toString: function() {
         return "Display Vertical Task";
-    },
-
-    reset: function () {
-        this.baseReset();
     }
 });
 
@@ -680,10 +679,6 @@ var cursorTask = extend(Task, {
 
     toString: function() {
         return "Cursor Task";
-    },
-
-    reset: function () {
-        this.baseReset();
     }
 });
 
@@ -698,27 +693,19 @@ var memoryRefreshTask = extend(Task, {
         }
     },
 
-    toString: function() {
-        return "Memory Refresh Task";
+    blockTask: function() {
+        this.wakeup = false;
     },
 
-    reset: function () {
-        this.baseReset();
+    toString: function() {
+        return "Memory Refresh Task";
     }
 });
 
 var ethernetTask = extend(Task, {
     taskType: TaskType.ETHERNET,
-
-    reset: function () {
-        this.baseReset();
-    }
 });
 
 var parityTask = extend(Task, {
     taskType: TaskType.PARITY,
-
-    reset: function () {
-        this.baseReset();
-    }
 });
