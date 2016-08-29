@@ -58,7 +58,7 @@ var DiskTask = function(taskType) {
                 case DiskBusSource.READ_KSTAT:
                     return diskController.getKstat();
                 case DiskBusSource.READ_KDATA:
-                    return diskController.kDataRead
+                    return diskController.kDataRead;
                 default:
                     throw "Unhandled bus source " + bs;
             }

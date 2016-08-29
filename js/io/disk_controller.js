@@ -46,11 +46,12 @@ var diskController = {
     kAdr: 0,
     kCom: 0,
     kStat: 0,
-    xferOff: false,
+    xferOff: true,
     wdInhib: true,
     bClkSource: false,
     wffo: false,
     sendAdr: false,
+    seclateEnable: false,
 
     // Transfer bit
     dataXfer: false,
@@ -122,6 +123,8 @@ var diskController = {
     setKcom: function(value) {
         this.kCom = value;
 
+        console.log("setKcom = " + value.toString(16));
+
         this.xferOff = (this.kCom & 0x10) === 0x10;
         this.wdInhib = (this.kCom & 0x08) === 0x08;
         this.bClkSource = (this.kCom & 0x04) === 0x04;
@@ -171,6 +174,7 @@ var diskController = {
         this.kDataWriteLatch = false;
         this.sendAdr = false;
         this.seeking = false;
+        this.seclateEnable = false;
 
         this.wdInhib = true;
         this.xferOff = true;
