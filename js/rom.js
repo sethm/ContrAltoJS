@@ -378,7 +378,7 @@ var MicroInstruction = function (code) {
     // Whether this instruction references constant memory
 
     this.constantAccess = (this.f1 == SpecialFunction1.CONSTANT ||
-                           this.f2 == SpecialFunction2.CONSTANT);
+    this.f2 == SpecialFunction2.CONSTANT);
 
     this.constantAccessOrBS4 = (this.constantAccess || this.bs > 4);
 
@@ -405,13 +405,13 @@ var MicroInstruction = function (code) {
     // only task-specific thing we cache, even if this isn't the right
     // task, worst-case we'll do an operation we didn't need to.
     this.needShifterOutput = (this.f2 == EmulatorF2.LOAD_DNS ||
-    this.f2 == SpecialFunction2.SHEQ0 ||
-    this.f2 == SpecialFunction2.SHLT0);
+                              this.f2 == SpecialFunction2.SHEQ0 ||
+                              this.f2 == SpecialFunction2.SHLT0);
 
     // Whether this instruction accesses memory
     this.memoryAccess = ((this.bs == BusSource.READ_MD && !this.constantAccess) ||
-    this.f1 == SpecialFunction1.LOAD_MAR ||
-    this.f2 == SpecialFunction2.STORE_MD);
+                         this.f1 == SpecialFunction1.LOAD_MAR ||
+                         this.f2 == SpecialFunction2.STORE_MD);
 
     if (this.memoryAccess) {
         if (this.f1 == SpecialFunction1.LOAD_MAR) {
@@ -448,7 +448,7 @@ MicroInstruction.prototype = {
         var f1String;
         var f2String;
 
-        switch(this.aluf) {
+        switch (this.aluf) {
             case AluFunction.BUS:
                 alufString = "BUS";
                 break;
@@ -499,7 +499,7 @@ MicroInstruction.prototype = {
                 break;
         }
 
-        switch(this.bs) {
+        switch (this.bs) {
             case BusSource.READ_R:
                 bsString = "READ_R";
                 break;
@@ -526,7 +526,7 @@ MicroInstruction.prototype = {
                 break;
         }
 
-        switch(this.f1) {
+        switch (this.f1) {
             case SpecialFunction1.NONE:
                 f1String = "NONE";
                 break;
@@ -586,13 +586,13 @@ MicroInstruction.prototype = {
         }
 
         return ("RSELECT=" + this.rselect.toString(8) +
-                " ALUF=" + alufString +
-                " BS=" + bsString +
-                " F1=" + f1String +
-                " F2=" + f2String +
-                " LoadT=" + (this.loadT ? "True" : "False") +
-                " LoadL=" + (this.loadL ? "True" : "False") +
-                " NEXT=" + this.next.toString(8));
+        " ALUF=" + alufString +
+        " BS=" + bsString +
+        " F1=" + f1String +
+        " F2=" + f2String +
+        " LoadT=" + (this.loadT ? "True" : "False") +
+        " LoadL=" + (this.loadL ? "True" : "False") +
+        " NEXT=" + this.next.toString(8));
     }
 };
 

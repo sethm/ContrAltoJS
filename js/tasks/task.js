@@ -141,6 +141,15 @@ var Task = {
     baseExecuteInstruction: function (instruction) {
         var completion = InstructionCompletion.NORMAL;
 
+        var msg = "executing: " + instruction;
+
+        if (instruction.bs == BusSource.LOAD_R) {
+            msg += "; loadR rSelect=" + this.rSelect;
+            msg += "; mem address=" + memoryBus.memoryAddress;
+        }
+
+        console.log(msg);
+
         var swMode = false;
         var block = false;
         var aluData = 0;
@@ -166,6 +175,10 @@ var Task = {
         this.nextModifier = 0;
 
         this.srSelect = this.rSelect = instruction.rselect;
+
+        if (instruction.bs == BusSource.LOAD_R && this.rSelect == 28) {
+            console.log("BREAK HERE");
+        }
 
         // Give tasks the chance to modify parameters early on (like RSELECT)
         this.executeSpecialFunction2Early(instruction);
