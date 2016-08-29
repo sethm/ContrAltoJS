@@ -34,9 +34,15 @@ var altoDisplay = {
 
     drawCursorWord: function(scanline, xoffset, whiteOnBlack, cursorWord) {
         var ctx = this.buffer.getContext("2d");
-        if (cursorWord != 0) {
-            console.log("cursorWord=" + cursorWord.toString(16));
+
+        ctx.fillStyle = "#000";
+        for (var i = 0; i < 16; i++) {
+            var bit = (cursorWord >> i) & 1;
+            if (bit == 0) {
+                ctx.fillRect(xoffset + i, scanline, 1, 1);
+            }
         }
+
     },
 
     render: function() {

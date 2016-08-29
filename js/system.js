@@ -36,7 +36,6 @@ var altoSystem = function(url) {
         pack = new DiabloPack(DiabloDiskType.DIABLO_31);
         pack.load(url, false, function() {
             diskController.drives[0].loadPack(pack);
-            system.reset();
         });
     }
 

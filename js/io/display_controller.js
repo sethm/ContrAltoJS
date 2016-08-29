@@ -200,7 +200,6 @@ var displayController = {
 
             // Draw cursor for this scanline first.
             if (d.cursorXLatched < 606) {
-                console.log("Going to draw cursor.");
                 altoDisplay.drawCursorWord(d.scanLine, d.cursorXLatched, d.whiteOnBlack, d.cursorRegLatched);
             }
 

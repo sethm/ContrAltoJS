@@ -36,7 +36,7 @@ var system = new altoSystem("http://www.loomcom.com/jsalto/images/diag.dsk");
 // Main loop
 function runMainLoop() {
     frameId = animFrame(runMainLoop);
-    system.run(1000);
+    system.run(7500);
     altoDisplay.displayLastFrame();
 }
 
@@ -54,6 +54,7 @@ function resetSimulator() {
     console.log("Resetting simulator");
     system.reset();
 }
+
 function stepSimulator() {
     var startButton = document.getElementById("startButton");
     startButton.disabled = true;

@@ -17,9 +17,11 @@
  <http://www.gnu.org/licenses/>.
 */
 
-var MEM_SIZE = 0x40000;
-var BANK_SIZE = 0x10000;
-var BANKS = 16;
+const MEM_SIZE = 0x40000;
+const BANK_SIZE = 0x10000;
+const BANKS = 16;
+const MEM_TOP = 0xfdff;
+const XM_BANK_START = 0xffe0;
 
 var MemoryRange = function (start, end) {
     if (!(end >= start)) {
@@ -38,25 +40,12 @@ MemoryRange.prototype.overlaps = function(other) {
 var memory = {
     mem: [],
     xmBanks: [],
-    memTop: 0xfdff,       // 176777
-    xmBankStart: 0xffe0,  // 177740
-    addresses: [],
 
-    init: function() {
-        if (Configuration.systemType === SystemType.ALTO_I) {
-            this.addresses = [
-                // Main bank of RAM to 176777. IO above this.
-                new MemoryRange(0, this.memTop)
-            ];
-        } else {
-            this.addresses = [
-                // Main bank of RAM to 176777. IO above this.
-                new MemoryRange(0, this.memTop),
-                // Memory bank registers
-                new MemoryRange(this.xmBankStart, this.xmBankStart + BANKS)
-            ];
-        }
-    },
+    // TODO: THIS MUST BE UPDATED TO SUPPORT ALTO I!
+    addresses: [
+        new MemoryRange(0, MEM_TOP),
+        new MemoryRange(XM_BANK_START, XM_BANK_START + BANKS)
+    ],
 
     reset: function() {
         // Clear out memory and bank registers
@@ -73,11 +62,10 @@ var memory = {
     },
 
     read: function(address, task, extendedMemory) {
-        if (address >= this.xmBankStart &&
-            address < this.xmBankStart + BANKS) {
-            return this.xmBanks[address - this.xmBankStart] & 0xfff0;
+        if (address >= XM_BANK_START && address < (XM_BANK_START + BANKS)) {
+            return 0xfff0 | this.xmBanks[address - XM_BANK_START];
         } else {
-            address += BANK_SIZE * this.getBankNumber(task, extendedMemory);
+            address += (BANK_SIZE * this.getBankNumber(task, extendedMemory));
             return this.mem[address];
         }
     },
@@ -85,19 +73,16 @@ var memory = {
     load: function(address, data, task, extendedMemory) {
         // Check for XM registers; this occurs regardless of XM
         // flag since it's in the I/O page
-        if (address >= this.xmBankStart &&
-            address < this.xmBankStart + BANKS) {
-            this.xmBanks[address - this.xmBankStart] = data;
+        if (address >= XM_BANK_START && address < (XM_BANK_START + BANKS)) {
+            this.xmBanks[address - XM_BANK_START] = data;
         } else {
-            address += BANK_SIZE * this.getBankNumber(task, extendedMemory);
+            address += (BANK_SIZE * this.getBankNumber(task, extendedMemory));
             this.mem[address] = data;
         }
     },
 
     getBankNumber: function(task, extendedMemory) {
-        return extendedMemory ?
-            (this.xmBanks[task] & 0x3) :
-            (this.xmBanks[task] & 0xc) >>> 2;
+        return extendedMemory ? (this.xmBanks[task] & 0x3) : (this.xmBanks[task] & 0xc) >>> 2;
     },
 
     toString: function() {

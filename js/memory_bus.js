@@ -54,8 +54,7 @@ var memoryBus = {
             for (var addr = ranges[i].start; addr <= ranges[i].end; addr++) {
                 // Make sure nothing is already using the slot
                 if (this.bus[addr] !== undefined) {
-                    throw "Memory mapped address collision for dev "
-                    + dev + " at address " + addr + " with " +
+                    throw "Memory mapped address collision for dev " + dev + " at address " + addr + " with " +
                     this.bus[addr];
                 }
                 this.bus[addr] = dev;
@@ -92,15 +91,11 @@ var memoryBus = {
         switch (this.memoryCycle) {
             case 4:
                 // Buffered read of single word
-                this.memoryData = this.readFromBus(this.memoryAddress,
-                    this.task,
-                    this.extendedMemoryReference);
+                this.memoryData = this.readFromBus(this.memoryAddress, this.task, this.extendedMemoryReference);
                 break;
             case 5:
                 // Buffered read of double-word
-                this.memoryData2 = this.readFromBus((this.memoryAddress | 1),
-                    this.task,
-                    this.extendedMemoryReference);
+                this.memoryData2 = this.readFromBus((this.memoryAddress | 1), this.task, this.extendedMemoryReference);
                 break;
             case 7:
                 // End of memory operation
@@ -113,15 +108,11 @@ var memoryBus = {
     clockAltoII: function () {
         switch (this.memoryCycle) {
             case 3:
-                this.memoryData = this.readFromBus(this.memoryAddress,
-                    this.task,
-                    this.extendedMemoryReference);
+                this.memoryData = this.readFromBus(this.memoryAddress, this.task, this.extendedMemoryReference);
                 break;
             case 4:
                 // Buffered read of double-word
-                this.memoryData2 = this.readFromBus((this.memoryAddress ^ 1),
-                    this.task,
-                    this.extendedMemoryReference);
+                this.memoryData2 = this.readFromBus((this.memoryAddress ^ 1), this.task, this.extendedMemoryReference);
                 break;
             case 5:
                 this.memoryOperationActive = false;
@@ -131,8 +122,7 @@ var memoryBus = {
     },
 
     ready: function (memoryOperation) {
-
-        if (this.memoryOperationActive == false) {
+        if (!this.memoryOperationActive) {
             // Nothing running right now, we're ready for anything
             return true;
         }
@@ -168,7 +158,7 @@ var memoryBus = {
     },
 
     readMD: function () {
-        if (Configuration.systemType === SystemType.ALTO_I) {
+        if (Configuration.systemType == SystemType.ALTO_I) {
             return this.readMDAltoI();
         } else {
             return this.readMDAltoII();
@@ -184,14 +174,12 @@ var memoryBus = {
             case 1:
             case 2:
                 // Good microcode should never do this
-                throw "Unexpected microcode behavior - readMD too soon"
-                + " after start of memory cycle";
+                throw "Unexpected microcode behavior - readMD too soon after start of memory cycle";
             case 3:
             case 4:
                 // This should not hapen; CPU should check whether the
                 // operation is possible using 'ready()' and stall if not
-                throw "Invalid readMD request during cycle 3 or 4 of"
-                + " memory operation";
+                throw "Invalid readMD request during cycle 3 or 4 of memory operation";
             case 5:
                 // Single word read
                 return this.memoryData;
@@ -199,8 +187,7 @@ var memoryBus = {
                 // Double word read, other half.
                 return this.memoryData2;
             default:
-                throw "Unexpected memory cycle " + this.memoryCycle + " in"
-                + " memory state machine.";
+                throw("Unexpected memory cycle " + this.memoryCycle + " in" + " memory state machine.");
         }
     },
 
@@ -210,14 +197,12 @@ var memoryBus = {
                 case 1:
                 case 2:
                     // Good microcode should never do this
-                    throw "Unexpected microcode behavior - readMD too soon"
-                    + " after start of memory cycle";
+                    throw "Unexpected microcode behavior - readMD too soon after start of memory cycle";
                 case 3:
                 case 4:
                     // This should not hapen; CPU should check whether the
                     // operation is possible using 'ready()' and stall if not
-                    throw "Invalid readMD request during cycle 3 or 4 of"
-                    + " memory operation";
+                    throw "Invalid readMD request during cycle 3 or 4 of memory operation";
                 case 5:
                     // Single word read
                     return this.memoryData;
@@ -229,8 +214,7 @@ var memoryBus = {
 
                 default:
                     // Invalid state.
-                    throw "Unexpected memory cycle " + this.memoryCycle
-                    + " in memory state machine.";
+                    throw "Unexpected memory cycle " + this.memoryCycle + " in memory state machine.";
             }
         } else {
             // memory state machine not running, just return last
@@ -255,7 +239,7 @@ var memoryBus = {
             return;
         }
 
-        if (this.systemType === SystemType.ALTO_I) {
+        if (this.systemType == SystemType.ALTO_I) {
             this.loadMDAltoI(data);
         } else {
             this.loadMDAltoII(data);
@@ -273,7 +257,7 @@ var memoryBus = {
             case 5:
                 this.memoryData = data;
                 this.writeToBus(this.memoryAddress, data, this.task,
-                    this.extendedMemoryReference);
+                                this.extendedMemoryReference);
                 this.doubleWordStore = true;
                 this.doubleWordMixed = true;
                 break;
@@ -288,7 +272,7 @@ var memoryBus = {
                 var actualAddress = this.memoryAddress | 1;
 
                 this.writeToBus(actualAddress, data, this.task,
-                    this.extendedMemoryReference);
+                                this.extendedMemoryReference);
                 break;
         }
     },
@@ -298,30 +282,25 @@ var memoryBus = {
             case 1:
             case 2:
             case 5:
-                throw "Unexpected microcode behavior -- LoadMD "
-                + "during incorrect memory cycle.";
+                throw "Unexpected microcode behavior -- LoadMD during incorrect memory cycle.";
             case 3:
                 this.memoryData = data;
-                this.writeToBus(this.memoryAddress, data, this.task,
-                    this.extendedMemoryReference);
+                this.writeToBus(this.memoryAddress, data, this.task, this.extendedMemoryReference);
                 this.doubleWordStore = true;
                 this.doubleWordMixed = true;
                 break;
             case 4:
                 this.memoryData = data;
 
-                var actualAddress = this.doubleWordStore ?
-                this.memoryAddress ^ 1 :
-                    this.memoryAddress;
+                var actualAddress = this.doubleWordStore ? this.memoryAddress ^ 1 : this.memoryAddress;
 
-                this.writeToBus(actualAddress, data, this.task,
-                    this.extendedMemoryReference);
+                this.writeToBus(actualAddress, data, this.task, this.extendedMemoryReference);
                 break;
         }
     },
 
     readFromBus: function (address, task, extendedMemoryReference) {
-        if (address <= memory.memTop) {
+        if (address <= MEM_TOP) {
             return this.mainMemory.read(address, task, extendedMemoryReference);
         }
 
@@ -335,7 +314,7 @@ var memoryBus = {
     },
 
     writeToBus: function (address, data, task, extendedMemoryReference) {
-        if (address <= memory.memTop) {
+        if (address <= MEM_TOP) {
             this.mainMemory.load(address, data, task, extendedMemoryReference);
             return;
         }
@@ -343,7 +322,6 @@ var memoryBus = {
         var device = this.bus[address];
 
         if (device === undefined) {
-            // TODO: Should we error or raise?
             return;
         }
 

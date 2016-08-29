@@ -49,10 +49,7 @@ var DiskTask = function(taskType) {
 
         onTaskSwitch: function () {
             if (this.taskType == TaskType.DISK_SECTOR) {
-                console.log("Switching to Disk Sector task");
                 diskController.disableSeclate();
-            } else {
-                console.log("Switching to Disk Word task");
             }
         },
 

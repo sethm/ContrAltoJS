@@ -29,13 +29,12 @@ var DiskActivityType = {
     SEEK:  3
 };
 
+const SECLATE  = 0x10;
+const NOTREADY = 0x20;
+const STROBE   = 0x40;
+const SEEKFAIL = 0x80;
+
 var diskController = {
-
-    SECLATE:  0x10,
-    NOTREADY: 0x20,
-    STROBE:   0x40,
-    SEEKFAIL: 0x80,
-
     recMap: [0, 2, 3, 1],
 
     kDataRead: 0,
@@ -127,7 +126,9 @@ var diskController = {
 
     setKcom: function(value) {
         this.kCom = value;
-        console.log("*** Just set kcom to " + this.kCom);
+
+        // Debugging
+        console.log("*** set kCom to " + this.kCom);
 
         this.xferOff = (this.kCom & 0x10) === 0x10;
         this.wdInhib = (this.kCom & 0x08) === 0x08;
@@ -148,7 +149,7 @@ var diskController = {
     },
 
     getKstat: function() {
-        return (this.kStat | 0x0f00);
+        return ((this.kStat & 0xffff) | 0x0f00);
     },
 
     recno: function() {
@@ -160,9 +161,9 @@ var diskController = {
     },
 
     fatalError: function() {
-        return ((this.kStat & this.SECLATE) != 0 ||
-                (this.kStat & this.SEEKFAIL) != 0 ||
-                (this.kStat & this.NOTREADY) != 0 ||
+        return ((this.kStat & SECLATE) != 0 ||
+                (this.kStat & SEEKFAIL) != 0 ||
+                (this.kStat & NOTREADY) != 0 ||
                 (!this.ready()));
     },
 
@@ -211,12 +212,12 @@ var diskController = {
 
         d.sector = (d.sector + 1) % 12;
 
-        d.kStat = (d.kStat & 0xffff) | (d.sector << 12);
+        d.kStat = ((d.kStat  & 0x0fff) | (d.sector << 12));
 
-        if (d.drives[d.disk].isLoaded) {
-            d.kStat &= (~(d.NOTREADY) & 0xffff);
+        if (d.drives[d.disk].isLoaded()) {
+            d.kStat &= (~(NOTREADY) & 0xffff);
         } else {
-            d.kStat |= d.NOTREADY;
+            d.kStat |= NOTREADY;
         }
 
         d.sectorWordIndex = 0;
@@ -231,7 +232,7 @@ var diskController = {
 
             d.seclate = false;
             d.seclateEnable = true;
-            d.kStat &= (~(d.SECLATE) & 0xffff);
+            d.kStat &= (~(SECLATE) & 0xffff);
 
             // Schedule a disk word wakeup to spin the disk
             d.wordEvent.timestampNsec = d.wordDuration();
@@ -265,7 +266,7 @@ var diskController = {
 
         if (d.seclateEnable) {
             d.seclate = true;
-            d.kStat |= d.SECLATE;
+            d.kStat |= SECLATE;
         }
     },
 
@@ -403,7 +404,7 @@ var diskController = {
 
     selectedDrive: function() {
         return this.drives[this.disk];
-    },
+    }
 
 
 };

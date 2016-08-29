@@ -64,7 +64,8 @@ var shifter = {
     },
 
     doOperation: function(input, t) {
-        var i, c;
+        var i = 0
+        var c = 0;
 
         switch(this.op) {
         case ShifterOp.NONE:
