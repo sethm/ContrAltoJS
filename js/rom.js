@@ -442,13 +442,156 @@ var MicroInstruction = function (code) {
 
 MicroInstruction.prototype = {
     toString: function () {
+
+        var alufString;
+        var bsString;
+        var f1String;
+        var f2String;
+
+        switch(this.aluf) {
+            case AluFunction.BUS:
+                alufString = "BUS";
+                break;
+            case AluFunction.T:
+                alufString = "T";
+                break;
+            case AluFunction.BUS_OR_T:
+                alufString = "BUS_OR_T";
+                break;
+            case AluFunction.BUS_AND_T:
+                alufString = "BUS_AND_T";
+                break;
+            case AluFunction.BUS_XOR_T:
+                alufString = "BUS_XOR_T";
+                break;
+            case AluFunction.BUS_PLUS_1:
+                alufString = "BUS_PLUS_1";
+                break;
+            case AluFunction.BUS_MINUS_1:
+                alufString = "BUS_MINUS_1";
+                break;
+            case AluFunction.BUS_PLUS_T:
+                alufString = "BUS_PLUS_T";
+                break;
+            case AluFunction.BUS_MINUS_T:
+                alufString = "BUS_MINUS_T";
+                break;
+            case AluFunction.BUS_MINUS_T_MINUS_1:
+                alufString = "BUS_MINUS_T_MINUS_1";
+                break;
+            case AluFunction.BUS_PLUS_T_PLUS_1:
+                alufString = "BUS_PLUS_T_PLUS_1";
+                break;
+            case AluFunction.BUS_PLUS_SKIP:
+                alufString = "BUS_PLUS_SKIP";
+                break;
+            case AluFunction.ALU_BUS_AND_T:
+                alufString = "BUS_PLUS_SKIP";
+                break;
+            case AluFunction.BUS_AND_NOT_T:
+                alufString = "BUS_AND_NOT_T";
+                break;
+            case AluFunction.UNDEFINED_1:
+                alufString = "UNDEFINED_1";
+                break;
+            case AluFunction.UNDEFINED_2:
+                alufString = "UNDEFINED_2";
+                break;
+        }
+
+        switch(this.bs) {
+            case BusSource.READ_R:
+                bsString = "READ_R";
+                break;
+            case BusSource.LOAD_R:
+                bsString = "LOAD_R";
+                break;
+            case BusSource.NONE:
+                bsString = "NONE";
+                break;
+            case BusSource.TASK_SPECIFIC_1:
+                bsString = "TASK_SPECIFIC_1";
+                break;
+            case BusSource.TASK_SPECIFIC_2:
+                bsString = "TASK_SPECIFIC_2";
+                break;
+            case BusSource.READ_MD:
+                bsString = "READ_MD";
+                break;
+            case BusSource.READ_MOUSE:
+                bsString = "READ_MOUSE";
+                break;
+            case BusSource.READ_DISP:
+                bsString = "READ_DISP";
+                break;
+        }
+
+        switch(this.f1) {
+            case SpecialFunction1.NONE:
+                f1String = "NONE";
+                break;
+            case SpecialFunction1.LOAD_MAR:
+                f1String = "LOAD_MAR";
+                break;
+            case SpecialFunction1.TASK:
+                f1String = "TASK";
+                break;
+            case SpecialFunction1.BLOCK:
+                f1String = "BLOCK";
+                break;
+            case SpecialFunction1.LLSH1:
+                f1String = "LLSH1";
+                break;
+            case SpecialFunction1.LRSH1:
+                f1String = "LRSH1";
+                break;
+            case SpecialFunction1.LLCY8:
+                f1String = "LLCY8";
+                break;
+            case SpecialFunction1.CONSTANT:
+                f1String = "CONSTANT";
+                break;
+            default:
+                f1String = this.f1.toString();
+                break;
+        }
+
+        switch (this.f2) {
+            case SpecialFunction2.NONE:
+                f2String = "NONE";
+                break;
+            case SpecialFunction2.BUSEQ0:
+                f2String = "BUSEQ0";
+                break;
+            case SpecialFunction2.SHLT0:
+                f2String = "SHLT0";
+                break;
+            case SpecialFunction2.SHEQ0:
+                f2String = "SHEQ0";
+                break;
+            case SpecialFunction2.BUS:
+                f2String = "BUS";
+                break;
+            case SpecialFunction2.ALUCY:
+                f2String = "ALUCY";
+                break;
+            case SpecialFunction2.STORE_MD:
+                f2String = "STORE_MD";
+                break;
+            case SpecialFunction2.CONSTANT:
+                f2String = "CONSTANT";
+                break;
+            default:
+                f2String = this.f2.toString();
+        }
+
         return ("RSELECT=" + this.rselect.toString(8) +
-                " ALUF=" + this.aluf +
-                " BS=" + this.bs +
-                " F1=" + this.f1 +
-                " F2=" + this.f2 +
-                " LoadT=" + (this.loadT ? "1" : "0") +
-                " LoadL=" + (this.loadL ? "1" : "0") +
+                " ALUF=" + alufString +
+                " BS=" + bsString +
+                " F1=" + f1String +
+                " F2=" + f2String +
+                " LoadT=" + (this.loadT ? "True" : "False") +
+                " LoadL=" + (this.loadL ? "True" : "False") +
                 " NEXT=" + this.next.toString(8));
     }
 };
