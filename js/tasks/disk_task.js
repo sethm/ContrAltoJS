@@ -49,7 +49,7 @@ var DiskTask = function(taskType) {
 
         onTaskSwitch: function () {
             if (this.taskType == TaskType.DISK_SECTOR) {
-                diskController.disableSeclate();
+                diskController.seclateEnable = false;
             }
         },
 
@@ -58,7 +58,7 @@ var DiskTask = function(taskType) {
                 case DiskBusSource.READ_KSTAT:
                     return diskController.getKstat();
                 case DiskBusSource.READ_KDATA:
-                    return diskController.kDataRead;
+                    return diskController.kDataRead
                 default:
                     throw "Unhandled bus source " + bs;
             }
@@ -138,7 +138,7 @@ var DiskTask = function(taskType) {
                 case DiskF2.XFRDAT:
                     this.nextModifier |= this.getInitModifier(instruction);
 
-                    if (this.diskController.dataXfer) {
+                    if (diskController.dataXfer) {
                         this.nextModifier |= 0x1;
                     }
                     break;
@@ -158,7 +158,7 @@ var DiskTask = function(taskType) {
 
                 case DiskF2.STROBON:
                     this.nextModifier |= this.getInitModifier(instruction);
-                    if ((diskController.getKstat() & diskController.STROBE) != 0) {
+                    if ((diskController.getKstat() & STROBE) != 0) {
                         this.nextModifier |= 0x1;
                     }
                     break;
@@ -211,10 +211,6 @@ var DiskTask = function(taskType) {
             } else {
                 return 0x0;
             }
-        },
-
-        reset: function () {
-            this.baseReset();
         },
 
         toString: function() {

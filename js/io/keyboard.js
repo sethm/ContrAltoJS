@@ -25,7 +25,7 @@ var keyboard = {
     },
 
     read: function(address, task, extendedMemoryReference) {
-        return 0;
+        return 0xffff;
     },
 
     load: function(address, data, task, extendedMemoryReference) {

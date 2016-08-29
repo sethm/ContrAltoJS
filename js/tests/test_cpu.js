@@ -578,5 +578,5 @@ QUnit.test("toString", function(assert) {
 
     u = new MicroInstruction(0x09623903);
 
-    assert.strictEqual(u.toString(), "RSELECT=1 ALUF=2 BS=6 F1=2 F2=3 LoadT=1 LoadL=0 NEXT=403");
+    assert.strictEqual(u.toString(), "RSELECT=1 ALUF=BUS_OR_T BS=READ_MOUSE F1=TASK F2=SHEQ0 LoadT=True LoadL=False NEXT=403");
 });

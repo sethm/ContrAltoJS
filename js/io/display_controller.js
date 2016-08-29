@@ -22,7 +22,7 @@ const DISPLAY_SCALE = 1.0;
 const VERTICAL_BLANK_DURATION = 665000.0 * DISPLAY_SCALE;
 const VERTICAL_BLANK_SCANLINE_DURATION = 3808.0 * DISPLAY_SCALE;
 const HORIZONTAL_BLANK_DURATION = 6084.0 * DISPLAY_SCALE;
-const WORD_DURATION = 842.0 * DISPLAY_SCALE;
+const DISPLAY_WORD_DURATION = 842.0 * DISPLAY_SCALE;
 
 var displayController = {
 
@@ -88,7 +88,7 @@ var displayController = {
 
         this.verticalBlankScanlineWakeup = new Event(VERTICAL_BLANK_DURATION, null, this.verticalBlankScanlineCallback);
         this.horizontalWakeup = new Event(HORIZONTAL_BLANK_DURATION, null, this.horizontalBlankEndCallback);
-        this.wordWakeup = new Event(WORD_DURATION, null, this.wordCallback);
+        this.wordWakeup = new Event(DISPLAY_WORD_DURATION, null, this.wordCallback);
 
         // Kick things off
         scheduler.schedule(this.verticalBlankScanlineWakeup);
@@ -172,7 +172,7 @@ var displayController = {
         // Schedule wakeup for first word on this scanline
         // TODO: the delay below is chosen to reduce flicker on first scanline;
         // investigate.
-        d.wordWakeup.timestampNsec = d.lowRes ? 0 : WORD_DURATION * 3;
+        d.wordWakeup.timestampNsec = d.lowRes ? 0 : DISPLAY_WORD_DURATION * 3;
         scheduler.schedule(d.wordWakeup);
     },
 
@@ -235,9 +235,9 @@ var displayController = {
         } else {
             // More words to do
             if (d.lowRes) {
-                d.wordWakeup.timestampNsec = WORD_DURATION * 2 - skewNsec;
+                d.wordWakeup.timestampNsec = DISPLAY_WORD_DURATION * 2 - skewNsec;
             } else {
-                d.wordWakeup.timestampNsec = WORD_DURATION - skewNsec;
+                d.wordWakeup.timestampNsec = DISPLAY_WORD_DURATION - skewNsec;
             }
 
             scheduler.schedule(d.wordWakeup);

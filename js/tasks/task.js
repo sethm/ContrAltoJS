@@ -91,11 +91,24 @@ var Task = {
     wakeup: false,
     nextModifier: 0,
     skip: 0,
+    busData: 0,
+    nextModifier: 0,
+    rSelect: 0,
+    srSelect: 0,
+    loadS: false,
+    loadR: false,
+    rdRam: false,
+    wrtRam: false,
+    swMode: false,
+    softReset:false,
+
 
     baseReset: function () {
         this.mpc = this.taskType;
         this.rdRam = false;
         this.rb = 0;
+        this.rSelect = 0;
+        this.srSelect = 0;
         this.firstInstructionAfterSwitch = false;
         this.swMode = false;
         this.wrtRam = false;
@@ -141,15 +154,6 @@ var Task = {
     baseExecuteInstruction: function (instruction) {
         var completion = InstructionCompletion.NORMAL;
 
-        var msg = "executing: " + instruction;
-
-        if (instruction.bs == BusSource.LOAD_R) {
-            msg += "; loadR rSelect=" + this.rSelect;
-            msg += "; mem address=" + memoryBus.memoryAddress;
-        }
-
-        console.log(msg);
-
         var swMode = false;
         var block = false;
         var aluData = 0;
@@ -175,10 +179,6 @@ var Task = {
         this.nextModifier = 0;
 
         this.srSelect = this.rSelect = instruction.rselect;
-
-        if (instruction.bs == BusSource.LOAD_R && this.rSelect == 28) {
-            console.log("BREAK HERE");
-        }
 
         // Give tasks the chance to modify parameters early on (like RSELECT)
         this.executeSpecialFunction2Early(instruction);
@@ -716,6 +716,14 @@ var memoryRefreshTask = extend(Task, {
 
 var ethernetTask = extend(Task, {
     taskType: TaskType.ETHERNET,
+
+    executeInstruction: function(instruction) {
+        return base.baseExecuteInstruction(instruction);
+    },
+
+    getBusSource: function(bs) {
+
+    }
 });
 
 var parityTask = extend(Task, {

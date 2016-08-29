@@ -37,18 +37,17 @@ QUnit.test("MemoryRange overlap", function(assert) {
 QUnit.module("Memory Tests", {
 });
 
-QUnit.test("Memory should be inittable - Alto I", function(assert) {
-    Configuration.systemType = SystemType.ALTO_I;
-    memory.init();
-    memory.reset();
-    assert.strictEqual(memory.addresses.length, 1);
-    assert.strictEqual(memory.addresses[0].start, 0);
-    assert.strictEqual(memory.addresses[0].end, 0xfdff);
-});
+//
+// QUnit.test("Memory should be inittable - Alto I", function(assert) {
+//     Configuration.systemType = SystemType.ALTO_I;
+//     memory.reset();
+//     assert.strictEqual(memory.addresses.length, 1);
+//     assert.strictEqual(memory.addresses[0].start, 0);
+//     assert.strictEqual(memory.addresses[0].end, 0xfdff);
+// });
 
 QUnit.test("Memory should be inittable - Alto II", function(assert) {
     Configuration.systemType = SystemType.TWO_K_ROM;
-    memory.init();
     memory.reset();
     assert.strictEqual(memory.addresses.length, 2);
     assert.strictEqual(memory.addresses[0].start, 0);
@@ -56,7 +55,6 @@ QUnit.test("Memory should be inittable - Alto II", function(assert) {
 });
 
 QUnit.test("Get Bank Number", function(assert) {
-    memory.init();
     memory.reset();
 
     memory.xmBanks[TaskType.DISK_SECTOR] = 0xd;   // 1101
@@ -65,7 +63,6 @@ QUnit.test("Get Bank Number", function(assert) {
 });
 
 QUnit.test("Read and Write Meory", function(assert) {
-    memory.init();
     memory.reset();
     memory.xmBanks[TaskType.DISK_SECTOR] = 5; // 0101 -- bank 1
     memory.xmBanks[TaskType.ETHERNET] = 10;   // 1010 -- bank 2
@@ -96,7 +93,6 @@ QUnit.test("Read and Write Meory", function(assert) {
 QUnit.module("Memory Bus Tests", {
     beforeEach: function() {
         Configuration.systemType = SystemType.TWO_K_ROM;
-        memory.init();
         memory.reset();
         memoryBus.reset();
         memoryBus.bus = {}; // Clear off the old bus

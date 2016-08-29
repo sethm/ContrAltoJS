@@ -29,10 +29,13 @@ var DiskActivityType = {
     SEEK:  3
 };
 
-const SECLATE  = 0x10;
-const NOTREADY = 0x20;
-const STROBE   = 0x40;
-const SEEKFAIL = 0x80;
+const SECLATE          = 0x10;
+const NOTREADY         = 0x20;
+const STROBE           = 0x40;
+const SEEKFAIL         = 0x80;
+const SECTOR_DURATION  = (40.0 / 12.0) * conversion.msecToNsec;
+const WORD_DURATION    = SECTOR_DURATION / SECTOR_WORD_COUNT;
+const SECLATE_DURATION = 86.0 * conversion.usecToNsec;
 
 var diskController = {
     recMap: [0, 2, 3, 1],
@@ -69,14 +72,6 @@ var diskController = {
     wdInit: false,
 
     syncWordWritten: false,
-
-    sectorDuration: (40.0 / 12.0) * conversion.msecToNsec,
-
-    wordDuration: function() {
-        return this.sectorDuration / SECTOR_WORD_COUNT;
-    },
-
-    seclateDuration: 86.0 * conversion.usecToNsec,
 
     // Variable, and updated depending on current sector / seek sector
     seekDuration: 0,
@@ -127,9 +122,6 @@ var diskController = {
     setKcom: function(value) {
         this.kCom = value;
 
-        // Debugging
-        console.log("*** set kCom to " + this.kCom);
-
         this.xferOff = (this.kCom & 0x10) === 0x10;
         this.wdInhib = (this.kCom & 0x08) === 0x08;
         this.bClkSource = (this.kCom & 0x04) === 0x04;
@@ -149,7 +141,7 @@ var diskController = {
     },
 
     getKstat: function() {
-        return ((this.kStat & 0xffff) | 0x0f00);
+        return (this.kStat | 0x0f00) & 0xffff;
     },
 
     recno: function() {
@@ -195,24 +187,24 @@ var diskController = {
 
         //Create events to be reused during execution
         this.sectorEvent = new Event(0, null, this.sectorCallback);
-        this.wordEvent = new Event(this.wordDuration(), null, this.wordCallback);
-        this.seclateEvent = new Event(this.seclateDuration, null, this.seclateCallback);
+        this.wordEvent = new Event(WORD_DURATION, null, this.wordCallback);
+        this.seclateEvent = new Event(SECLATE_DURATION, null, this.seclateCallback);
         this.seekEvent = new Event(this.seekDuration, null, this.seekCallback);
 
         // And schedule the first sector pulse
         scheduler.schedule(this.sectorEvent);
     },
 
-    disableSeclate: function() {
-        this.seclateEnable = false;
-    },
-
     sectorCallback: function(timeNsec, skewNsec, context) {
         var d = diskController;
 
         d.sector = (d.sector + 1) % 12;
+        console.log("SECTOR CALLBACK. CHS=" +
+                    d.selectedDrive().cylinder + "/" +
+                    d.selectedDrive().head + "/" +
+                    d.sector);
 
-        d.kStat = ((d.kStat  & 0x0fff) | (d.sector << 12));
+        d.kStat = ((d.kStat & 0x0fff) | (d.sector << 12));
 
         if (d.drives[d.disk].isLoaded()) {
             d.kStat &= (~(NOTREADY) & 0xffff);
@@ -227,7 +219,7 @@ var diskController = {
 
         d.selectedDrive().sector = d.sector;
 
-        if ((d.kStat & d.STROBE) == 0) {
+        if ((d.kStat & STROBE) == 0) {
             cpu.wakeupTask(TaskType.DISK_SECTOR);
 
             d.seclate = false;
@@ -235,14 +227,14 @@ var diskController = {
             d.kStat &= (~(SECLATE) & 0xffff);
 
             // Schedule a disk word wakeup to spin the disk
-            d.wordEvent.timestampNsec = d.wordDuration();
+            d.wordEvent.timestampNsec = WORD_DURATION;
             scheduler.schedule(d.wordEvent);
 
             // Schedule SECLATE trigger
-            d.seclateEvent.timestampNsec = d.seclateDuration;
+            d.seclateEvent.timestampNsec = SECLATE_DURATION;
             scheduler.schedule(d.seclateEvent);
         } else {
-            d.sectorEvent.timestampNsec = d.sectorDuration - skewNsec;
+            d.sectorEvent.timestampNsec = SECTOR_DURATION - skewNsec;
             scheduler.schedule(d.sectorEvent);
         }
     },
@@ -253,7 +245,7 @@ var diskController = {
         d.spinDisk();
 
         if(d.sectorWordIndex < SECTOR_WORD_COUNT) {
-            d.wordEvent.timestampNsec = d.wordDuration() - skewNsec;
+            d.wordEvent.timestampNsec = WORD_DURATION - skewNsec;
             scheduler.schedule(d.wordEvent);
         } else {
             d.sectorEvent.timestampNsec = skewNsec;
@@ -276,15 +268,70 @@ var diskController = {
     },
 
     incrementRecord: function() {
-        throw "Not yet implemented";
+        // "Advances the shift registers holding the KADR register so that they present the
+        //  number and read/write/check status of the next record to the hardware."
+        // "RECORD" in this context indicates the sector field corresponding to the 2 bit
+        // "action" field in the KADR register (i.e. one of Header, Label, or Data.)
+        // INCRECNO shifts the data over two bits to select from Header->Label->Data.
+
+        this.kAdr = (this.kAdr << 2);
+
+        this.recNo++;
+
+        this.syncWordWritten = false;
+
+        if (this.recNo > 3) {
+            // Sanity check
+            throw "Unexpected INCRECORD past rec 3."
+        }
     },
 
     strobe: function() {
-        throw "Not Implemented";
+        if (!this.sendAdr) {
+            throw "STROBE while SENDADR bit of KCOM not 1. Unexpected";
+        }
+
+        this.initSeek((this.kDataWrite & 0x0ff8) >>> 3)
     },
 
     initSeek: function(destCylinder) {
-        throw "Not Implemented"
+        console.log("Seeking to cylinder " + destCylinder);
+        if (!this.selectedDrive().isLoaded() || destCylinder > this.selectedDrive().pack.geometry.cylinders - 1) {
+            this.kStat |= SEEKFAIL;
+            this.seeking = false;
+            this.lastDiskActivity = DiskActivityType.IDLE;
+        } else if (destCylinder != this.selectedDrive().cylinder) {
+            // Start a seek
+            this.destCylinder = destCylinder;
+
+            // Clear the fail bit.
+            this.kStat &= (~SEEKFAIL) & 0xffff;
+
+            // Set seek bit.
+            this.kStat |= STROBE;
+            this.seeking = true;
+
+            this.seekDuration = this.calculateSeekTime() /
+                (Math.abs(this.destCylinder - this.selectedDrive().cylinder + 1));
+
+            this.seekEvent.timestampNsec = this.seekDuration;
+            scheduler.schedule(this.seekEvent);
+
+            this.lastDiskActivity = DiskActivityType.SEEK;
+        } else {
+            // Clear the fail bit.
+            this.kStat &= (~SEEKFAIL) & 0xffff;
+        }
+    },
+
+    calculateSeekTime: function() {
+        // TODO: Calucate real seek time
+        // var dt = Math.abs(this.destCylinder - this.selectedDrive().cylinder);
+
+        // For now, just be fast
+        var seekTimeMsec = 1.0;
+
+        return (seekTimeMsec * conversion.msecToNsec);
     },
 
     spinDisk: function() {
@@ -332,9 +379,18 @@ var diskController = {
         // and we weren't late reading this sector,  then we will wake up the word task
         // and read in the data if transfers are not inhibited.
         //
-        if (!this.seclate && (!this.wffo || this.diskBitCounterEnable)) {
+        if (!this.seclate && (this.wffo || this.diskBitCounterEnable)) {
             if (!this.xferOff) {
-                if (this.isWrite()) {
+                if (!this.isWrite()) {
+                    // Read
+                    this.kDataRead = diskWord.data;
+                    this.lastDiskActivity = DiskActivityType.READ;
+
+                    console.log("cylinder=" + this.selectedDrive().cylinder
+                                + " head=" + this.selectedDrive().head
+                                + " sector=" + this.sector
+                                + " word=" + diskWord.data.toString(8) + " read into KDATA");
+                } else {
                     // Write
                     if (this.kDataWriteLatch) {
                         this.kDataRead = this.kDataWrite;
@@ -346,10 +402,6 @@ var diskController = {
                         this.selectedDrive().writeWord(this.sectorWordIndex, this.kDataWrite);
                         this.lastDiskActivity = DiskActivityType.WRITE;
                     }
-                } else {
-                    // Read
-                    this.kDataRead = diskWord.data;
-                    this.lastDiskActivity = DiskActivityType.READ;
                 }
             }
 
@@ -387,7 +439,6 @@ var diskController = {
         }
 
         if (bWakeup) {
-            console.log("Waking up word task for word " + this.sectorWordIndex);
             cpu.wakeupTask(TaskType.DISK_WORD);
         }
 
@@ -399,7 +450,22 @@ var diskController = {
     },
 
     seekCallback: function(timeNsec, skewNsec, context) {
-        console.log("DiskController: SEEK CALLBACK");
+        var d = diskController;
+
+        if (d.selectedDrive().cylinder < d.destCylinder) {
+            d.selectedDrive().cylinder++;
+        } else if (d.selectedDrive().cylinder > d.destCylinder) {
+            d.selectedDrive().cylinder--;
+        }
+
+        if (d.selectedDrive().cylinder == d.destCylinder) {
+            d.kStat &= (~STROBE) & 0xffff;
+            d.seeking = false;
+        } else {
+            d.seekEvent.timestampNsec = d.seekDuration - skewNsec;
+            scheduler.schedule(d.seekEvent);
+            d.lastDiskActivity = DiskActivityType.SEEK;
+        }
     },
 
     selectedDrive: function() {

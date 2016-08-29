@@ -252,8 +252,7 @@ var memoryBus = {
             case 2:
             case 3:
             case 4:
-                throw "Unexpected microcode behavior -- LoadMD "
-                + "during incorrect memory cycle.";
+                throw "Unexpected microcode behavior -- LoadMD during incorrect memory cycle.";
             case 5:
                 this.memoryData = data;
                 this.writeToBus(this.memoryAddress, data, this.task,

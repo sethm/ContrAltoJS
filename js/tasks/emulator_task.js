@@ -56,7 +56,6 @@ var emulatorTask = extend(Task, {
             case EmulatorBusSource.LOAD_S_LOCATION:
                 this.loadS = true;
                 return 0xffff;
-                break;
             default:
                 throw "Unhandled bus source " + bs;
         }
@@ -108,7 +107,6 @@ var emulatorTask = extend(Task, {
             case EmulatorF1.STARTF:
                 // Dispatch function to Ethernet I/O based on contents of AC0.
                 if ((this.busData & 0x8000) != 0) {
-                    console.log("*** Soft Boot CPU ***");
                     //
                     // BOOT (soft-reset) operation. Reset the CPU using
                     // the current RMR (start tasks in RAM or ROM as
@@ -122,7 +120,6 @@ var emulatorTask = extend(Task, {
                     // this instruction.
                     this.softReset = true;
                 } else if (this.busData != 0) {
-                    console.log("*** Ethernet STARTF ***");
                     //
                     // Dispatch to the appropriate device. The Ethernet
                     // controller is the only common device that is
@@ -134,8 +131,7 @@ var emulatorTask = extend(Task, {
                     if (this.busData < 4) {
                         ethernetController.startf(this.busData);
                     } else {
-                        console.log("STARTF for non-Ethernet device (code "
-                            + this.busData.toString(8) + ")");
+                        console.log("STARTF for non-Ethernet device (code " + this.busData.toString(8) + ")");
                     }
                 }
                 break;
@@ -203,8 +199,7 @@ var emulatorTask = extend(Task, {
 
                 // "IR<- also merges bus bits 0, 5, 6 and 7 into NEXT[6-9]
                 // which does a first level instruction dispatch."
-                this.nextModifier = (((this.busData & 0x8000) >>> 12) |
-                ((this.busData & 0x0700) >>> 8));
+                this.nextModifier = (((this.busData & 0x8000) >>> 12) | ((this.busData & 0x0700) >>> 8));
 
                 // "IR<- clears SKIP"
                 this.skip = 0;

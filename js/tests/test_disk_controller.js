@@ -25,5 +25,5 @@ QUnit.module("Disk Controller Tests", {
 });
 
 QUnit.test("", function(assert) {
-    assert.equal(Math.floor(diskController.sectorDuration), 3333333);
+    assert.equal(Math.floor(SECTOR_DURATION), 3333333);
 });
