@@ -91,7 +91,7 @@ var diskController = {
 
         // "In addition, it causes the head address bit to be loaded
         // from KDATA[13]."
-        this.selectedDrive().head = (this.kDataWrite & 0x4) >>> 2;
+        this.selectedDrive().setHead((this.kDataWrite & 0x4) >>> 2);
 
         // "0 normally, 1 if the command is to terminate immediately
         // after the correct cylinder position is reached (before
@@ -221,7 +221,7 @@ var diskController = {
 
         d.kDataRead = 0;
 
-        d.selectedDrive().sector = d.sector;
+        d.selectedDrive().setSector(d.sector);
 
         if ((d.kStat & STROBE) == 0) {
             cpu.wakeupTask(TaskType.DISK_SECTOR);
@@ -455,11 +455,12 @@ var diskController = {
 
     seekCallback: function(timeNsec, skewNsec, context) {
         var d = diskController;
+        var drive = d.selectedDrive();
 
-        if (d.selectedDrive().cylinder < d.destCylinder) {
-            d.selectedDrive().cylinder++;
+        if (drive.cylinder < d.destCylinder) {
+            drive.setCylinder(drive.cylinder + 1);
         } else if (d.selectedDrive().cylinder > d.destCylinder) {
-            d.selectedDrive().cylinder--;
+            drive.setCylinder(drive.cylinder - 1);
         }
 
         if (d.selectedDrive().cylinder == d.destCylinder) {

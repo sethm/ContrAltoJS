@@ -218,6 +218,8 @@ var cpu = {
     m:  0,
     ir: 0,
 
+    lastInstruction: undefined,
+
     // R and S register files and bank select
     r: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],

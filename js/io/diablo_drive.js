@@ -128,7 +128,7 @@ DiabloDrive.prototype = {
             if (this.sectorData[index].type === CellType.DATA) {
                 this.sectorData[index].Data = data;
             } else {
-                console.log("Data written to non-data section!");
+                throw "Data written to non-data section!";
             }
 
             this.sectorModified = true;
@@ -136,7 +136,6 @@ DiabloDrive.prototype = {
     },
 
     loadSector: function() {
-        console.log("Load Sector " + this.cylinder + "/" + this.head + "/" + this.sector);
         var i, j, checksum;
 
         if (this.pack == null || this.pack == undefined) {
@@ -150,6 +149,7 @@ DiabloDrive.prototype = {
             this.sectorData[i] = new DataCell(sec.header[j], CellType.DATA);
         }
         checksum = this.calculateChecksum(this.sectorData, HEADER_OFFSET + 1, 2);
+        console.log("*** header checksum: " + checksum.toString(16));
         this.sectorData[HEADER_OFFSET + 3].data = checksum;
 
         // Label (8 words data, 1 word checksum)
@@ -157,6 +157,7 @@ DiabloDrive.prototype = {
             this.sectorData[i] = new DataCell(sec.label[j], CellType.DATA);
         }
         checksum = this.calculateChecksum(this.sectorData, LABEL_OFFSET + 1, 8);
+        console.log("*** label checksum: " + checksum.toString(16));
         this.sectorData[LABEL_OFFSET + 9].data = checksum;
 
         // Sector data (256 words data, 1 word checksum)
@@ -164,6 +165,7 @@ DiabloDrive.prototype = {
             this.sectorData[i] = new DataCell(sec.data[j], CellType.DATA);
         }
         checksum = this.calculateChecksum(this.sectorData, DATA_OFFSET + 1, 256);
+        console.log("*** data checksum: " + checksum.toString(16));
         this.sectorData[DATA_OFFSET + 257].data = checksum;
     },
 
@@ -195,7 +197,6 @@ DiabloDrive.prototype = {
     },
 
     initSector: function() {
-        console.log("Init Sector " + this.cylinder + "/" + this.head + "/" + this.sector);
         var i;
 
         // Header delay, 22 words
@@ -204,7 +205,7 @@ DiabloDrive.prototype = {
         }
         this.sectorData[HEADER_OFFSET] = new DataCell(1, CellType.SYNC);
 
-        // inter-record delay between header & label (10 words)
+        // inter-record delay between header & label (2 words)
         for (i = HEADER_OFFSET + 4; i < LABEL_OFFSET; i++) {
             this.sectorData[i] = new DataCell(0, CellType.GAP);
         }

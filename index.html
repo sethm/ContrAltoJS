@@ -6,15 +6,25 @@
     <style>
         * { padding: 0; margin: 0; }
         canvas { background: #000; display: block; margin: 0 auto; border: 1px solid #333;}
-        #container { margin: 40px; auto; 20px; auto; }
+        #container { margin: 40px auto 20px auto; }
         #controls { text-align: center; }
+        #debugger { text-align: center; }
         button { padding: 6px; margin: 6px; }
+        #debugger { font-family: monospace; }
+        #debugger input { font-family: monospace; }
+        #cpuL { width: 60px; }
+        #lastInst { width: 600px; }
     </style>
 </head>
 <body>
 
 <div id="container">
   <canvas id="altoDisplay" width="606" height="808"></canvas>
+</div>
+
+<div id="debugger">
+    <input type="text" id="currentTask"/> <br/>
+    <input type="text" id="lastInst"/>
 </div>
 
 <div id="controls">

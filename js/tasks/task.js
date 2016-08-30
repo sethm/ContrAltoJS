@@ -152,6 +152,8 @@ var Task = {
     // Returns an InstructionCompletion indicating whether this
     // instruction calls for a task switch or not.
     baseExecuteInstruction: function (instruction) {
+        cpu.lastInstruction = instruction;
+
         var completion = InstructionCompletion.NORMAL;
 
         var swMode = false;

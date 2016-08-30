@@ -30,8 +30,7 @@ var DiskGeometry = function(cylinders, heads, sectors) {
 
 var DiabloDiskSector = function(header, label, data) {
     if (header.length != 4 || label.length != 16 || data.length != 512) {
-        throw "Invalid header/label/data length : " +
-            header.length + "/" + label.length + "/" + data.length;
+        throw "Invalid header/label/data length : " + header.length + "/" + label.length + "/" + data.length;
     }
 
     this.header = this.getUshortArray(header);
@@ -92,7 +91,7 @@ DiabloPack.prototype = {
                 var byteArray = new Uint8Array(arrayBuffer);
 
                 // Great, we have a raw byte stream of the disk image now.
-                pack.packName = "TODOFIXME";
+                pack.packName = "FIXME";
 
                 offset = 0;
                 secNum = 0;
@@ -107,12 +106,20 @@ DiabloPack.prototype = {
                             var data = byteArray.slice(offset + 22, offset + 534);
 
                             if (reverseByteOrder) {
-                                this.swapBytes(header);
-                                this.swapBytes(label);
-                                this.swapBytes(data);
+                                pack.swapBytes(header);
+                                pack.swapBytes(label);
+                                pack.swapBytes(data);
                             }
 
-                            pack.sectors[secNum++] = new DiabloDiskSector(header, label, data);
+                            if (pack.sectors[cyl] == undefined) {
+                                pack.sectors[cyl] = [];
+                            }
+
+                            if (pack.sectors[cyl][track] == undefined) {
+                                pack.sectors[cyl][track] = [];
+                            }
+
+                            pack.sectors[cyl][track][sec] = new DiabloDiskSector(header, label, data);
 
                             offset += 534;
                         }
@@ -132,7 +139,7 @@ DiabloPack.prototype = {
     },
 
     getSector: function(cylinder, track, sector) {
-        return this.sectors[cylinder * track * sector];
+        return this.sectors[cylinder][track][sector];
     },
 
     swapBytes: function(data) {
