@@ -40,54 +40,54 @@ var AltoIoTable = {
 };
 
 var InstructionClass = {
-    MEM: 0x0000,
-    LDA: 0x2000,
-    STA: 0x4000,
+    MEM:         0x0000,
+    LDA:         0x2000,
+    STA:         0x4000,
     ALTO_SPEC_1: 0x6000,
     ALTO_SPEC_2: 0x7000
 };
 
 var AlcFunctions = {
-    COM: 0x000,
-    NEG: 0x100,
-    MOV: 0x200,
-    INC: 0x300,
-    ADC: 0x400,
-    SUB: 0x500,
-    ADD: 0x600,
-    AND: 0x700
+    0x000: "COM",
+    0x100: "NEG",
+    0x200: "MOV",
+    0x300: "INC",
+    0x400: "ADC",
+    0x500: "SUB",
+    0x600: "ADD",
+    0x700: "AND"
 };
 
-var ShiftMode = {
-    NONE: 0x00,
-    L:    0x40,
-    R:    0x80,
-    S:    0xc0
+var AlcShift = {
+    0x00: "",
+    0x40: "L",
+    0x80: "R",
+    0xc0: "S"
 };
 
 var AlcCarry = {
-    NONE: 0x00,
-    Z:    0x10,
-    O:    0x20,
-    C:    0x30
+    0x00: "",
+    0x10: "Z",
+    0x20: "O",
+    0x30: "C"
 };
 
 var AlcSkip = {
-    NONE: 0x0,
-    SKP:  0x1,
-    SZC:  0x2,
-    SNC:  0x3,
-    SZR:  0x4,
-    SNR:  0x5,
-    SEZ:  0x6,
-    SBN:  0x7
+    0x0: "",
+    0x1: "SKP",
+    0x2: "SZC",
+    0x3: "SNC",
+    0x4: "SZR",
+    0x5: "SNR",
+    0x6: "SEZ",
+    0x7: "SBN"
 };
 
 var MemFunction = {
-    JMP: 0x0000,
-    JSR: 0x0800,
-    ISZ: 0x1000,
-    DSZ: 0x1800
+    0x0000: "JMP",
+    0x0800: "JSR",
+    0x1000: "ISZ",
+    0x1800: "DSZ"
 };
 
 var MemIndex = {
@@ -117,8 +117,8 @@ var novaDisassembler = {
     disassembleMem: function(address, instructionWord) {
         var result = [];
 
-        var func = instructionWord & 0x1800;
-        var indirect = (instructionWord & 0x400) != 0;
+        var func = MemFunction[instructionWord & 0x1800];
+        var indirect = (instructionWord & 0x400) !== 0;
         var index = instructionWord & 0x300;
         var disp = instructionWord & 0xff;
 
@@ -213,11 +213,65 @@ var novaDisassembler = {
     disassembleAltoSpecific: function(address, instructionWord) {
         var result = [];
 
+        // Check for alto-specific instructions that do not use DISP field
+        if (AltoIoTable[instructionWord] !== undefined) {
+            result.push(AltoIoTable[instructionWord]);
+        } else {
+            var topBits = (instructionWord & 0xff00);
+
+            switch (topBits) {
+                case 0x6000:
+                    result.push("CYCLE ");
+                    result.push((instructionWord & 0xf).toString(8));
+                    break;
+
+                case 0x6900:
+                    result.push("JSRII ");
+                    result.push(instructionWord & 0xff);
+                    result.push("   ;(");
+                    result.push(address + (instructionWord & 0xff));
+                    result.push(")");
+                    break;
+
+                case 0x6a00:
+                    result.push("JSRIS ");
+                    result.push((instructionWord & 0xff).toString(8));
+                    break;
+
+                case 0x6e00:
+                    result.push("CONVERT ");
+                    result.push((instructionWord & 0xff).toString(8));
+                    break;
+
+                default:
+                    // Unimplemented, treat as a TRAP to either ROM or RAM
+                    result.push("TRAP");
+                    break;
+            }
+        }
+
         return result.join("");
     },
 
     disassembleAlc: function(address, instructionWord) {
         var result = [];
+
+        var srcAC = (instructionWord & 0x6000) >>> 13;
+        var dstAC = (instructionWord & 0x1800) >>> 11;
+        var func = AlcFunctions[instructionWord & 0x700];
+        var shift = AlcShift[instructionWord & 0xc0];
+        var carry = AlcCarry[instructionWord & 0x30];
+        var noLoad = ((instructionWord & 0x8) !== 0);
+        var skip = AlcSkip[instructionWord & 0x7];
+
+        result.push(func);
+        result.push(shift);
+        result.push(carry);
+        if (noLoad) { result.push("#"); }
+        result.push(" ");
+        result.push(srcAC);
+        result.push(",");
+        result.push(dstAC);
 
         return result.join("");
     },
