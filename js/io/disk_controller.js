@@ -19,7 +19,7 @@
 
 var conversion = {
     msecToNsec: 1000000,
-    usecToNsec: 1000
+    usecToNsec: 1000,
 };
 
 var DiskActivityType = {
