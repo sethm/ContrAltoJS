@@ -160,6 +160,53 @@ var novaDisassembler = {
     disassembleLoadStore: function(address, instructionWord) {
         var result = [];
 
+        var ac = (instructionWord & 0x1800) >>> 11;
+        var indirect = (instructionWord & 0x400) != 0;
+        var index = instructionWord & 0x300;
+        var disp = instructionWord & 0xff;
+
+        var inst = ((instructionWord & 0x6000) === InstructionClass.LDA) ? "LDA" : "STA";
+
+        switch (index) {
+            case MemIndex.PAGEZERO:
+                result.push(inst);
+                if (indirect) { result.push("@"); }
+                result.push(" ");
+                result.push(ac);
+                result.push(",");
+                result.push(disp.toString(8));
+                break;
+            case MemIndex.PCRELATIVE:
+                result.push(inst);
+                if (indirect) { result.push("@"); }
+                result.push(" ");
+                result.push(ac);
+                result.push(",.+");
+                result.push(disp.toString(8));
+                result.push("   ;(");
+                result.push((disp + address).toString(8));
+                result.push(")");
+                break;
+            case MemIndex.AC2RELATIVE:
+                result.push(inst);
+                if (indirect) { result.push("@"); }
+                result.push(" ");
+                result.push(ac);
+                result.push(",AC2+");
+                result.push(disp.toString(8));
+                break;
+            case MemIndex.AC3RELATIVE:
+                result.push(inst);
+                if (indirect) { result.push("@"); }
+                result.push(" ");
+                result.push(ac);
+                result.push(",AC3+");
+                result.push(disp.toString(8));
+                break;
+            default:
+                throw "Unexpected index type";
+        }
+
         return result.join("");
     },
 
