@@ -26,7 +26,7 @@ var altoDisplay = {
         ctx.fillStyle = "#fff";
         for (var i = 0; i < 16; i++) {
             var bit = (displayWord >> i) & 1;
-            if (bit == 1) {
+            if (bit === 1) {
                 ctx.fillRect(offsetX + i, offsetY, 1, 1);
             }
         }
@@ -38,7 +38,7 @@ var altoDisplay = {
         ctx.fillStyle = "#000";
         for (var i = 0; i < 16; i++) {
             var bit = (cursorWord >> i) & 1;
-            if (bit == 0) {
+            if (bit === 1) {
                 ctx.fillRect(xoffset + i, scanline, 1, 1);
             }
         }
@@ -46,7 +46,7 @@ var altoDisplay = {
     },
 
     render: function() {
-
+        // Probably not needed?
     },
 
     displayLastFrame: function() {

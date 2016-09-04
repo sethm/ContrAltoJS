@@ -158,7 +158,7 @@ var DiskTask = function(taskType) {
 
                 case DiskF2.STROBON:
                     this.nextModifier |= this.getInitModifier(instruction);
-                    if ((diskController.getKstat() & STROBE) != 0) {
+                    if ((diskController.getKstat() & STROBE) !== 0) {
                         this.nextModifier |= 0x1;
                     }
                     break;
@@ -220,7 +220,7 @@ var DiskTask = function(taskType) {
                 return "Disk Word Task";
             }
         }
-    }
+    };
 };
 
 var diskSectorTask = extend(Task, new DiskTask(TaskType.DISK_SECTOR));

@@ -17,10 +17,10 @@
  <http://www.gnu.org/licenses/>.
 */
 
-const HEADER_OFFSET = 44;
-const LABEL_OFFSET = HEADER_OFFSET + 14;
-const DATA_OFFSET = LABEL_OFFSET + 20;
-const SECTOR_WORD_COUNT = 269 + HEADER_OFFSET + 34;
+var HEADER_OFFSET = 44;
+var LABEL_OFFSET = HEADER_OFFSET + 14;
+var DATA_OFFSET = LABEL_OFFSET + 20;
+var SECTOR_WORD_COUNT = 269 + HEADER_OFFSET + 34;
 
 var CellType = {
     DATA: 0,
@@ -71,7 +71,7 @@ DiabloDrive.prototype = {
     },
 
     isLoaded: function() {
-        return this.pack != null && this.pack != undefined;
+        return this.pack !== null && this.pack !== undefined;
     },
 
     setSector: function(value) {
@@ -85,7 +85,7 @@ DiabloDrive.prototype = {
     },
 
     setHead: function(value) {
-        if (value != this.head) {
+        if (value !== this.head) {
             // If we switch heads, we need to reload the sector.
 
             // If the last sector was modified,
@@ -116,7 +116,7 @@ DiabloDrive.prototype = {
     },
 
     readWord: function(index) {
-        if (this.pack != null && this.pack != undefined) {
+        if (this.pack !== null && this.pack !== undefined) {
             return this.sectorData[index];
         } else {
             return EmptyDataCell;
@@ -124,7 +124,7 @@ DiabloDrive.prototype = {
     },
 
     writeWord: function(index, data) {
-        if (this.pack != null && this.pack != undefined && index < this.sectorData.length) {
+        if (this.pack !== null && this.pack !== undefined && index < this.sectorData.length) {
             if (this.sectorData[index].type === CellType.DATA) {
                 this.sectorData[index].Data = data;
             } else {
@@ -138,7 +138,7 @@ DiabloDrive.prototype = {
     loadSector: function() {
         var i, j, checksum;
 
-        if (this.pack == null || this.pack == undefined) {
+        if (this.pack === null || this.pack === undefined) {
             return;
         }
 
@@ -149,7 +149,6 @@ DiabloDrive.prototype = {
             this.sectorData[i] = new DataCell(sec.header[j], CellType.DATA);
         }
         checksum = this.calculateChecksum(this.sectorData, HEADER_OFFSET + 1, 2);
-        console.log("*** header checksum: " + checksum.toString(16));
         this.sectorData[HEADER_OFFSET + 3].data = checksum;
 
         // Label (8 words data, 1 word checksum)
@@ -157,7 +156,6 @@ DiabloDrive.prototype = {
             this.sectorData[i] = new DataCell(sec.label[j], CellType.DATA);
         }
         checksum = this.calculateChecksum(this.sectorData, LABEL_OFFSET + 1, 8);
-        console.log("*** label checksum: " + checksum.toString(16));
         this.sectorData[LABEL_OFFSET + 9].data = checksum;
 
         // Sector data (256 words data, 1 word checksum)
@@ -165,15 +163,13 @@ DiabloDrive.prototype = {
             this.sectorData[i] = new DataCell(sec.data[j], CellType.DATA);
         }
         checksum = this.calculateChecksum(this.sectorData, DATA_OFFSET + 1, 256);
-        console.log("*** data checksum: " + checksum.toString(16));
         this.sectorData[DATA_OFFSET + 257].data = checksum;
     },
 
     commitSector: function() {
-        console.log("Commit Sector " + this.cylinder + "/" + this.head + "/" + this.sector);
         var i, j, checksum;
 
-        if (this.pack == null || this.pack == undefined) {
+        if (this.pack === null || this.pack === undefined) {
             return;
         }
 

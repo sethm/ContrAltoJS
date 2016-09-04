@@ -78,7 +78,6 @@ DiabloPack.prototype = {
 
         var cyl, track, sec, offset, secNum;
 
-        console.log("Requesting " + url);
         var req = new XMLHttpRequest();
         req.open("GET", url, true);
         req.responseType = "arraybuffer";
@@ -111,11 +110,11 @@ DiabloPack.prototype = {
                                 pack.swapBytes(data);
                             }
 
-                            if (pack.sectors[cyl] == undefined) {
+                            if (pack.sectors[cyl] === undefined) {
                                 pack.sectors[cyl] = [];
                             }
 
-                            if (pack.sectors[cyl][track] == undefined) {
+                            if (pack.sectors[cyl][track] === undefined) {
                                 pack.sectors[cyl][track] = [];
                             }
 
@@ -127,7 +126,6 @@ DiabloPack.prototype = {
                 }
             }
 
-            console.log("Loaded disk image from " + url);
             loadedCallback();
         };
 

@@ -7,15 +7,16 @@ var mouse = {
     },
 
     reset: function() {
-
+        "use strict";
     },
 
     read: function(address, task, extendedMemoryReference) {
-        return 0;
+        "use strict";
+        return 0xffff;
     },
 
     load: function(address, data, task, extendedMemoryReference) {
-
+        // Nothing
     },
 
     toString: function() {

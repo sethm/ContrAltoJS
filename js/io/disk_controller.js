@@ -15,7 +15,7 @@
  You should have received a copy of the GNU Affero General Public License
  along with this program.  If not, see
  <http://www.gnu.org/licenses/>.
-*/
+ */
 
 var conversion = {
     msecToNsec: 1000000,
@@ -23,19 +23,19 @@ var conversion = {
 };
 
 var DiskActivityType = {
-    IDLE:  0,
-    READ:  1,
+    IDLE: 0,
+    READ: 1,
     WRITE: 2,
-    SEEK:  3
+    SEEK: 3
 };
 
-const SECLATE          = 0x10;
-const NOTREADY         = 0x20;
-const STROBE           = 0x40;
-const SEEKFAIL         = 0x80;
-const SECTOR_DURATION  = (40.0 / 12.0) * conversion.msecToNsec;
-const WORD_DURATION    = SECTOR_DURATION / SECTOR_WORD_COUNT;
-const SECLATE_DURATION = 86.0 * conversion.usecToNsec;
+var SECLATE = 0x10;
+var NOTREADY = 0x20;
+var STROBE = 0x40;
+var SEEKFAIL = 0x80;
+var SECTOR_DURATION = Math.round((40.0 / 12.0) * conversion.msecToNsec);
+var WORD_DURATION = Math.round(SECTOR_DURATION / SECTOR_WORD_COUNT);
+var SECLATE_DURATION = 86.0 * conversion.usecToNsec;
 
 var diskController = {
     recMap: [0, 2, 3, 1],
@@ -79,12 +79,12 @@ var diskController = {
 
     drives: [new DiabloDrive(), new DiabloDrive()],
 
-    setKdata: function(value) {
+    setKdata: function (value) {
         this.kDataWrite = value;
         this.kDataWriteLatch = true;
     },
 
-    setKadr: function(value) {
+    setKadr: function (value) {
         this.kAdr = value;
         this.recNo = 0;
         this.syncWordWritten = false;
@@ -115,15 +115,15 @@ var diskController = {
 
         this.disk = ((this.kDataWrite & 0x2) >>> 1);
 
-        if ((this.kDataWrite & 0x1) != 0) {
+        if ((this.kDataWrite & 0x1) !== 0) {
             this.initSeek(0);
         }
     },
 
-    setKcom: function(value) {
+    setKcom: function (value) {
         this.kCom = value;
 
-        console.log("setKcom = " + value.toString(16));
+        console.log("Just set kCom to " + value);
 
         this.xferOff = (this.kCom & 0x10) === 0x10;
         this.wdInhib = (this.kCom & 0x08) === 0x08;
@@ -138,31 +138,31 @@ var diskController = {
             this.wdInit = true;
         }
 
-        if ((this.sendAdr & (this.kDataWrite & 0x2)) != 0) {
+        if ((this.sendAdr & (this.kDataWrite & 0x2)) !== 0) {
             this.seeking = false;
         }
     },
 
-    getKstat: function() {
+    getKstat: function () {
         return (this.kStat | 0x0f00) & 0xffff;
     },
 
-    recno: function() {
+    recno: function () {
         return this.recMap[this.recNo];
     },
 
-    ready: function() {
+    ready: function () {
         return this.drives[this.disk].isLoaded() && !this.seeking;
     },
 
-    fatalError: function() {
-        return ((this.kStat & SECLATE) != 0 ||
-                (this.kStat & SEEKFAIL) != 0 ||
-                (this.kStat & NOTREADY) != 0 ||
-                (!this.ready()));
+    fatalError: function () {
+        return ((this.kStat & SECLATE) !== 0 ||
+        (this.kStat & SEEKFAIL) !== 0 ||
+        (this.kStat & NOTREADY) !== 0 ||
+        (!this.ready()));
     },
 
-    reset: function() {
+    reset: function () {
         this.clearStatus();
 
         this.recNo = 0;
@@ -199,19 +199,14 @@ var diskController = {
         scheduler.schedule(this.sectorEvent);
     },
 
-    sectorCallback: function(timeNsec, skewNsec, context) {
+    sectorCallback: function (timeNsec, skewNsec, context) {
         var d = diskController;
 
         d.sector = (d.sector + 1) % 12;
-        console.log("SECTOR CALLBACK. CHS=" +
-                    d.selectedDrive().cylinder + "/" +
-                    d.selectedDrive().head + "/" +
-                    d.sector);
-
         d.kStat = ((d.kStat & 0x0fff) | (d.sector << 12));
 
         if (d.drives[d.disk].isLoaded()) {
-            d.kStat &= (~(NOTREADY) & 0xffff);
+            d.kStat &= (~NOTREADY & 0xffff);
         } else {
             d.kStat |= NOTREADY;
         }
@@ -223,12 +218,12 @@ var diskController = {
 
         d.selectedDrive().setSector(d.sector);
 
-        if ((d.kStat & STROBE) == 0) {
+        if ((d.kStat & STROBE) === 0) {
             cpu.wakeupTask(TaskType.DISK_SECTOR);
 
             d.seclate = false;
             d.seclateEnable = true;
-            d.kStat &= (~(SECLATE) & 0xffff);
+            d.kStat &= (~SECLATE & 0xffff);
 
             // Schedule a disk word wakeup to spin the disk
             d.wordEvent.timestampNsec = WORD_DURATION;
@@ -243,12 +238,12 @@ var diskController = {
         }
     },
 
-    wordCallback: function(timeNsec, skewNsec, context) {
+    wordCallback: function (timeNsec, skewNsec, context) {
         var d = diskController;
 
         d.spinDisk();
 
-        if(d.sectorWordIndex < SECTOR_WORD_COUNT) {
+        if (d.sectorWordIndex < SECTOR_WORD_COUNT) {
             d.wordEvent.timestampNsec = WORD_DURATION - skewNsec;
             scheduler.schedule(d.wordEvent);
         } else {
@@ -257,7 +252,7 @@ var diskController = {
         }
     },
 
-    seclateCallback: function(timeNsec, skewNsec, context) {
+    seclateCallback: function (timeNsec, skewNsec, context) {
         var d = diskController;
 
         if (d.seclateEnable) {
@@ -266,12 +261,12 @@ var diskController = {
         }
     },
 
-    clearStatus: function() {
+    clearStatus: function () {
         this.kStat &= 0xff4b;
         this.seclate = false;
     },
 
-    incrementRecord: function() {
+    incrementRecord: function () {
         // "Advances the shift registers holding the KADR register so that they present the
         //  number and read/write/check status of the next record to the hardware."
         // "RECORD" in this context indicates the sector field corresponding to the 2 bit
@@ -286,37 +281,37 @@ var diskController = {
 
         if (this.recNo > 3) {
             // Sanity check
-            throw "Unexpected INCRECORD past rec 3."
+            throw "Unexpected INCRECORD past rec 3.";
         }
     },
 
-    strobe: function() {
+    strobe: function () {
         if (!this.sendAdr) {
             throw "STROBE while SENDADR bit of KCOM not 1. Unexpected";
         }
 
-        this.initSeek((this.kDataWrite & 0x0ff8) >>> 3)
+        this.initSeek((this.kDataWrite & 0x0ff8) >>> 3);
     },
 
-    initSeek: function(destCylinder) {
+    initSeek: function (destCylinder) {
         console.log("Seeking to cylinder " + destCylinder);
-        if (!this.selectedDrive().isLoaded() || destCylinder > this.selectedDrive().pack.geometry.cylinders - 1) {
+        if (!this.selectedDrive().isLoaded() || destCylinder > (this.selectedDrive().pack.geometry.cylinders - 1)) {
             this.kStat |= SEEKFAIL;
             this.seeking = false;
             this.lastDiskActivity = DiskActivityType.IDLE;
-        } else if (destCylinder != this.selectedDrive().cylinder) {
+        } else if (destCylinder !== this.selectedDrive().cylinder) {
             // Start a seek
             this.destCylinder = destCylinder;
 
             // Clear the fail bit.
-            this.kStat &= (~SEEKFAIL) & 0xffff;
+            this.kStat &= (~SEEKFAIL & 0xffff);
 
             // Set seek bit.
             this.kStat |= STROBE;
             this.seeking = true;
 
-            this.seekDuration = this.calculateSeekTime() /
-                (Math.abs(this.destCylinder - this.selectedDrive().cylinder + 1));
+            this.seekDuration = Math.round(this.calculateSeekTime() /
+                                           (Math.abs(this.destCylinder - this.selectedDrive().cylinder + 1)));
 
             this.seekEvent.timestampNsec = this.seekDuration;
             scheduler.schedule(this.seekEvent);
@@ -324,11 +319,11 @@ var diskController = {
             this.lastDiskActivity = DiskActivityType.SEEK;
         } else {
             // Clear the fail bit.
-            this.kStat &= (~SEEKFAIL) & 0xffff;
+            this.kStat &= (~SEEKFAIL & 0xffff);
         }
     },
 
-    calculateSeekTime: function() {
+    calculateSeekTime: function () {
         // TODO: Calucate real seek time
         // var dt = Math.abs(this.destCylinder - this.selectedDrive().cylinder);
 
@@ -338,7 +333,7 @@ var diskController = {
         return (seekTimeMsec * conversion.msecToNsec);
     },
 
-    spinDisk: function() {
+    spinDisk: function () {
         //
         // Roughly:  If transfer is enabled:
         //   Select data word based on elapsed time in this sector.
@@ -390,10 +385,10 @@ var diskController = {
                     this.kDataRead = diskWord.data;
                     this.lastDiskActivity = DiskActivityType.READ;
 
-                    console.log("cylinder=" + this.selectedDrive().cylinder
-                                + " head=" + this.selectedDrive().head
-                                + " sector=" + this.sector
-                                + " word=" + diskWord.data.toString(8) + " read into KDATA");
+                    console.log("cylinder=" + this.selectedDrive().cylinder +
+                                " head=" + this.selectedDrive().head +
+                                " sector=" + this.sector +
+                                " word=" + diskWord.data.toString(8) + " read into KDATA");
                 } else {
                     // Write
                     if (this.kDataWriteLatch) {
@@ -429,7 +424,7 @@ var diskController = {
 
             // "Adjust" the write index to the start of the data area
             // for our current record. This is cheating.
-            switch(this.recNo) {
+            switch (this.recNo) {
                 case 0:
                     this.sectorWordIndex = HEADER_OFFSET;
                     break;
@@ -449,11 +444,11 @@ var diskController = {
         this.sectorWordIndex++;
     },
 
-    isWrite: function() {
+    isWrite: function () {
         return ((this.kAdr & 0x00c0) >>> 6) == 2 || ((this.kAdr & 0x00c0) >>> 6) == 3;
     },
 
-    seekCallback: function(timeNsec, skewNsec, context) {
+    seekCallback: function (timeNsec, skewNsec, context) {
         var d = diskController;
         var drive = d.selectedDrive();
 
@@ -463,8 +458,8 @@ var diskController = {
             drive.setCylinder(drive.cylinder - 1);
         }
 
-        if (d.selectedDrive().cylinder == d.destCylinder) {
-            d.kStat &= (~STROBE) & 0xffff;
+        if (d.selectedDrive().cylinder === d.destCylinder) {
+            d.kStat &= (~STROBE & 0xffff);
             d.seeking = false;
         } else {
             d.seekEvent.timestampNsec = d.seekDuration - skewNsec;
@@ -473,7 +468,7 @@ var diskController = {
         }
     },
 
-    selectedDrive: function() {
+    selectedDrive: function () {
         return this.drives[this.disk];
     }
 

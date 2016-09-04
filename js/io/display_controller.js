@@ -17,12 +17,12 @@
  <http://www.gnu.org/licenses/>.
 */
 
-const SCAN_LINE_WORDS = 38;
-const DISPLAY_SCALE = 1.0;
-const VERTICAL_BLANK_DURATION = 665000.0 * DISPLAY_SCALE;
-const VERTICAL_BLANK_SCANLINE_DURATION = 3808.0 * DISPLAY_SCALE;
-const HORIZONTAL_BLANK_DURATION = 6084.0 * DISPLAY_SCALE;
-const DISPLAY_WORD_DURATION = 842.0 * DISPLAY_SCALE;
+var SCAN_LINE_WORDS = 38;
+var DISPLAY_SCALE = 1.0;
+var VERTICAL_BLANK_DURATION = 665000.0 * DISPLAY_SCALE;
+var VERTICAL_BLANK_SCANLINE_DURATION = 38080.0 * DISPLAY_SCALE;
+var HORIZONTAL_BLANK_DURATION = 6084.0 * DISPLAY_SCALE;
+var DISPLAY_WORD_DURATION = 842.0 * DISPLAY_SCALE;
 
 var displayController = {
 
@@ -41,6 +41,7 @@ var displayController = {
     cursorXLatch: false,
     cursorX: 0,
     cursorXLatched: 0,
+
 
     // Indicates whether the DWT or DHT blocked themselves
     // in which case they cannot be reawakened until the next field.
@@ -126,6 +127,7 @@ var displayController = {
         cpu.wakeupTask(TaskType.MEMORY_REFRESH);
 
         // // Run Ethernet if a countdown wakeup is in progress
+        // // TODO: Not yet implemented.
         // if (ethernetController.countdownWakeup) {
         //    cpu.wakeupTask(TaskType.ETHERNET);
         // }
@@ -172,7 +174,7 @@ var displayController = {
         // Schedule wakeup for first word on this scanline
         // TODO: the delay below is chosen to reduce flicker on first scanline;
         // investigate.
-        d.wordWakeup.timestampNsec = d.lowRes ? 0 : DISPLAY_WORD_DURATION * 3;
+        d.wordWakeup.timestampNsec = d.lowRes ? 0 : (DISPLAY_WORD_DURATION * 3);
         scheduler.schedule(d.wordWakeup);
     },
 
@@ -194,7 +196,7 @@ var displayController = {
 
         d.word++;
 
-        if (d.word >= (d.lowRes ? SCAN_LINE_WORDS / 2 : SCAN_LINE_WORDS)) {
+        if (d.word >= (d.lowRes ? (SCAN_LINE_WORDS / 2) : SCAN_LINE_WORDS)) {
             // End of scanline.
             // Move to next.
 
@@ -228,7 +230,7 @@ var displayController = {
                 // Deal with SWMODE latches for the scanline we're about to draw.
                 if (d.swModeLatch) {
                     d.lowRes = d.lowResLatch;
-                    d.whtieOnBlack = d.whiteOnBlackLatch;
+                    d.whiteOnBlack = d.whiteOnBlackLatch;
                     d.swModeLatch = false;
                 }
             }
@@ -284,8 +286,8 @@ var displayController = {
 
     // Sets the mode (low res and white on black bits)
     setMode: function(word) {
-        this.lowResLatch = (word & 0x8000) != 0;
-        this.whiteOnBlackLatch = (word & 0x4000) != 0;
+        this.lowResLatch = (word & 0x8000) !== 0;
+        this.whiteOnBlackLatch = (word & 0x4000) !== 0;
         this.swModeLatch = true;
     }
 };

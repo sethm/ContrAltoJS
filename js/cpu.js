@@ -297,7 +297,7 @@ var cpu = {
 
         // reset tasks.
         for (i = 0; i < this.tasks.length; i++) {
-            if (this.tasks[i] != undefined) {
+            if (this.tasks[i] !== undefined) {
                 this.tasks[i].reset();
             }
         }
@@ -319,7 +319,7 @@ var cpu = {
             break;
 
         case InstructionCompletion.NORMAL:
-            if (this.nextTask != undefined) {
+            if (this.nextTask !== undefined) {
                 // If we have a new task, switch to it now.
                 this.currentTask = this.nextTask;
                 this.nextTask = undefined;
@@ -336,7 +336,7 @@ var cpu = {
 
     softReset: function() {
         for (var i = 0; i < this.tasks.length; i++) {
-            if (this.tasks[i] != undefined) {
+            if (this.tasks[i] !== undefined) {
                 this.tasks[i].softReset();
             }
         }
@@ -361,19 +361,19 @@ var cpu = {
     },
 
     wakeupTask: function(task) {
-        if (this.tasks[task] != undefined) {
+        if (this.tasks[task] !== undefined) {
             this.tasks[task].wakeupTask();
         }
     },
 
     blockTask: function(task) {
-        if (this.tasks[task] != undefined) {
+        if (this.tasks[task] !== undefined) {
             this.tasks[task].blockTask();
         }
     },
 
     isBlocked: function(task) {
-        if (this.tasks[task] == undefined) {
+        if (this.tasks[task] === undefined) {
             return false;
         }
 
@@ -382,8 +382,8 @@ var cpu = {
 
     // Switch tasks
     taskSwitch: function() {
-        for (var i = this.tasks.length - 1; i >= 0; i--) {
-            if (this.tasks[i] !== undefined && this.tasks[i].wakeup) {
+        for (var i = (this.tasks.length - 1); i >= 0; i--) {
+            if (this.tasks[i] !== undefined && this.tasks[i].wakeup === true) {
                 this.nextTask = this.tasks[i];
                 this.nextTask.firstInstructionAfterSwitch = true;
                 break;
@@ -392,11 +392,11 @@ var cpu = {
     },
 
     toString: function() {
-        return "[CPU: t=" + this.t.toString(8)
-            + ", l=" + this.l.toString(8)
-            + ", ir=" + this.ir.toString(8)
-            + ", currentTask=" + this.currentTask
-            + ", nextTask=" + this.nextTask
-            + "]";
+        return "[CPU: t=" + this.t.toString(8) +
+            ", l=" + this.l.toString(8) +
+            ", ir=" + this.ir.toString(8) +
+            ", currentTask=" + this.currentTask +
+            ", nextTask=" + this.nextTask +
+            "]";
     }
 };

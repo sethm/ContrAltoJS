@@ -92,15 +92,12 @@ var Task = {
     nextModifier: 0,
     skip: 0,
     busData: 0,
-    nextModifier: 0,
     rSelect: 0,
     srSelect: 0,
     loadS: false,
     loadR: false,
-    rdRam: false,
     wrtRam: false,
-    swMode: false,
-    softReset:false,
+    wasSoftReset:false,
 
 
     baseReset: function () {
@@ -153,6 +150,10 @@ var Task = {
     // instruction calls for a task switch or not.
     baseExecuteInstruction: function (instruction) {
         cpu.lastInstruction = instruction;
+
+        if (system.traceInstructions) {
+            console.log("> " + instruction);
+        }
 
         var completion = InstructionCompletion.NORMAL;
 
@@ -235,7 +236,7 @@ var Task = {
 
                     this.busData = cpu.ir & 0xff;
 
-                    if ((cpu.ir & 0x300) != 0) {
+                    if ((cpu.ir & 0x300) !== 0) {
                         if ((cpu.ir & 0x80) == 0x80) {
                             this.busData |= 0xff00;
                         }
@@ -377,8 +378,9 @@ var Task = {
             case SpecialFunction2.NONE:
                 // Nothing
                 break;
+
             case SpecialFunction2.BUSEQ0:
-                if (this.busData == 0) {
+                if (this.busData === 0) {
                     this.nextModifier = 1;
                 }
                 break;
@@ -458,14 +460,14 @@ var Task = {
 
                 // Originally: 'if (shifter.output < 0)', but JavaScript
                 // has no 16-bit signed types, wheeee.
-                if ((shifter.output & 0x8000) == 0x8000) {
+                if ((shifter.output & 0x8000) === 0x8000) {
                     this.nextModifier = 1;
                 }
                 break;
 
             case SpecialFunction2.SHEQ0:
                 // See note above.
-                if (shifter.output == 0) {
+                if (shifter.output === 0) {
                     this.nextModifier = 1;
                 }
                 break;
@@ -630,7 +632,7 @@ var displayHorizontalTask = extend(Task, {
             case DisplayHorizontalF2.SETMODE:
                 displayController.setMode(this.busData);
 
-                if ((this.busData & 0x8000) != 0) {
+                if ((this.busData & 0x8000) !== 0) {
                     this.nextModifier |= 1;
                 }
                 break;
@@ -707,10 +709,6 @@ var memoryRefreshTask = extend(Task, {
         }
     },
 
-    blockTask: function() {
-        this.wakeup = false;
-    },
-
     toString: function() {
         return "Memory Refresh Task";
     }
@@ -724,7 +722,7 @@ var ethernetTask = extend(Task, {
     },
 
     getBusSource: function(bs) {
-
+        return 0;
     }
 });
 

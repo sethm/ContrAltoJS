@@ -368,17 +368,16 @@ var MicroInstruction = function (code) {
     // Decode fields
     this.rselect = (code >>> 27) & 0x1f;
     this.aluf = (code >>> 23) & 0x0f;   // ALU Function
-    this.bs = (code >>> 20) & 0x07;   // Bus Source
-    this.f1 = (code >>> 16) & 0x0f;   // Special Function 1
-    this.f2 = (code >>> 12) & 0x0f;   // Special Function 2
+    this.bs = (code >>> 20) & 0x07;     // Bus Source
+    this.f1 = (code >>> 16) & 0x0f;     // Special Function 1
+    this.f2 = (code >>> 12) & 0x0f;     // Special Function 2
     this.loadT = ((code >>> 11) & 1) !== 0;
     this.loadL = ((code >>> 10) & 1) !== 0;
     this.next = code & 0x3ff;
 
     // Whether this instruction references constant memory
 
-    this.constantAccess = (this.f1 == SpecialFunction1.CONSTANT ||
-    this.f2 == SpecialFunction2.CONSTANT);
+    this.constantAccess = (this.f1 == SpecialFunction1.CONSTANT || this.f2 == SpecialFunction2.CONSTANT);
 
     this.constantAccessOrBS4 = (this.constantAccess || this.bs > 4);
 
@@ -647,7 +646,7 @@ var uCodeMemory = {
 
     loadBanksFromRMR: function (rmr) {
         for (var i = 0; i < 16; i++) {
-            this.microcodeBank[i] = (rmr & (1 << i)) == 0 ?
+            this.microcodeBank[i] = (rmr & (1 << i)) === 0 ?
                 MicrocodeBank.RAM0 : MicrocodeBank.ROM0;
         }
     },
@@ -657,8 +656,8 @@ var uCodeMemory = {
     },
 
     loadControlRamAddress: function (address) {
-        this.ramSelect = (address & 0x800) == 0;
-        this.lowHalfsel = (address & 0x400) == 0;
+        this.ramSelect = (address & 0x800) === 0;
+        this.lowHalfsel = (address & 0x400) === 0;
         this.ramAddr = (address & 0x3ff);
 
         // Clip RAM bank into range, it's always 0 unless we have a 3K
@@ -683,40 +682,40 @@ var uCodeMemory = {
             case SystemType.TWO_K_ROM:
                 switch (this.microcodeBank[task]) {
                     case MicrocodeBank.ROM0:
-                        this.microcodeBank[task] = ((nextAddress & 0x100) == 0) ?
+                        this.microcodeBank[task] = ((nextAddress & 0x100) === 0) ?
                             MicrocodeBank.RAM0 : MicrocodeBank.ROM1;
                         break;
                     case MicrocodeBank.ROM1:
-                        this.microcodeBank[task] = ((nextAddress & 0x100) == 0) ?
+                        this.microcodeBank[task] = ((nextAddress & 0x100) === 0) ?
                             MicrocodeBank.ROM0 : MicrocodeBank.RAM0;
                         break;
                     case MicrocodeBank.RAM0:
-                        this.microcodeBank[task] = ((nextAddress & 0x100) == 0) ?
+                        this.microcodeBank[task] = ((nextAddress & 0x100) === 0) ?
                             MicrocodeBank.ROM0 : MicrocodeBank.ROM1;
                         break;
                 }
                 break;
             case SystemType.THREE_K_RAM:
-                if ((nextAddress & 0x100) == 0) {
+                if ((nextAddress & 0x100) === 0) {
                     switch (this.microcodeBank[task]) {
                         case MicrocodeBank.ROM0:
-                            this.microcodeBank[task] = ((nextAddress & 0x80) == 0) ?
+                            this.microcodeBank[task] = ((nextAddress & 0x80) === 0) ?
                                 MicrocodeBank.RAM0 : MicrocodeBank.RAM2;
                             break;
                         case MicrocodeBank.RAM0:
                         case MicrocodeBank.RAM1:
-                            this.microcodeBank[task] = ((nextAddress & 0x80) == 0) ?
+                            this.microcodeBank[task] = ((nextAddress & 0x80) === 0) ?
                                 MicrocodeBank.ROM0 : MicrocodeBank.RAM2;
                             break;
                         case MicrocodeBank.RAM2:
-                            this.microcodeBank[task] = ((nextAddress & 0x80) == 0) ?
+                            this.microcodeBank[task] = ((nextAddress & 0x80) === 0) ?
                                 MicrocodeBank.ROM0 : MicrocodeBank.RAM1;
                             break;
                     }
                 } else {
                     switch (this.microcodeBank[task]) {
                         case MicrocodeBank.ROM0:
-                            this.microcodeBank[task] = ((nextAddress & 0x80) == 0) ?
+                            this.microcodeBank[task] = ((nextAddress & 0x80) === 0) ?
                                 MicrocodeBank.RAM1 : MicrocodeBank.RAM0;
                             break;
                         case MicrocodeBank.RAM0:

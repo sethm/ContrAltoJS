@@ -40,6 +40,8 @@ var altoSystem = function(url) {
     }
 
     var system = {
+        traceInstructions: false,
+
         clockedDevices: [
             memoryBus,
             cpu

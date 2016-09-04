@@ -38,45 +38,27 @@ function runMainLoop() {
     frameId = animFrame(runMainLoop);
     system.run(7500);
     altoDisplay.displayLastFrame();
-    updateDebugger();
-}
-
-function toOctal(i) {
-    var s = "000000" + i;
-    return s.substr(s.length - 6);
-}
-
-function updateDebugger() {
-    var inst = document.getElementById("lastInst");
-    var task = document.getElementById("currentTask");
-    inst.value = cpu.lastInstruction.toString();
-    task.value = cpu.currentTask.toString();
-
 }
 
 function stopRunning() {
     cancelAnimationFrame(frameId);
     var startButton = document.getElementById("startButton");
     var stepButton = document.getElementById("stepButton");
-    console.log("Stopping simulator.");
     startButton.disabled = false;
     stepButton.disabled = false;
 }
 
 function resetSimulator() {
     this.stopRunning();
-    console.log("Resetting simulator");
     system.reset();
 }
 
 function stepSimulator() {
     var startButton = document.getElementById("startButton");
     startButton.disabled = true;
-    console.log("Stepping simulator.");
     system.step();
     startButton.disabled = false;
     altoDisplay.displayLastFrame();
-    updateDebugger();
 }
 
 function startRunning() {
@@ -84,6 +66,5 @@ function startRunning() {
     var stepButton = document.getElementById("stepButton");
     startButton.disabled = true;
     stepButton.disabled = true;
-    console.log("Starting simulator.");
     runMainLoop();
 }

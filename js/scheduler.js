@@ -64,7 +64,7 @@ var SchedulerQueue = function () {
 
     this.getQueue = function() {
         return q;
-    }
+    };
 };
 
 // Scheduler

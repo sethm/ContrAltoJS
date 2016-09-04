@@ -44,7 +44,7 @@ var emulatorTask = extend(Task, {
     getBusSource: function (bs) {
         switch (bs) {
             case EmulatorBusSource.READ_S_LOCATION:
-                if (this.srSelect != 0) {
+                if (this.srSelect !== 0) {
                     return cpu.s[this.rb][this.srSelect];
                 } else {
                     // "...when reading data from the S registers onto the processor bus,
@@ -106,7 +106,7 @@ var emulatorTask = extend(Task, {
 
             case EmulatorF1.STARTF:
                 // Dispatch function to Ethernet I/O based on contents of AC0.
-                if ((this.busData & 0x8000) != 0) {
+                if ((this.busData & 0x8000) !== 0) {
                     //
                     // BOOT (soft-reset) operation. Reset the CPU using
                     // the current RMR (start tasks in RAM or ROM as
@@ -119,7 +119,7 @@ var emulatorTask = extend(Task, {
                     // implementation to skip updating _mpc at the end of
                     // this instruction.
                     this.softReset = true;
-                } else if (this.busData != 0) {
+                } else if (this.busData !== 0) {
                     //
                     // Dispatch to the appropriate device. The Ethernet
                     // controller is the only common device that is
@@ -151,7 +151,7 @@ var emulatorTask = extend(Task, {
             case EmulatorF1.LOAD_ESRB:
                 this.rb = (this.busData & 0xe) >>> 1;
 
-                if (this.rb != 0 &&
+                if (this.rb !== 0 &&
                     Configuration.systemType != SystemType.THREE_K_RAM) {
                     // Force bank 0 for machines with only 1K RAM.
                     this.rb = 0;
@@ -228,7 +228,7 @@ var emulatorTask = extend(Task, {
                 // NOTE: The above table is accurate and functions
                 // correctly; using the PROM is faster.
                 //
-                if ((cpu.ir & 0x8000) != 0) {
+                if ((cpu.ir & 0x8000) !== 0) {
                     this.nextModifier = (3 - ((cpu.ir & 0xc0) >>> 6));
                 } else {
                     this.nextModifier = ACSROM[((cpu.ir & 0x7f00) >>> 8) + 0x80];
@@ -261,7 +261,7 @@ var emulatorTask = extend(Task, {
                 // 256x8 PROM. We just use the PROM rather than
                 // implementing the above logic (because it works.)
                 //
-                if ((cpu.ir & 0x8000) != 0) {
+                if ((cpu.ir & 0x8000) !== 0) {
                     // 3-IR[8-9] (shift field of arithmetic instruction)
                     this.nextModifier = (3 - ((cpu.ir & 0xc0) >>> 6));
                 } else {
@@ -298,7 +298,7 @@ var emulatorTask = extend(Task, {
                 var carry = 0;
 
                 // Also indicates modifying CARRY
-                this.loadR = (cpu.ir & 0x0008) == 0;
+                this.loadR = (cpu.ir & 0x0008) === 0;
 
                 // At this point the ALU has already done its operation
                 // but the shifter has not yet run. We need to set the
@@ -339,7 +339,7 @@ var emulatorTask = extend(Task, {
                     case 0x500:
                     case 0x600:
                         // NEG, INC, ADC, SUB, ADD - invert the carry bit
-                        if (cpu.aluC0 != 0) {
+                        if (cpu.aluC0 !== 0) {
                             carry = (~carry) & 0x1;
                         }
                         break;
@@ -380,7 +380,7 @@ var emulatorTask = extend(Task, {
 
                     case 2:     // SZC
                         // Skip if carry result is zero
-                        this.skip = (carry == 0) ? 1 : 0;
+                        this.skip = (carry === 0) ? 1 : 0;
                         break;
 
                     case 3:     // SNC
@@ -389,19 +389,19 @@ var emulatorTask = extend(Task, {
                         break;
 
                     case 4:     // SZR
-                        this.skip = (result == 0) ? 1 : 0;
+                        this.skip = (result === 0) ? 1 : 0;
                         break;
 
                     case 5:     // SNR
-                        this.skip = (result != 0) ? 1 : 0;
+                        this.skip = (result !== 0) ? 1 : 0;
                         break;
 
                     case 6:     // SEZ
-                        this.skip = (result == 0 || carry == 0) ? 1 : 0;
+                        this.skip = (result === 0 || carry === 0) ? 1 : 0;
                         break;
 
                     case 7:     // SBN
-                        this.skip = (result != 0 && carry != 0) ? 1 : 0;
+                        this.skip = (result !== 0 && carry !== 0) ? 1 : 0;
                         break;
                 }
 

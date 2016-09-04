@@ -17,19 +17,19 @@
  <http://www.gnu.org/licenses/>.
 */
 
-const MEM_SIZE = 0x40000;
-const BANK_SIZE = 0x10000;
-const BANKS = 16;
-const MEM_TOP = 0xfdff;
-const XM_BANK_START = 0xffe0;
+var MEM_SIZE = 0x40000;
+var BANK_SIZE = 0x10000;
+var BANKS = 16;
+var MEM_TOP = 0xfdff;
+var XM_BANK_START = 0xffe0;
 
 var MemoryRange = function (start, end) {
-    if (!(end >= start)) {
+    if (end >= start) {
+        this.start = start;
+        this.end = end;
+    } else {
         throw "end must be greater than or equal to start";
     }
-
-    this.start = start;
-    this.end = end;
 };
 
 MemoryRange.prototype.overlaps = function(other) {

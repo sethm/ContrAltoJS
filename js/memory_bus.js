@@ -138,6 +138,7 @@ var memoryBus = {
                 } else {
                     return this.memoryCycle > 2;
                 }
+                break;
             default:
                 throw "Unexpected memory operation " + memoryOperation;
         }
@@ -262,8 +263,7 @@ var memoryBus = {
                 break;
             case 6:
                 if (!this.doubleWordStore) {
-                    throw "Unexpected microcode behavior -- LoadMD "
-                    + "on cycle 6, no LoadMD on cycle 5";
+                    throw "Unexpected microcode behavior -- LoadMD on cycle 6, no LoadMD on cycle 5";
                 }
 
                 this.memoryData = data;
