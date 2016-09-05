@@ -151,10 +151,6 @@ var Task = {
     baseExecuteInstruction: function (instruction) {
         cpu.lastInstruction = instruction;
 
-        if (system.traceInstructions) {
-            console.log("> " + instruction);
-        }
-
         var completion = InstructionCompletion.NORMAL;
 
         var swMode = false;

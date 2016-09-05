@@ -122,9 +122,6 @@ var diskController = {
 
     setKcom: function (value) {
         this.kCom = value;
-
-        console.log("Just set kCom to " + value);
-
         this.xferOff = (this.kCom & 0x10) === 0x10;
         this.wdInhib = (this.kCom & 0x08) === 0x08;
         this.bClkSource = (this.kCom & 0x04) === 0x04;
@@ -385,10 +382,10 @@ var diskController = {
                     this.kDataRead = diskWord.data;
                     this.lastDiskActivity = DiskActivityType.READ;
 
-                    console.log("cylinder=" + this.selectedDrive().cylinder +
-                                " head=" + this.selectedDrive().head +
-                                " sector=" + this.sector +
-                                " word=" + diskWord.data.toString(8) + " read into KDATA");
+                    // console.log("cylinder=" + this.selectedDrive().cylinder +
+                    //             " head=" + this.selectedDrive().head +
+                    //             " sector=" + this.sector +
+                    //             " word=" + diskWord.data.toString(8) + " read into KDATA");
                 } else {
                     // Write
                     if (this.kDataWriteLatch) {

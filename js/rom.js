@@ -584,14 +584,14 @@ MicroInstruction.prototype = {
                 f2String = this.f2.toString();
         }
 
-        return ("RSELECT=" + this.rselect.toString(8) +
-        " ALUF=" + alufString +
-        " BS=" + bsString +
-        " F1=" + f1String +
-        " F2=" + f2String +
-        " LoadT=" + (this.loadT ? "True" : "False") +
-        " LoadL=" + (this.loadL ? "True" : "False") +
-        " NEXT=" + this.next.toString(8));
+        return("RSELECT=" + this.rselect.toString(8) +
+               " ALUF=" + alufString +
+               " BS=" + bsString +
+               " F1=" + f1String +
+               " F2=" + f2String +
+               " LoadT=" + (this.loadT ? "True" : "False") +
+               " LoadL=" + (this.loadL ? "True" : "False") +
+               " NEXT=" + this.next.toString(8));
     }
 };
 

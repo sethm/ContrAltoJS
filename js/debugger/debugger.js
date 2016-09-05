@@ -15,7 +15,7 @@
  You should have received a copy of the GNU Affero General Public License
  along with this program.  If not, see
  <http://www.gnu.org/licenses/>.
-*/
+ */
 
 var AltoIoTable = {
     0x6210: "MUL",
@@ -273,17 +273,17 @@ var novaDisassembler = {
         result.push(",");
         result.push(dstAC);
 
+        if (skip !== "") {
+            result.push(",");
+            result.push(skip);
+        }
+
         return result.join("");
     },
 
     dumpMem: function(startAddress, endAddress) {
         for (var i = startAddress; i < endAddress; i++) {
             var word = memoryBus.readFromBus(i, TaskType.EMULATOR, false);
-
-            // TODO: This is just sanity checking. Remove it.
-            if (word > 0xffff) {
-                throw "Should never read a word greater than ffff"
-            }
 
             var result = [];
 
@@ -301,5 +301,60 @@ var novaDisassembler = {
 
         return padding.substring(0, 6 - str.length) + str;
     }
+};
+
+var altoDebugger = {
+    decodeKblk: function() {
+        // Find the KBLK at 0521 and decode it.
+
+        // "Pointer to first disk command block"
+        var dcbp = memoryBus.readFromBus(0521, TaskType.EMULATOR, false);
+        // "Status at the beginning of the current sector"
+        var sectorStatus = memoryBus.readFromBus(0522, TaskType.EMULATOR, false);
+        // "Disk address of most-recently started disk command"
+        var lastAddr = memoryBus.readFromBus(0523, TaskType.EMULATOR, false);
+        // "Sector interrupt bit mask"
+        var imask = memoryBus.readFromBus(0524, TaskType.EMULATOR, false);
+
+
+        console.log("KBLK:")
+        console.log(">>> Address of first Disk Command Block: " + dcbp.toString(8));
+        console.log(">>> Status of current sector: ");
+        this.decodeStatusWord(sectorStatus);
+
+
+        while (dcbp !== 0) {
+            console.log(">>> DCB At Address " + dcbp.toString(8));
+            this.decodeStatusWord(memoryBus.readFromBus(dcbp + 1, TaskType.EMULATOR, false));
+            this.decodeAddress(memoryBus.readFromBus(dcbp + 9));
+
+            // Get NEXT dcbp
+            dcbp = memoryBus.readFromBus(dcbp, TaskType.EMULATOR, false);
+        }
+    },
+
+    decodeStatusWord: function(statusWord) {
+        console.log("    > Sector Number: " + ((statusWord >>> 12) & 0xf));
+        console.log("    > Completion: " + (statusWord & 3));
+        console.log("    > Checksum Err: " + ((statusWord >>> 2) & 1));
+        console.log("    > No Transfer: " + ((statusWord >>> 3) & 1));
+        console.log("    > Late Processing: " + ((statusWord >>> 4) & 1));
+        console.log("    > Disk Unit Not Rdy: " + ((statusWord >>> 5) & 1));
+
+    },
+
+    decodeAddress: function(addrWord) {
+        console.log(">>> Disk Address: C/H/S = " +
+                    ((addrWord & 0x0ff8) >> 3) + "/" +
+                    ((addrWord & 0x0004) >> 2) + "/" +
+                    ((addrWord & 0xf000) >>> 12));
+    },
+
+    novaRegisters: function() {
+        for (var i = 0; i <= 7; i++) {
+            console.log("R[" + i + "]: " + cpu.r[i].toString(8));
+        }
+    }
 
 };
+

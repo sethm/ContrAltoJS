@@ -1,32 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8"/>
     <title>Xerox Alto Emulator</title>
     <style>
-        * { padding: 0; margin: 0; }
-        canvas { background: #000; display: block; margin: 0 auto; border: 1px solid #333;}
-        #container { margin: 40px auto 20px auto; }
-        #controls { text-align: center; }
-        #debugger { text-align: center; }
-        button { padding: 6px; margin: 6px; }
-        #debugger { font-family: monospace; }
-        #debugger input { font-family: monospace; }
-        #cpuL { width: 60px; }
-        #lastInst { width: 600px; }
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        canvas {
+            background: #000;
+            display: block;
+            margin: 0 auto;
+            border: 1px solid #333;
+        }
+
+        #container {
+            margin: 40px auto 20px auto;
+        }
+
+        #controls {
+            text-align: center;
+        }
+
+        #debugger {
+            text-align: center;
+        }
+
+        button {
+            padding: 6px;
+            margin: 6px;
+        }
+
+        #debugger {
+            font-family: monospace;
+        }
+
+        #debugger input {
+            font-family: monospace;
+        }
+
+        #cpuL {
+            width: 60px;
+        }
+
+        #lastInst {
+            width: 600px;
+        }
     </style>
 </head>
 <body>
 
 <div id="container">
-  <canvas id="altoDisplay" width="606" height="808"></canvas>
+    <canvas id="altoDisplay" width="606" height="808"></canvas>
 </div>
 
 <div id="controls">
-   <button name="start" id="startButton" onclick="startRunning()">Start</button>
-   <button name="stop" id="stopButton" onclick="stopRunning()">Stop</button>
-   <button name="step" id="stepButton" onclick="stepSimulator()">Step</button>
-   <button name="step" id="resetButton" onclick="resetSimulator()">Reset</button>
+    <button name="start" id="startButton" onclick="startRunning()">Start</button>
+    <button name="stop" id="stopButton" onclick="stopRunning()">Stop</button>
+    <button name="step" id="stepButton" onclick="stepSimulator()">Step</button>
+    <button name="step" id="resetButton" onclick="resetSimulator()">Reset</button>
+    <button name="novaStep" id="novaStep" onClick="novaStepSimulator()">Nova Step</button>
 </div>
 
 <script src="js/config.js"></script>
@@ -49,7 +84,7 @@
 <script src="js/io/keyboard.js"></script>
 <script src="js/io/music_interface.js"></script>
 <script src="js/system.js"></script>
-<script src="js/dis/nova_disassembler.js"></script>
+<script src="js/debugger/debugger.js"></script>
 <script src="js/main.js"></script>
 
 </body>

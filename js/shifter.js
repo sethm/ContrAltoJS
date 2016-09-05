@@ -60,7 +60,7 @@ var shifter = {
 
     setDns: function(dns, carry) {
         this.dns = dns;
-        this.carry = carry;
+        this.dnsCarry = carry;
     },
 
     doOperation: function(input, t) {

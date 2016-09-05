@@ -93,11 +93,11 @@ Array.prototype.remove = function(element) {
     return undefined;
 };
 
+var TIME_STEP_NSEC = 170;
+
 var scheduler = {
 
     queue: new SchedulerQueue(),
-
-    timeStepNsec: 170,
 
     currentTimeNsec: 0,
 
@@ -107,14 +107,11 @@ var scheduler = {
     },
 
     clock: function() {
-        this.currentTimeNsec += this.timeStepNsec;
+        this.currentTimeNsec += TIME_STEP_NSEC;
 
-        while (this.queue.peek() !== undefined &&
-               (this.currentTimeNsec >= this.queue.peek().timestampNsec)) {
+        while (this.queue.peek() !== undefined && this.currentTimeNsec >= this.queue.peek().timestampNsec) {
             var event = this.queue.pop();
-            event.callback(this.currentTimeNsec,
-                           this.currentTimeNsec - event.timestampNsec,
-                           event.context);
+            event.callback(this.currentTimeNsec, this.currentTimeNsec - event.timestampNsec, event.context);
         }
     },
 

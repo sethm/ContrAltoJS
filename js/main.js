@@ -31,12 +31,12 @@ var animFrame = window.requestAnimationFrame ||
 
 var frameId = 0;
 
-var system = new altoSystem("http://www.loomcom.com/jsalto/images/diag.dsk");
+var system = new altoSystem("http://www.loomcom.com/jsalto/images/games.dsk");
 
 // Main loop
 function runMainLoop() {
     frameId = animFrame(runMainLoop);
-    system.run(7500);
+    system.run(90000);
     altoDisplay.displayLastFrame();
 }
 
@@ -57,6 +57,31 @@ function stepSimulator() {
     var startButton = document.getElementById("startButton");
     startButton.disabled = true;
     system.step();
+    startButton.disabled = false;
+    altoDisplay.displayLastFrame();
+}
+
+var stepCount = 0;
+
+function novaStepSimulator() {
+    var startButton = document.getElementById("startButton");
+    startButton.disabled = true;
+    // To prevent runaway execution.
+    var maxStepsAllowed = 20000000;
+    system.step();
+
+    while (cpu.currentTask !== undefined && cpu.currentTask.mpc != 020 && stepCount < maxStepsAllowed) {
+        system.step();
+        stepCount++;
+    }
+
+    // Print some useful debugging information about the state of the simulator.
+    var instruction = memoryBus.readFromBus(cpu.r[6], TaskType.EMULATOR, false);
+
+    // console.log("[" + stepCount + "] Stopped at memory location=" + cpu.r[6].toString(8) + " (" +
+    //             instruction.toString(8) +  ") : " +
+    //             novaDisassembler.disassembleInstruction(cpu.r[6], instruction));
+
     startButton.disabled = false;
     altoDisplay.displayLastFrame();
 }

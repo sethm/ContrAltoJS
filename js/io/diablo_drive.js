@@ -101,7 +101,7 @@ DiabloDrive.prototype = {
     },
 
     setCylinder: function(value) {
-        if (value != cylinder) {
+        if (value != this.cylinder) {
             // If we switch cylinders, we need to reload the sector.
             // If the last sector was modified,
             // commit it before moving to the next.
@@ -128,7 +128,7 @@ DiabloDrive.prototype = {
             if (this.sectorData[index].type === CellType.DATA) {
                 this.sectorData[index].Data = data;
             } else {
-                throw "Data written to non-data section!";
+                throw "Data written to non-data section! type=" + this.sectorData[index].type;
             }
 
             this.sectorModified = true;

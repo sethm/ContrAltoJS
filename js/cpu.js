@@ -123,7 +123,7 @@ var alu = {
     },
 
     execute: function(fn, bus, t, skip) {
-        var r = 0;
+        var r = 0; // n.b. 32-bit signed number
 
         switch (fn) {
         case AluFunction.BUS:
@@ -178,7 +178,7 @@ var alu = {
             break;
 
         case AluFunction.BUS_MINUS_T_MINUS_1:
-            r = bus - t - 1;
+            r = (bus - t) - 1;
             this.carry = (r < 0) ? 0 : 1;
             break;
 
