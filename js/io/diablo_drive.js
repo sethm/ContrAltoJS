@@ -124,15 +124,17 @@ DiabloDrive.prototype = {
     },
 
     writeWord: function(index, data) {
-        console.log(">>> Writing data to " + this.cylinder + "/" + this.head + "/" + this.sector + ", index=" + index);
         if (this.pack !== null && this.pack !== undefined && index < this.sectorData.length) {
             if (this.sectorData[index].type === CellType.DATA) {
-                this.sectorData[index].Data = data;
-            } else {
-                console.log("WARNING Data written to non-data section! index=" + index);
-            }
+                var oldData = this.sectorData[index].data;
+                this.sectorData[index].data = data;
+                if (oldData != data) {
+                    console.log(">>> Writing data to " + this.cylinder + "/" + this.head + "/" + this.sector +
+                        ", index=" + index + ", old_data=" + oldData + ", data=" + data);
+                }
 
-            this.sectorModified = true;
+                this.sectorModified = true;
+            }
         }
     },
 
@@ -168,7 +170,7 @@ DiabloDrive.prototype = {
     },
 
     commitSector: function() {
-        var i, j, checksum;
+        var i, j;
 
         if (this.pack === null || this.pack === undefined) {
             return;
