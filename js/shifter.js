@@ -64,8 +64,6 @@ var shifter = {
     },
 
     doOperation: function(input, t) {
-        "use strict";
-
         var i = 0;
         var c = 0;
 

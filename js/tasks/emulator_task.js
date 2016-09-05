@@ -71,8 +71,7 @@ var emulatorTask = extend(Task, {
                 // BUS[0-7] is not driven and will therefore be -1. If no
                 // Ethernet interface is present, BUS will be -1.
                 //
-                // this.busData &= (0xff00 | ethernetController.address);
-                this.busData &= (0xff00 | 0x0000);
+                this.busData &= (0xff00 | ethernetController.address);
                 break;
         }
     },

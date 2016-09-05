@@ -114,13 +114,22 @@ var novaDisassembler = {
         }
     },
 
+    // Sign extend a 8-bit number to JS's 64-bit representation
+    signExtendByte: function(num) {
+        if ((num & 0x80) !== 0) {
+            return -(256 - num);
+        }
+
+        return num;
+    },
+
     disassembleMem: function(address, instructionWord) {
         var result = [];
 
         var func = MemFunction[instructionWord & 0x1800];
         var indirect = (instructionWord & 0x400) !== 0;
         var index = instructionWord & 0x300;
-        var disp = instructionWord & 0xff;
+        var disp = this.signExtendByte(instructionWord & 0xff);
 
         switch (index) {
             case MemIndex.PAGEZERO:
@@ -151,7 +160,7 @@ var novaDisassembler = {
                 result.push(disp.toString(8));
                 break;
             default:
-                throw "Unexpected index type"
+                throw "Unexpected index type";
         }
 
         return result.join("");
@@ -161,9 +170,9 @@ var novaDisassembler = {
         var result = [];
 
         var ac = (instructionWord & 0x1800) >>> 11;
-        var indirect = (instructionWord & 0x400) != 0;
+        var indirect = (instructionWord & 0x400) !== 0;
         var index = instructionWord & 0x300;
-        var disp = instructionWord & 0xff;
+        var disp = this.signExtendByte(instructionWord & 0xff);
 
         var inst = ((instructionWord & 0x6000) === InstructionClass.LDA) ? "LDA" : "STA";
 
@@ -227,9 +236,9 @@ var novaDisassembler = {
 
                 case 0x6900:
                     result.push("JSRII ");
-                    result.push(instructionWord & 0xff);
+                    result.push((instructionWord & 0xff).toString(8));
                     result.push("   ;(");
-                    result.push(address + (instructionWord & 0xff));
+                    result.push((address + (instructionWord & 0xff)).toString(8));
                     result.push(")");
                     break;
 
@@ -317,7 +326,7 @@ var altoDebugger = {
         var imask = memoryBus.readFromBus(0524, TaskType.EMULATOR, false);
 
 
-        console.log("KBLK:")
+        console.log("KBLK:");
         console.log(">>> Address of first Disk Command Block: " + dcbp.toString(8));
         console.log(">>> Status of current sector: ");
         this.decodeStatusWord(sectorStatus);

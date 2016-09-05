@@ -15,33 +15,34 @@ var altoDisplay = {
     },
 
     drawWord: function(scanline, word, displayWord, lowRes) {
-        var ctx = this.buffer.getContext("2d");
 
-        var offsetX = word * 16;
-        var offsetY = scanline;
-
-        ctx.clearRect(offsetX, offsetY, 16, 1);
-
-        // There must be a better way than this! This is absurd.
-        ctx.fillStyle = "#fff";
-        for (var i = 0; i < 16; i++) {
-            var bit = (displayWord >> i) & 1;
-            if (bit === 1) {
-                ctx.fillRect(offsetX + i, offsetY, 1, 1);
-            }
-        }
+        // var ctx = this.buffer.getContext("2d");
+        //
+        // var offsetX = word * 16;
+        // var offsetY = scanline;
+        //
+        // ctx.clearRect(offsetX, offsetY, 16, 1);
+        //
+        // // There must be a better way than this! This is absurd.
+        // ctx.fillStyle = "#fff";
+        // for (var i = 0; i < 16; i++) {
+        //     var bit = (displayWord >> i) & 1;
+        //     if (bit === 1) {
+        //         ctx.fillRect(offsetX + i, offsetY, 1, 1);
+        //     }
+        // }
     },
 
     drawCursorWord: function(scanline, xoffset, whiteOnBlack, cursorWord) {
-        var ctx = this.buffer.getContext("2d");
-
-        ctx.fillStyle = "#000";
-        for (var i = 0; i < 16; i++) {
-            var bit = (cursorWord >> i) & 1;
-            if (bit === 1) {
-                ctx.fillRect(xoffset + i, scanline, 1, 1);
-            }
-        }
+        // var ctx = this.buffer.getContext("2d");
+        //
+        // ctx.fillStyle = "#000";
+        // for (var i = 0; i < 16; i++) {
+        //     var bit = (cursorWord >> i) & 1;
+        //     if (bit === 1) {
+        //         ctx.fillRect(xoffset + i, scanline, 1, 1);
+        //     }
+        // }
 
     },
 

@@ -151,6 +151,14 @@ var Task = {
     baseExecuteInstruction: function (instruction) {
         cpu.lastInstruction = instruction;
 
+        if (system.traceInstructions) {
+            console.log("> MPC=" + this.mpc.toString(8) +
+                        " NEXTMOD=" + this.nextModifier +
+                        " SKIP=" + this.skip.toString(8) +
+                        " T=" + cpu.t.toString(8) +
+                        " " + instruction);
+        }
+
         var completion = InstructionCompletion.NORMAL;
 
         var swMode = false;

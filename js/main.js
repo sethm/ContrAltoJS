@@ -31,7 +31,7 @@ var animFrame = window.requestAnimationFrame ||
 
 var frameId = 0;
 
-var system = new altoSystem("http://www.loomcom.com/jsalto/images/diag.dsk");
+var system = new altoSystem("http://www.loomcom.com/jsalto/images/games.dsk");
 
 // Main loop
 function runMainLoop() {
@@ -61,6 +61,15 @@ function stepSimulator() {
     altoDisplay.displayLastFrame();
 }
 
+function enableTrace() {
+    "use strict";
+    var traceCheckbox = document.getElementById("trace");
+
+    if (traceCheckbox) {
+        system.traceInstructions = traceCheckbox.checked;
+    }
+}
+
 var stepCount = 0;
 
 function novaStepSimulator() {
@@ -78,9 +87,14 @@ function novaStepSimulator() {
     // Print some useful debugging information about the state of the simulator.
     var instruction = memoryBus.readFromBus(cpu.r[6], TaskType.EMULATOR, false);
 
-    // console.log("[" + stepCount + "] Stopped at memory location=" + cpu.r[6].toString(8) + " (" +
-    //             instruction.toString(8) +  ") : " +
-    //             novaDisassembler.disassembleInstruction(cpu.r[6], instruction));
+    console.log("[" + stepCount + "] Stopped at memory location=" + cpu.r[6].toString(8) + " (" +
+                instruction.toString(8) +  ") : " +
+                novaDisassembler.disassembleInstruction(cpu.r[6], instruction));
+    console.log("    PC=" + cpu.r[6].toString(8))
+    console.log("    R0=" + cpu.r[3].toString(8));
+    console.log("    R1=" + cpu.r[2].toString(8));
+    console.log("    R2=" + cpu.r[1].toString(8));
+    console.log("    R3=" + cpu.r[0].toString(8));
 
     startButton.disabled = false;
     altoDisplay.displayLastFrame();

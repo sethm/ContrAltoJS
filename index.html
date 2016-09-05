@@ -4,6 +4,9 @@
     <meta charset="utf-8"/>
     <title>Xerox Alto Emulator</title>
     <style>
+        body{
+            font-family: Helvetica, Arial, sans-serif;
+        }
         * {
             padding: 0;
             margin: 0;
@@ -61,7 +64,8 @@
     <button name="stop" id="stopButton" onclick="stopRunning()">Stop</button>
     <button name="step" id="stepButton" onclick="stepSimulator()">Step</button>
     <button name="step" id="resetButton" onclick="resetSimulator()">Reset</button>
-    <button name="novaStep" id="novaStep" onClick="novaStepSimulator()">Nova Step</button>
+    <button name="novaStep" id="novaStep" onclick="novaStepSimulator()">Nova Step</button>
+    <input type="checkbox" id="trace" onclick="enableTrace()"/> JS Console Trace
 </div>
 
 <script src="js/config.js"></script>
