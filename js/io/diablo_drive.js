@@ -124,11 +124,12 @@ DiabloDrive.prototype = {
     },
 
     writeWord: function(index, data) {
+        console.log(">>> Writing data to " + this.cylinder + "/" + this.head + "/" + this.sector + ", index=" + index);
         if (this.pack !== null && this.pack !== undefined && index < this.sectorData.length) {
             if (this.sectorData[index].type === CellType.DATA) {
                 this.sectorData[index].Data = data;
             } else {
-                throw "Data written to non-data section! type=" + this.sectorData[index].type;
+                console.log("WARNING Data written to non-data section! index=" + index);
             }
 
             this.sectorModified = true;

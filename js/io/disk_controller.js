@@ -381,11 +381,6 @@ var diskController = {
                     // Read
                     this.kDataRead = diskWord.data;
                     this.lastDiskActivity = DiskActivityType.READ;
-
-                    // console.log("cylinder=" + this.selectedDrive().cylinder +
-                    //             " head=" + this.selectedDrive().head +
-                    //             " sector=" + this.sector +
-                    //             " word=" + diskWord.data.toString(8) + " read into KDATA");
                 } else {
                     // Write
                     if (this.kDataWriteLatch) {
