@@ -126,11 +126,10 @@ var displayController = {
         // Run MRT
         cpu.wakeupTask(TaskType.MEMORY_REFRESH);
 
-        // // Run Ethernet if a countdown wakeup is in progress
-        // // TODO: Not yet implemented.
-        // if (ethernetController.countdownWakeup) {
-        //    cpu.wakeupTask(TaskType.ETHERNET);
-        // }
+        // Run Ethernet if a countdown wakeup is in progress
+        if (ethernetController.countdownWakeup) {
+           cpu.wakeupTask(TaskType.ETHERNET);
+        }
 
         if (d.vblankScanlineCount > (d.evenField ? 33 : 34)) {
             // End of vblank.

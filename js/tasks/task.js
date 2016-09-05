@@ -725,7 +725,16 @@ var ethernetTask = extend(Task, {
         return base.baseExecuteInstruction(instruction);
     },
 
+    executeSpecialFunction1: function(instruction) {
+        console.log(">>> Ethernet Special Function 1");
+    },
+
+    executeSpecialFunction2: function(instruction) {
+        console.log(">>> Ethernet Special Function 2");
+    },
+
     getBusSource: function(bs) {
+        console.log(">>> Ethernet Task: GET BUS SOURCE");
         return 0;
     }
 });
