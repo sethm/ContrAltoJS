@@ -1,3 +1,6 @@
+MOUSE_LEFT_BUTTON   = 0x04;
+MOUSE_RIGHT_BUTTON  = 0x02;
+MOUSE_MIDDLE_BUTTON = 0x01;
 
 
 var mouse = {
@@ -7,6 +10,7 @@ var mouse = {
     newX: 0,
     newY: 0,
 
+    mouseButtons: 0x0,
     mouseBits: 0x0,
 
     pollMouseBits: function() {
@@ -88,7 +92,7 @@ var mouse = {
     },
 
     read: function(address, task, extendedMemoryReference) {
-        return 0xffff;
+        return (~this.mouseButtons) & 0xffff;
     },
 
     load: function(address, data, task, extendedMemoryReference) {
@@ -102,6 +106,38 @@ var mouse = {
     mouseMove: function(x, y) {
         mouse.newX = x;
         mouse.newY = y;
+    },
+
+    mouseDown: function(e) {
+        switch (e.button) {
+            case 0: // left
+                mouse.mouseButtons |= MOUSE_LEFT_BUTTON;
+                break;
+            case 1: // middle
+                mouse.mouseButtons |= MOUSE_MIDDLE_BUTTON;
+                break;
+            case 2: // right
+                mouse.mouseButtons |= MOUSE_RIGHT_BUTTON;
+                break;
+        }
+
+        return false;
+    },
+
+    mouseUp: function(e) {
+        switch (e.button) {
+            case 0: // left
+                mouse.mouseButtons ^= MOUSE_LEFT_BUTTON;
+                break;
+            case 1: // middle
+                mouse.mouseButtons ^= MOUSE_MIDDLE_BUTTON;
+                break;
+            case 2: // right
+                mouse.mouseButtons ^= MOUSE_RIGHT_BUTTON;
+                break;
+        }
+
+        return false;
     },
 
     addresses: [

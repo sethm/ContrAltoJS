@@ -115,6 +115,8 @@ var keyboard = {
         if (code) {
             keyboard.keys[code[0]] &= ((~code[1]) & 0xffff);
         }
+
+        return false;
     },
 
     keyDown: function(e) {
@@ -123,6 +125,8 @@ var keyboard = {
         if (code) {
             keyboard.keys[code[0]] |= code[1];
         }
+
+        return false;
     },
 
     addresses: [

@@ -31,7 +31,7 @@ var animFrame = window.requestAnimationFrame ||
 
 var frameId = 0;
 
-var system = new altoSystem("http://www.loomcom.com/jsalto/images/games.dsk");
+var system = new altoSystem("http://www.loomcom.com/jsalto/images/diag.dsk");
 
 window.addEventListener("keydown", keyboard.keyDown, false);
 window.addEventListener("keyup", keyboard.keyUp, false);
@@ -39,11 +39,14 @@ window.addEventListener("keyup", keyboard.keyUp, false);
 var display = document.getElementById("altoDisplay");
 
 display.addEventListener("mousemove", mouseMove, false);
+display.addEventListener("mousedown", mouse.mouseDown, false);
+display.addEventListener("mouseup", mouse.mouseUp, false);
 
 function mouseMove(e) {
     var rect = display.getBoundingClientRect();
     mouse.mouseMove(Math.round(e.clientX - rect.left),
                     Math.round(e.clientY - rect.top));
+    return false;
 }
 
 // Main loop

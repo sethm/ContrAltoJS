@@ -118,7 +118,7 @@ var emulatorTask = extend(Task, {
                     // setting this flag causes the main Task
                     // implementation to skip updating _mpc at the end of
                     // this instruction.
-                    this.softReset = true;
+                    this.wasSoftReset = true;
                 } else if (this.busData !== 0) {
                     //
                     // Dispatch to the appropriate device. The Ethernet
