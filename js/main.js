@@ -31,7 +31,18 @@ var animFrame = window.requestAnimationFrame ||
 
 var frameId = 0;
 
-var system = new altoSystem("http://www.loomcom.com/jsalto/images/diag.dsk");
+var system = new altoSystem("http://www.loomcom.com/jsalto/images/games.dsk");
+
+window.addEventListener("keydown", keyboard.keyDown, false);
+window.addEventListener("keyup", keyboard.keyUp, false);
+
+function doKeyDown(e) {
+    console.log("key down: " + e.keyCode);
+}
+
+function doKeyUp(e) {
+    console.log("key up: " + e.keyCode);
+}
 
 // Main loop
 function runMainLoop() {
