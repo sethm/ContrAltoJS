@@ -128,11 +128,6 @@ DiabloDrive.prototype = {
             if (this.sectorData[index].type === CellType.DATA) {
                 var oldData = this.sectorData[index].data;
                 this.sectorData[index].data = data;
-                if (oldData != data) {
-                    console.log(">>> Writing data to " + this.cylinder + "/" + this.head + "/" + this.sector +
-                        ", index=" + index + ", old_data=" + oldData + ", data=" + data);
-                }
-
                 this.sectorModified = true;
             }
         }

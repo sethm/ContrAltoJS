@@ -50,7 +50,6 @@ var displayController = {
 
     scanLine: 0,
     word: 0,
-    scanLineWords: 38,
 
     dataBuffer: [],
 
@@ -171,9 +170,7 @@ var displayController = {
         }
 
         // Schedule wakeup for first word on this scanline
-        // TODO: the delay below is chosen to reduce flicker on first scanline;
-        // investigate.
-        d.wordWakeup.timestampNsec = d.lowRes ? 0 : (DISPLAY_WORD_DURATION * 3);
+        d.wordWakeup.timestampNsec = 0;
         scheduler.schedule(d.wordWakeup);
     },
 
@@ -185,6 +182,7 @@ var displayController = {
         if (d.dataBuffer.length > 0) {
             var word = d.dataBuffer.shift();
             displayWord = d.whiteOnBlack ? word : (~word) & 0xffff;
+            d.checkWordWakeup();
         }
 
         altoDisplay.drawWord(d.scanLine, d.word, displayWord, d.lowRes);
@@ -246,7 +244,7 @@ var displayController = {
     },
 
     fifoFull: function() {
-        return this.dataBuffer.size >= 15;
+        return this.dataBuffer.size >= 127;
     },
 
     checkWordWakeup: function() {
@@ -260,7 +258,8 @@ var displayController = {
     loadDdr: function(word) {
         this.dataBuffer.push(word & 0xffff);
 
-        if (this.dataBuffer.length > 16) {
+        if (this.dataBuffer.length > 128) {
+            console.log("*** WARNING: DISPLAY WORD BUFFER OVERFLOW")
             this.dataBuffer.shift();
         }
 

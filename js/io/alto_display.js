@@ -1,59 +1,55 @@
 var altoDisplay = {
 
-    buffer: undefined,
+    WIDTH: 608,
+
+    HEIGHT: 808,
+
+    context: undefined,
+
+    imgData: undefined,
 
     reset: function() {
-        this.buffer = document.createElement("canvas");
-        this.buffer.width = 606;
-        this.buffer.height = 808;
         var canvas = document.getElementById("altoDisplay");
-        if (canvas) {
-            var ctx = canvas.getContext("2d");
-            ctx.clearRect(0, 0, 606, 808);
-            ctx.drawImage(this.buffer, 0, 0);
+        console.log("Resetting Alto Display");
+        this.context = canvas.getContext("2d");
+        this.imgData = this.context.createImageData(this.WIDTH, this.HEIGHT);
+    },
+
+    drawWord: function(scanline, wordOffset, word, lowRes) {
+        if (lowRes) {
+            throw "ERROR: LOW RES NOT YET IMPLEMENTED";
+        }
+
+        var address = ((scanline * 38 * 16 * 4) + (wordOffset * 16 * 4));
+
+        var i, j;
+
+        for (i = 0, j = 0; i < (16 * 4); i += 4, j++) {
+            var bit = (word >>> (15 - j)) & 1;
+            var color = (bit === 1) ? 255 : 0;
+
+            this.imgData.data[address + i] = color;
+            this.imgData.data[address + i + 1] = color;
+            this.imgData.data[address + i + 2] = color;
+            this.imgData.data[address + i + 3] = 255;
         }
     },
 
-    drawWord: function(scanline, word, displayWord, lowRes) {
-
-        // var ctx = this.buffer.getContext("2d");
-        //
-        // var offsetX = word * 16;
-        // var offsetY = scanline;
-        //
-        // ctx.clearRect(offsetX, offsetY, 16, 1);
-        //
-        // // There must be a better way than this! This is absurd.
-        // ctx.fillStyle = "#fff";
-        // for (var i = 0; i < 16; i++) {
-        //     var bit = (displayWord >> i) & 1;
-        //     if (bit === 1) {
-        //         ctx.fillRect(offsetX + i, offsetY, 1, 1);
-        //     }
-        // }
-    },
-
     drawCursorWord: function(scanline, xoffset, whiteOnBlack, cursorWord) {
-        // var ctx = this.buffer.getContext("2d");
-        //
-        // ctx.fillStyle = "#000";
-        // for (var i = 0; i < 16; i++) {
-        //     var bit = (cursorWord >> i) & 1;
-        //     if (bit === 1) {
-        //         ctx.fillRect(xoffset + i, scanline, 1, 1);
-        //     }
-        // }
+        var address = ((scanline * 38 * 16 * 4)) + (xoffset * 16);
 
+        for (i = 0, j = 0; i < (16 * 4); i += 4, j++) {
+            var bit = (cursorWord >>> (15 - j)) & 1;
+            var color = (bit === 1) ? 0 : 255;
+
+            this.imgData.data[address + i    ] = color;
+            this.imgData.data[address + i + 1] = color;
+            this.imgData.data[address + i + 2] = color;
+            this.imgData.data[address + i + 3] = 255;
+        }
     },
 
     render: function() {
-        // Probably not needed?
-    },
-
-    displayLastFrame: function() {
-        var canvas = document.getElementById("altoDisplay");
-        var ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, 606, 808);
-        ctx.drawImage(this.buffer, 0, 0);
+        this.context.putImageData(this.imgData, 0, 0);
     }
 };

@@ -31,13 +31,13 @@ var animFrame = window.requestAnimationFrame ||
 
 var frameId = 0;
 
-var system = new altoSystem("http://www.loomcom.com/jsalto/images/games.dsk");
+var system = new altoSystem("http://www.loomcom.com/jsalto/images/diag.dsk");
 
 // Main loop
 function runMainLoop() {
     frameId = animFrame(runMainLoop);
-    system.run(90000);
-    altoDisplay.displayLastFrame();
+    system.run(50000);
+    altoDisplay.render();
 }
 
 function stopRunning() {
@@ -58,15 +58,24 @@ function stepSimulator() {
     startButton.disabled = true;
     system.step();
     startButton.disabled = false;
-    altoDisplay.displayLastFrame();
+    altoDisplay.render();
 }
 
-function enableTrace() {
+function enableAltoTrace() {
     "use strict";
     var traceCheckbox = document.getElementById("trace");
 
     if (traceCheckbox) {
-        system.traceInstructions = traceCheckbox.checked;
+        system.instTrace = traceCheckbox.checked;
+    }
+}
+
+function enableDiskTrace() {
+    "use strict";
+    var traceCheckbox = document.getElementById("diskTrace");
+
+    if (traceCheckbox) {
+        system.diskTrace = traceCheckbox.checked;
     }
 }
 
@@ -97,7 +106,7 @@ function novaStepSimulator() {
     console.log("    R3=" + cpu.r[0].toString(8));
 
     startButton.disabled = false;
-    altoDisplay.displayLastFrame();
+    altoDisplay.render();
 }
 
 function startRunning() {

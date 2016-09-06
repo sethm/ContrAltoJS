@@ -151,7 +151,7 @@ var Task = {
     baseExecuteInstruction: function (instruction) {
         cpu.lastInstruction = instruction;
 
-        if (system.traceInstructions) {
+        if (system.instTrace) {
             console.log("> MPC=" + this.mpc.toString(8) +
                         " NEXTMOD=" + this.nextModifier +
                         " SKIP=" + this.skip.toString(8) +
@@ -592,11 +592,6 @@ var Task = {
 
 var displayWordTask = extend(Task, {
     taskType: TaskType.DISPLAY_WORD,
-
-    onTaskSwitch: function() {
-        // Go to sleep again right away.
-        this.wakeup = false;
-    },
 
     executeSpecialFunction2: function(instruction) {
         switch(instruction.f2) {

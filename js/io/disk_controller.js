@@ -199,10 +199,17 @@ var diskController = {
     sectorCallback: function (timeNsec, skewNsec, context) {
         var d = diskController;
 
+        var drive = d.selectedDrive();
+
+        if (system.diskTrace) {
+            console.log("Sector Callback for C/H/S=" +
+                        drive.cylinder + "/" + drive.head + "/" + drive.sector);
+        }
+
         d.sector = (d.sector + 1) % 12;
         d.kStat = ((d.kStat & 0x0fff) | (d.sector << 12));
 
-        if (d.drives[d.disk].isLoaded()) {
+        if (drive.isLoaded()) {
             d.kStat &= (~NOTREADY & 0xffff);
         } else {
             d.kStat |= NOTREADY;
@@ -213,7 +220,7 @@ var diskController = {
 
         d.kDataRead = 0;
 
-        d.selectedDrive().setSector(d.sector);
+        drive.setSector(d.sector);
 
         if ((d.kStat & STROBE) === 0) {
             cpu.wakeupTask(TaskType.DISK_SECTOR);
@@ -291,7 +298,10 @@ var diskController = {
     },
 
     initSeek: function (destCylinder) {
-        console.log("Seeking to cylinder " + destCylinder);
+        if (system.diskTrace) {
+            console.log("Seeking to cylinder " + destCylinder);
+        }
+
         if (!this.selectedDrive().isLoaded() || destCylinder > (this.selectedDrive().pack.geometry.cylinders - 1)) {
             this.kStat |= SEEKFAIL;
             this.seeking = false;
@@ -307,8 +317,9 @@ var diskController = {
             this.kStat |= STROBE;
             this.seeking = true;
 
+
             this.seekDuration = Math.round(this.calculateSeekTime() /
-                                           (Math.abs(this.destCylinder - this.selectedDrive().cylinder + 1)));
+                                           (Math.abs(this.destCylinder - this.selectedDrive().cylinder) + 1));
 
             this.seekEvent.timestampNsec = this.seekDuration;
             scheduler.schedule(this.seekEvent);
@@ -441,6 +452,9 @@ var diskController = {
     },
 
     seekCallback: function (timeNsec, skewNsec, context) {
+        if (system.diskTrace) {
+            console.log("Seek Callback!");
+        }
         var d = diskController;
         var drive = d.selectedDrive();
 
