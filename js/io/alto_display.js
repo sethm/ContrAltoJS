@@ -40,12 +40,13 @@ var altoDisplay = {
 
         for (i = 0, j = 0; i < (16 * 4); i += 4, j++) {
             var bit = (cursorWord >>> (15 - j)) & 1;
-            var color = (bit === 1) ? 0 : 255;
 
-            this.imgData.data[address + i    ] = color;
-            this.imgData.data[address + i + 1] = color;
-            this.imgData.data[address + i + 2] = color;
-            this.imgData.data[address + i + 3] = 255;
+            if (bit === 1) {
+                this.imgData.data[address + i    ] = 0;
+                this.imgData.data[address + i + 1] = 0;
+                this.imgData.data[address + i + 2] = 0;
+                this.imgData.data[address + i + 3] = 255;
+            }
         }
     },
 

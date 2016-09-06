@@ -99,10 +99,9 @@ DiabloPack.prototype = {
                         for (sec = 0; sec < pack.geometry.sectors; sec++) {
 
                             // We're reading a single sector of data out of the image.
-
-                            var header = byteArray.slice(offset + 2, offset + 6);
-                            var label = byteArray.slice(offset + 6, offset + 22);
-                            var data = byteArray.slice(offset + 22, offset + 534);
+                            var header = byteArray.subarray(offset + 2, offset + 6);
+                            var label = byteArray.subarray(offset + 6, offset + 22);
+                            var data = byteArray.subarray(offset + 22, offset + 534);
 
                             if (reverseByteOrder) {
                                 pack.swapBytes(header);

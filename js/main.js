@@ -36,18 +36,20 @@ var system = new altoSystem("http://www.loomcom.com/jsalto/images/games.dsk");
 window.addEventListener("keydown", keyboard.keyDown, false);
 window.addEventListener("keyup", keyboard.keyUp, false);
 
-function doKeyDown(e) {
-    console.log("key down: " + e.keyCode);
-}
+var display = document.getElementById("altoDisplay");
 
-function doKeyUp(e) {
-    console.log("key up: " + e.keyCode);
+display.addEventListener("mousemove", mouseMove, false);
+
+function mouseMove(e) {
+    var rect = display.getBoundingClientRect();
+    mouse.mouseMove(Math.round(e.clientX - rect.left),
+                    Math.round(e.clientY - rect.top));
 }
 
 // Main loop
 function runMainLoop() {
     frameId = animFrame(runMainLoop);
-    system.run(50000);
+    system.run(85000);
     altoDisplay.render();
 }
 

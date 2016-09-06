@@ -20,8 +20,11 @@
 var SCAN_LINE_WORDS = 38;
 var DISPLAY_SCALE = 1.0;
 var VERTICAL_BLANK_DURATION = 665000.0 * DISPLAY_SCALE;
+// var VERTICAL_BLANK_SCANLINE_DURATION = 38080.0 * DISPLAY_SCALE;
 var VERTICAL_BLANK_SCANLINE_DURATION = 38080.0 * DISPLAY_SCALE;
-var HORIZONTAL_BLANK_DURATION = 6084.0 * DISPLAY_SCALE;
+// var HORIZONTAL_BLANK_DURATION = 6084.0 * DISPLAY_SCALE;
+var HORIZONTAL_BLANK_DURATION = 9500.0 * DISPLAY_SCALE;
+// var HORIZONTAL_BLANK_DURATION = 12000.0 * DISPLAY_SCALE; // TODO: Why does increasing this stabilize the display?
 var DISPLAY_WORD_DURATION = 842.0 * DISPLAY_SCALE;
 
 var displayController = {
@@ -187,10 +190,6 @@ var displayController = {
 
         altoDisplay.drawWord(d.scanLine, d.word, displayWord, d.lowRes);
 
-        // // Merge in cursor word.a
-        // TODO: This local variable is unused in ContrAlto, investigate.
-        // var xOffset = word * (d.lowRes ? 32 : 16);
-
         d.word++;
 
         if (d.word >= (d.lowRes ? (SCAN_LINE_WORDS / 2) : SCAN_LINE_WORDS)) {
@@ -259,7 +258,7 @@ var displayController = {
         this.dataBuffer.push(word & 0xffff);
 
         if (this.dataBuffer.length > 128) {
-            console.log("*** WARNING: DISPLAY WORD BUFFER OVERFLOW")
+            console.log("*** WARNING: DISPLAY WORD BUFFER OVERFLOW");
             this.dataBuffer.shift();
         }
 
