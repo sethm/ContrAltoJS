@@ -78,6 +78,26 @@ var CursorF2 = {
     LOAD_CSR:   9
 };
 
+var EthernetBusSource = {
+    EIDFCT: 4
+};
+
+var EthernetF1 = {
+    EILFCT: 11,
+    EPFCT:  12,
+    EWFCT:  13
+};
+
+var EthernetF2 = {
+    EODFCT: 8,
+    EOSFCT: 9,
+    ERBFCT: 10,
+    EEFCT:  11,
+    EBFCT:  12,
+    ECBFCT: 13,
+    EISFCT: 14
+};
+
 //
 // Base Task implementation used by all tasks
 //
@@ -716,20 +736,124 @@ var ethernetTask = extend(Task, {
     taskType: TaskType.ETHERNET,
 
     executeInstruction: function(instruction) {
-        return base.baseExecuteInstruction(instruction);
+
+        // The Ethernet task only remains awake if there are pending data wakeups
+        if (ethernetController.countdownWakeup) {
+            // The resulting [Countdown] wakeup is cleared when the ether task next runs.
+            ethernetController.countdownWakeup = false;
+            this.wakeup = false;
+        }
+
+        return this.baseExecuteInstruction(instruction);
+    },
+
+
+    getBusSource: function(bs) {
+        switch (instruction.bs) {
+            case EthernetBusSource.EIDFCT:
+                // Input Data Function. Gates the contents of the FIFO to BUS[0-15], and
+                // increments the read pointer at the end of the cycle.
+                return ethernetController.readInputFifo();
+            default:
+                throw "Unimplemented ethernet bus source";
+        }
+    },
+
+    executeSpecialFunction1Early: function(instruction) {
+        switch (instruction.f1) {
+            case EthernetF1.EILFCT:
+                // Early: Input Look Function. Gates the contents of the FIFO to BUS[0-15] but does
+                // not increment the read pointer.
+                this.busData &= ethernetController.peekInputFifo();
+                break;
+        }
     },
 
     executeSpecialFunction1: function(instruction) {
-        console.log(">>> Ethernet Special Function 1");
+        switch (instruction.f1) {
+            case EthernetF1.EILFCT:
+                // nothing; handled in early handler
+                break;
+            case EthernetF1.EPFCT:
+                // Post Function. Gates interface status to BUS[8-15]. Resets the interface at
+                // the end of the cycle and removes wakeup for this task.
+                this.busData &= ethernetController.status;
+                ethernetController.resetInterface();
+                this.wakeup = false;
+                break;
+            case EthernetF1.EWFCT:
+                // Countdown Wakeup Function. Sets a flip flop in the interface that will
+                // cause a wakeup to the Ether task on the next tick of SWAKMRT. This
+                // function must be issued in the instruction after a TASK. The resulting
+                // wakeup is cleared when the Ether task next runs.
+                ethernetController.countdownWakeup = true;
+                break;
+            default:
+                throw "Unimplemented Ethernet F1";
+        }
     },
 
     executeSpecialFunction2: function(instruction) {
-        console.log(">>> Ethernet Special Function 2");
-    },
+        switch (instruction.f2) {
+            case EthernetF2.EODFCT:
+                // Output Data Function. Loads the FIFO from BUS[0-15], then increments the
+                // write pointer at the end of the cycle.
+                ethernetController.writeOutputFifo(this.busData);
+                break;
 
-    getBusSource: function(bs) {
-        console.log(">>> Ethernet Task: GET BUS SOURCE");
-        return 0;
+            case EthernetF2.EOSFCT:
+                // Output Start Function. Sets the OBusy flip flop in the interface, starting
+                // data wakeups to fill the FIFO for output. When the FIFO is full, or EEFct has
+                // been issued, the interface will wait for silence on the Ether and begin
+                // transmitting.
+                ethernetController.startOutput();
+                break;
+
+            case EthernetF2.ERBFCT:
+                // Reset Branch Function. This command dispatch function merges the ICMD
+                // and OCMD flip flops, into NEXT[6-7]. These flip flops are the means of
+                // communication between the emulator task and the Ethernet task. The
+                // emulator task sets them from BUS[14-15] with the STARTF function, causing
+                // the Ethernet task to wakeup, dispatch on them and then reset them with
+                // EPFCT.
+                this.nextModifier = (ethernetController.ioCmd << 2) & 0xffff;
+                break;
+
+            case EthernetF2.EEFCT:
+                ethernetController.endTransmission();
+                break;
+
+            case EthernetF2.EBFCT:
+                if (ethernetController.dataLate ||
+                    ethernetController.ioCmd !== 0 ||
+                    ethernetController.operationDone())
+                {
+                    this.nextModifier |= 0x4;
+                }
+
+                if (ethernetController.collision) {
+                    this.nextModifier |= 0x8;
+                }
+                break;
+
+            case EthernetF2.ECBFCT:
+                // Countdown Branch Function. ORs a one into NEXT[7] if the FIFO is not
+                // empty.
+                if (!ethernetController.fifoEmpty()) {
+                    this.nextModifier |= 0x4;
+                }
+                break;
+
+            case EthernetF2.EISFCT:
+                // Input Start Function. Sets the IBusy flip flop in the interface, causing it to
+                // hunt for the beginning of a packet: silence on the Ether followed by a
+                // transition. When the interface has collected two words, it will begin
+                // generating data wakeups to the microcode.
+                ethernetController.startInput();
+                break;
+            default:
+                throw "Unimplemented Ethernet F2";
+        }
     }
 });
 

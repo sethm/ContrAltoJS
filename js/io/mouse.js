@@ -106,7 +106,6 @@ var mouse = {
     },
 
     mouseDown: function(e) {
-        console.log("Mouse Down. Button = " + e.button);
         switch (e.button) {
             case 0: // left
                 mouse.mouseButtons |= MOUSE_LEFT_BUTTON;
@@ -125,7 +124,6 @@ var mouse = {
     },
 
     mouseUp: function(e) {
-        console.log("Mouse Up. Button = " + e.button);
         switch (e.button) {
             case 0: // left
                 mouse.mouseButtons ^= MOUSE_LEFT_BUTTON;
