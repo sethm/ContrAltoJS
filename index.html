@@ -7,11 +7,6 @@
         body{
             font-family: Helvetica, Arial, sans-serif;
         }
-        * {
-            padding: 0;
-            margin: 0;
-        }
-
         canvas {
             background: #000;
             display: block;
@@ -21,12 +16,13 @@
         }
 
         #container {
+            width: 610px;
             margin: 15px auto 20px auto;
         }
 
         #controls {
             text-align: center;
-            margin-bottom: 60px;
+            margin-top: 20px;
         }
 
         #debugger {
@@ -58,42 +54,60 @@
 <body>
 
 <div id="container">
-    <canvas id="altoDisplay" width="608" height="808"></canvas>
-</div>
+    <h1>JavaScript Xerox Alto Emulator</h1>
 
-<div id="controls">
-    <select id="diskChooser">
-        <option value="Clark-Games.dsk">Clark-Games.dsk</option>
-        <option value="Josh.dsk">Josh.dsk</option>
-        <option value="allgames.dsk">allgames.dsk</option>
-        <option value="bcpl.dsk">bcpl.dsk</option>
-        <option value="bravox.dsk">bravox.dsk</option>
-        <option value="diag.dsk">diag.dsk</option>
-        <option value="experimental.dsk">experimental.dsk</option>
-        <option value="games.dsk" selected="true">games.dsk</option>
-        <option value="gamesb.dsk">gamesb.dsk</option>
-        <option value="gsl.dsk">gsl.dsk</option>
-        <option value="mazeWar.dsk">mazeWar.dsk</option>
-        <option value="mazeWarTry2.dsk">mazeWarTry2.dsk</option>
-        <option value="nonprog.dsk">nonprog.dsk</option>
-        <option value="os12.5.empty.dsk">os12.5.empty.dsk</option>
-        <option value="os20.16.empty.dsk">os20.16.empty.dsk</option>
-        <option value="st76.dsk">st76.dsk</option>
-        <option value="st76boot.dsk">st76boot.dsk</option>
-        <option value="st76experiment.dsk">st76experiment.dsk</option>
-        <option value="st80.dsk">st80.dsk</option>
-        <option value="tdisk4.dsk">tdisk4.dsk</option>
-        <option value="tdisk8.dsk">tdisk8.dsk</option>
-        <option value="xmsmall.dsk">xmsmall.dsk</option>
-    </select>
-    <button name="start" id="startButton" onclick="startRunning()">Start</button>
-    <button name="stop" id="stopButton" onclick="stopRunning()">Stop</button>
-    <button name="step" id="stepButton" onclick="stepSimulator()">Step</button>
-    <button name="novaStep" id="novaStep" onclick="novaStepSimulator()">Nova Step</button>
-    <button name="step" id="resetButton" onclick="resetSimulator()">Reset</button>
-    <br/>
-    <br/>&nbsp; &nbsp;
-    <input type="checkbox" id="diskTrace" onclick="enableDiskTrace()" /> Disk Trace
+    <p>Don't be alarmed. When using this page, your mouse and keyboard are being used by the
+        emulator, so your normal keyboard shortcuts will probably not work.</p>
+
+    <canvas id="altoDisplay" width="608" height="808"></canvas>
+
+    <div id="controls">
+        <select id="diskChooser">
+            <option value="Clark-Games.dsk">Clark-Games.dsk</option>
+            <option value="Josh.dsk">Josh.dsk</option>
+            <option value="allgames.dsk">allgames.dsk</option>
+            <option value="bcpl.dsk">bcpl.dsk</option>
+            <option value="bravox.dsk">bravox.dsk</option>
+            <option value="diag.dsk">diag.dsk</option>
+            <option value="experimental.dsk">experimental.dsk</option>
+            <option value="games.dsk" selected="true">games.dsk</option>
+            <option value="gamesb.dsk">gamesb.dsk</option>
+            <option value="gsl.dsk">gsl.dsk</option>
+            <option value="nonprog.dsk">nonprog.dsk</option>
+            <option value="os12.5.empty.dsk">os12.5.empty.dsk</option>
+            <option value="os20.16.empty.dsk">os20.16.empty.dsk</option>
+            <option value="st76.dsk">st76.dsk</option>
+            <option value="st76boot.dsk">st76boot.dsk</option>
+            <option value="st76experiment.dsk">st76experiment.dsk</option>
+            <option value="st80.dsk">st80.dsk</option>
+            <option value="tdisk4.dsk">tdisk4.dsk</option>
+            <option value="tdisk8.dsk">tdisk8.dsk</option>
+            <option value="xmsmall.dsk">xmsmall.dsk</option>
+        </select>
+        <button name="start" id="bootButton" onclick="startRunning()">Boot</button>
+        <button name="stop" id="stopButton" onclick="stopRunning()">Stop</button>
+        <button name="step" id="resetButton" onclick="resetSimulator()">Reset</button>
+    </div>
+
+    <h3>Usage</h3>
+    <ul>
+        <li>Select a disk to boot from the pull-down menu, then click <strong>Boot</strong></li>
+        <li>To see all files on the pack, type a single quetsion mark at the prompt. e.g.,
+            <br/><code>&gt;?</code></li>
+        <li>To see only runnable programs, type:
+            <br/><code>&gt;*.run?</code></li>
+        <li>To run a program, just type its name and hit ENTER. e.g.,
+            <br/><code>&gt;trek</code></li>
+    </ul>
+    <h3>Known Bugs</h3>
+    <ul>
+        <li>Mouse tracking is very poor and gets &ldquo;off track&rdquo; very easily.</li>
+        <li>Ethernet emulation is not implemented.</li>
+        <li>Keyboard input is laggy, keystrokes are easily missed.</li>
+        <li>You cannot save changes to disk.</li>
+    </ul>
+    <h3>Project Info</h3>
+    <p>Find the project <a href="https://github.com/sethm/jsalto">On GitHub</a>.</p>
 </div>
 
 <script src="js/config.js"></script>

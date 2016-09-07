@@ -1,16 +1,16 @@
 # About
 
 This is a pure JavaScript implementation of a Xerox Alto emulator.
-This project is more or less a straight port of the Living Computer
-Museum's "ContrAlto" emulator from .Net / C# to JavaScript.
 
 The end goal is a usable, performant Xerox Alto emulator running in
 your web browser.
 
+![JsAlto In Action] (http://www.loomcom.com/jsalto/jsalto.png)
+
 # Status
 
-This code is incomplete and in active development. It is NOT YET
-USABLE.
+The project is usable, with some known bugs. It should be considered
+early beta quality.
 
 # Credits
 

@@ -2,11 +2,14 @@ MOUSE_LEFT_BUTTON   = 0x04;
 MOUSE_RIGHT_BUTTON  = 0x02;
 MOUSE_MIDDLE_BUTTON = 0x01;
 
+MOUSE_MAX_X = 608 - 16;
+
 
 var mouse = {
 
     currentX: 0,
     currentY: 0,
+
     newX: 0,
     newY: 0,
 
@@ -16,48 +19,65 @@ var mouse = {
     pollMouseBits: function() {
         // Move the mouse closer to X, Y
 
-        if (this.currentX > this.newX && this.currentY > this.newY) {
+        if (mouse.currentX > mouse.newX && mouse.currentY > mouse.newY) {
             // Move up-left
-            this.mouseBits = 4;
-            this.currentX--;
-            this.currentY--;
-        } else if (this.currentX < this.newX && this.currentY > this.newY) {
+            mouse.mouseBits = 4;
+            mouse.currentX--;
+            mouse.currentY--;
+        } else if (mouse.currentX < mouse.newX && mouse.currentY > mouse.newY) {
             // Move up-right
-            this.mouseBits = 7;
-            this.currentX++;
-            this.currentY--;
-        } else if (this.currentX > this.newX && this.currentY < this.newY) {
+            mouse.mouseBits = 7;
+            mouse.currentX++;
+            mouse.currentY--;
+        } else if (mouse.currentX > mouse.newX && mouse.currentY < mouse.newY) {
             // move down-left
-            this.mouseBits = 5;
-            this.currentX--;
-            this.currentY++;
-        } else if (this.currentX < this.newX && this.currentY < this.newY) {
+            mouse.mouseBits = 5;
+            mouse.currentX--;
+            mouse.currentY++;
+        } else if (mouse.currentX < mouse.newX && mouse.currentY < mouse.newY) {
             // move down-right
-            this.mouseBits = 8;
-            this.currentX++;
-            this.currentY++;
-        } else if (this.currentX == this.newX && this.currentY < this.newY) {
+            mouse.mouseBits = 8;
+            mouse.currentX++;
+            mouse.currentY++;
+        } else if (mouse.currentX == mouse.newX && mouse.currentY < mouse.newY) {
             // move down
-            this.mouseBits = 2;
-            this.currentY++;
-        } else if (this.currentX == this.newX && this.currentY > this.newY) {
+            mouse.mouseBits = 2;
+            mouse.currentY++;
+        } else if (mouse.currentX == mouse.newX && mouse.currentY > mouse.newY) {
             // move up
-            this.mouseBits = 1;
-            this.currentY--;
-        } else if (this.currentX > this.newX && this.currentY == this.newY) {
+            mouse.mouseBits = 1;
+            mouse.currentY--;
+        } else if (mouse.currentX > mouse.newX && mouse.currentY == mouse.newY) {
             // move left
-            this.mouseBits = 3;
-            this.currentX--;
-        } else if (this.currentX < this.newX && this.currentY == this.newY) {
+            mouse.mouseBits = 3;
+            mouse.currentX--;
+        } else if (mouse.currentX < mouse.newX && mouse.currentY == mouse.newY) {
             // move right
-            this.mouseBits = 6;
-            this.currentX++;
-        } else if (this.currentX == this.newX && this.currentY == this.newY) {
+            mouse.mouseBits = 6;
+            mouse.currentX++;
+        } else if (mouse.currentX == mouse.newX && mouse.currentY == mouse.newY) {
             // No change
-            this.mouseBits = 0;
+            mouse.mouseBits = 0;
         }
 
-        return this.mouseBits;
+        // Sanity checking
+        if (mouse.currentX > MOUSE_MAX_X) {
+            mouse.currentX = MOUSE_MAX_X;
+        }
+
+        if (mouse.currentX < 0) {
+            mouse.currentX = 0;
+        }
+
+        if (mouse.currentY > 808) {
+            mouse.currentY = 808;
+        }
+
+        if (mouse.currentY < 0) {
+            mouse.currentY = 0;
+        }
+
+        return mouse.mouseBits;
     },
 
     reset: function() {
@@ -99,6 +119,8 @@ var mouse = {
                 break;
         }
 
+        e.stopPropagation();
+        e.preventDefault();
         return false;
     },
 
@@ -116,6 +138,8 @@ var mouse = {
                 break;
         }
 
+        e.stopPropagation();
+        e.preventDefault();
         return false;
     },
 

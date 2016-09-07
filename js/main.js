@@ -42,16 +42,13 @@ display.addEventListener("mousemove", mouseMove, false);
 display.addEventListener("mousedown", mouse.mouseDown, false);
 display.addEventListener("mouseup", mouse.mouseUp, false);
 display.oncontextmenu = function() {
-    "use strict";
     return false;
-}
+};
 
 var diskChooser = document.getElementById("diskChooser");
-var startButton = document.getElementById("startButton");
-var stepButton = document.getElementById("stepButton");
+var bootButton = document.getElementById("bootButton");
 var stopButton = document.getElementById("stopButton");
 var resetButton = document.getElementById("resetButton");
-var novaStepButton = document.getElementById("novaStep");
 
 diskChooser.onchange = function(e) {
     "use strict";
@@ -73,7 +70,7 @@ function mouseMove(e) {
 // Main loop
 function runMainLoop() {
     frameId = animFrame(runMainLoop);
-    system.run(75000);
+    system.run(95000);
     altoDisplay.render();
 }
 
@@ -81,10 +78,8 @@ function stopRunning() {
     cancelAnimationFrame(frameId);
 
     diskChooser.disabled = false;
-    startButton.disabled = false;
+    bootButton.disabled = false;
     stopButton.disabled = true;
-    stepButton.disabled = false;
-    novaStepButton.disabled = false;
     resetButton.disabled = false;
 }
 
@@ -94,10 +89,9 @@ function resetSimulator() {
 }
 
 function stepSimulator() {
-    var startButton = document.getElementById("startButton");
-    startButton.disabled = true;
+    bootButton.disabled = true;
     system.step();
-    startButton.disabled = false;
+    bootButton.disabled = false;
     altoDisplay.render();
 }
 
@@ -112,8 +106,7 @@ function enableDiskTrace() {
 var stepCount = 0;
 
 function novaStepSimulator() {
-    var startButton = document.getElementById("startButton");
-    startButton.disabled = true;
+    bootButton.disabled = true;
     // To prevent runaway execution.
     var maxStepsAllowed = 20000000;
     system.step();
@@ -135,17 +128,15 @@ function novaStepSimulator() {
     console.log("    R2=" + cpu.r[1].toString(8));
     console.log("    R3=" + cpu.r[0].toString(8));
 
-    startButton.disabled = false;
+    bootButton.disabled = false;
     altoDisplay.render();
 }
 
 function startRunning() {
     diskChooser.disabled = true;
-    startButton.disabled = true;
-    stepButton.disabled = true;
+    bootButton.disabled = true;
     stopButton.disabled = false;
     resetButton.disabled = true;
-    novaStepButton.disabled = true;
 
     runMainLoop();
 }
@@ -160,17 +151,9 @@ function loadSystemWithDisk() {
 }
 
 window.onload = function() {
-    "use strict";
-    var startButton = document.getElementById("startButton");
-    var stepButton = document.getElementById("stepButton");
-    var stopButton = document.getElementById("stopButton");
-    var novaStepButton = document.getElementById("novaStep");
-
     loadSystemWithDisk();
 
-    startButton.disabled = false;
-    stepButton.disabled = false;
+    bootButton.disabled = false;
     stopButton.disabled = true;
-    novaStepButton.disabled = false;
     resetButton.disabled = false;
 };

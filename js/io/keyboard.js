@@ -116,6 +116,8 @@ var keyboard = {
             keyboard.keys[code[0]] &= ((~code[1]) & 0xffff);
         }
 
+        e.stopPropagation();
+        e.preventDefault();
         return false;
     },
 
@@ -125,6 +127,9 @@ var keyboard = {
         if (code) {
             keyboard.keys[code[0]] |= code[1];
         }
+
+        e.stopPropagation();
+        e.preventDefault();
 
         return false;
     },
