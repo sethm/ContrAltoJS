@@ -99,7 +99,6 @@ var Task = {
     wrtRam: false,
     wasSoftReset:false,
 
-
     baseReset: function () {
         this.mpc = this.taskType;
         this.rdRam = false;

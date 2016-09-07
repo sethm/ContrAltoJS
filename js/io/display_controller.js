@@ -170,7 +170,7 @@ var displayController = {
         }
 
         // Schedule wakeup for first word on this scanline
-        d.wordWakeup.timestampNsec = 0;
+        d.wordWakeup.timestampNsec = HORIZONTAL_BLANK_DURATION;
         scheduler.schedule(d.wordWakeup);
     },
 
@@ -201,11 +201,7 @@ var displayController = {
             d.scanLine += 2;
 
             if (d.scanLine >= 808) {
-                // Done with field.
-                // Draw completed field to the emulated display
-                altoDisplay.render();
-
-                // And start over.
+                // Done with field, start another.
                 d.fieldStart();
             } else {
                 // More scanlines to do.
