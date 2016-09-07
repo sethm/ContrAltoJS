@@ -101,7 +101,7 @@ var mouse = {
 
     mouseMove: function(x, y) {
 
-        mouse.newX = Math.ceil(x / 4);
+        mouse.newX = x;
         mouse.newY = y;
     },
 
