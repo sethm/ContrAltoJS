@@ -31,7 +31,7 @@ var animFrame = window.requestAnimationFrame ||
 
 var frameId = 0;
 
-var system = new altoSystem("http://www.loomcom.com/jsalto/images/diag.dsk");
+var system = new altoSystem();
 
 window.addEventListener("keydown", keyboard.keyDown, false);
 window.addEventListener("keyup", keyboard.keyUp, false);
@@ -41,27 +41,51 @@ var display = document.getElementById("altoDisplay");
 display.addEventListener("mousemove", mouseMove, false);
 display.addEventListener("mousedown", mouse.mouseDown, false);
 display.addEventListener("mouseup", mouse.mouseUp, false);
+display.oncontextmenu = function() {
+    "use strict";
+    return false;
+}
+
+var diskChooser = document.getElementById("diskChooser");
+var startButton = document.getElementById("startButton");
+var stepButton = document.getElementById("stepButton");
+var stopButton = document.getElementById("stopButton");
+var resetButton = document.getElementById("resetButton");
+var novaStepButton = document.getElementById("novaStep");
+
+diskChooser.onchange = function(e) {
+    "use strict";
+    loadSystemWithDisk();
+    system.reset();
+};
 
 function mouseMove(e) {
     var rect = display.getBoundingClientRect();
-    mouse.mouseMove(Math.round(e.clientX - rect.left),
-                    Math.round(e.clientY - rect.top));
+
+    var scaleX = display.width / rect.width;
+    var scaleY = display.height / rect.height;
+
+    mouse.mouseMove(Math.ceil((e.clientX - rect.left) / (rect.right - rect.left) * display.width),
+                    Math.ceil((e.clientY - rect.top) / (rect.bottom - rect.top) * display.height));
     return false;
 }
 
 // Main loop
 function runMainLoop() {
     frameId = animFrame(runMainLoop);
-    system.run(85000);
+    system.run(75000);
     altoDisplay.render();
 }
 
 function stopRunning() {
     cancelAnimationFrame(frameId);
-    var startButton = document.getElementById("startButton");
-    var stepButton = document.getElementById("stepButton");
+
+    diskChooser.disabled = false;
     startButton.disabled = false;
+    stopButton.disabled = true;
     stepButton.disabled = false;
+    novaStepButton.disabled = false;
+    resetButton.disabled = false;
 }
 
 function resetSimulator() {
@@ -77,17 +101,7 @@ function stepSimulator() {
     altoDisplay.render();
 }
 
-function enableAltoTrace() {
-    "use strict";
-    var traceCheckbox = document.getElementById("trace");
-
-    if (traceCheckbox) {
-        system.instTrace = traceCheckbox.checked;
-    }
-}
-
 function enableDiskTrace() {
-    "use strict";
     var traceCheckbox = document.getElementById("diskTrace");
 
     if (traceCheckbox) {
@@ -115,7 +129,7 @@ function novaStepSimulator() {
     console.log("[" + stepCount + "] Stopped at memory location=" + cpu.r[6].toString(8) + " (" +
                 instruction.toString(8) +  ") : " +
                 novaDisassembler.disassembleInstruction(cpu.r[6], instruction));
-    console.log("    PC=" + cpu.r[6].toString(8))
+    console.log("    PC=" + cpu.r[6].toString(8));
     console.log("    R0=" + cpu.r[3].toString(8));
     console.log("    R1=" + cpu.r[2].toString(8));
     console.log("    R2=" + cpu.r[1].toString(8));
@@ -126,9 +140,37 @@ function novaStepSimulator() {
 }
 
 function startRunning() {
-    var startButton = document.getElementById("startButton");
-    var stepButton = document.getElementById("stepButton");
+    diskChooser.disabled = true;
     startButton.disabled = true;
     stepButton.disabled = true;
+    stopButton.disabled = false;
+    resetButton.disabled = true;
+    novaStepButton.disabled = true;
+
     runMainLoop();
 }
+
+function loadSystemWithDisk() {
+    "use strict";
+    var diskName = diskChooser.options[diskChooser.selectedIndex].value;
+
+    console.log("Choosing disk image: "  + diskName);
+
+    system.loadPack("http://www.loomcom.com/jsalto/images/" + diskName);
+}
+
+window.onload = function() {
+    "use strict";
+    var startButton = document.getElementById("startButton");
+    var stepButton = document.getElementById("stepButton");
+    var stopButton = document.getElementById("stopButton");
+    var novaStepButton = document.getElementById("novaStep");
+
+    loadSystemWithDisk();
+
+    startButton.disabled = false;
+    stepButton.disabled = false;
+    stopButton.disabled = true;
+    novaStepButton.disabled = false;
+    resetButton.disabled = false;
+};

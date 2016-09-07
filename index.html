@@ -17,6 +17,7 @@
             display: block;
             margin: 0 auto;
             border: 1px solid #333;
+            cursor: none;
         }
 
         #container {
@@ -61,11 +62,35 @@
 </div>
 
 <div id="controls">
+    <select id="diskChooser">
+        <option value="Clark-Games.dsk">Clark-Games.dsk</option>
+        <option value="Josh.dsk">Josh.dsk</option>
+        <option value="allgames.dsk">allgames.dsk</option>
+        <option value="bcpl.dsk">bcpl.dsk</option>
+        <option value="bravox.dsk">bravox.dsk</option>
+        <option value="diag.dsk">diag.dsk</option>
+        <option value="experimental.dsk">experimental.dsk</option>
+        <option value="games.dsk" selected="true">games.dsk</option>
+        <option value="gamesb.dsk">gamesb.dsk</option>
+        <option value="gsl.dsk">gsl.dsk</option>
+        <option value="mazeWar.dsk">mazeWar.dsk</option>
+        <option value="mazeWarTry2.dsk">mazeWarTry2.dsk</option>
+        <option value="nonprog.dsk">nonprog.dsk</option>
+        <option value="os12.5.empty.dsk">os12.5.empty.dsk</option>
+        <option value="os20.16.empty.dsk">os20.16.empty.dsk</option>
+        <option value="st76.dsk">st76.dsk</option>
+        <option value="st76boot.dsk">st76boot.dsk</option>
+        <option value="st76experiment.dsk">st76experiment.dsk</option>
+        <option value="st80.dsk">st80.dsk</option>
+        <option value="tdisk4.dsk">tdisk4.dsk</option>
+        <option value="tdisk8.dsk">tdisk8.dsk</option>
+        <option value="xmsmall.dsk">xmsmall.dsk</option>
+    </select>
     <button name="start" id="startButton" onclick="startRunning()">Start</button>
     <button name="stop" id="stopButton" onclick="stopRunning()">Stop</button>
     <button name="step" id="stepButton" onclick="stepSimulator()">Step</button>
-    <button name="step" id="resetButton" onclick="resetSimulator()">Reset</button>
     <button name="novaStep" id="novaStep" onclick="novaStepSimulator()">Nova Step</button>
+    <button name="step" id="resetButton" onclick="resetSimulator()">Reset</button>
     <br/>
     <br/>&nbsp; &nbsp;
     <input type="checkbox" id="diskTrace" onclick="enableDiskTrace()" /> Disk Trace

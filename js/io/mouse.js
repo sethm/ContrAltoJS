@@ -21,61 +21,37 @@ var mouse = {
             this.mouseBits = 4;
             this.currentX--;
             this.currentY--;
-            console.log("Moving mouse up-left. " +
-                        "currentX=" + this.currentX + ", currentY=" + this.currentY +
-                        ", newX=" + this.newX + ", newY=" + this.newY);
         } else if (this.currentX < this.newX && this.currentY > this.newY) {
             // Move up-right
             this.mouseBits = 7;
             this.currentX++;
             this.currentY--;
-            console.log("Moving mouse up-right. " +
-                        "currentX=" + this.currentX + ", currentY=" + this.currentY +
-                        ", newX=" + this.newX + ", newY=" + this.newY);
         } else if (this.currentX > this.newX && this.currentY < this.newY) {
             // move down-left
             this.mouseBits = 5;
             this.currentX--;
             this.currentY++;
-            console.log("Moving mouse down-left. " +
-                        "currentX=" + this.currentX + ", currentY=" + this.currentY +
-                        ", newX=" + this.newX + ", newY=" + this.newY);
         } else if (this.currentX < this.newX && this.currentY < this.newY) {
             // move down-right
             this.mouseBits = 8;
             this.currentX++;
             this.currentY++;
-            console.log("Moving mouse down-right. " +
-                        "currentX=" + this.currentX + ", currentY=" + this.currentY +
-                        ", newX=" + this.newX + ", newY=" + this.newY);
         } else if (this.currentX == this.newX && this.currentY < this.newY) {
             // move down
             this.mouseBits = 2;
             this.currentY++;
-            console.log("Moving mouse down. " +
-                        "currentX=" + this.currentX + ", currentY=" + this.currentY +
-                        ", newX=" + this.newX + ", newY=" + this.newY);
         } else if (this.currentX == this.newX && this.currentY > this.newY) {
             // move up
             this.mouseBits = 1;
             this.currentY--;
-            console.log("Moving mouse up. " +
-                        "currentX=" + this.currentX + ", currentY=" + this.currentY +
-                        ", newX=" + this.newX + ", newY=" + this.newY);
         } else if (this.currentX > this.newX && this.currentY == this.newY) {
             // move left
             this.mouseBits = 3;
             this.currentX--;
-            console.log("Moving left. " +
-                        "currentX=" + this.currentX + ", currentY=" + this.currentY +
-                        ", newX=" + this.newX + ", newY=" + this.newY);
         } else if (this.currentX < this.newX && this.currentY == this.newY) {
             // move right
             this.mouseBits = 6;
             this.currentX++;
-            console.log("Moving right. " +
-                        "currentX=" + this.currentX + ", currentY=" + this.currentY +
-                        ", newX=" + this.newX + ", newY=" + this.newY);
         } else if (this.currentX == this.newX && this.currentY == this.newY) {
             // No change
             this.mouseBits = 0;
@@ -104,11 +80,13 @@ var mouse = {
     },
 
     mouseMove: function(x, y) {
-        mouse.newX = x;
+
+        mouse.newX = Math.ceil(x / 4);
         mouse.newY = y;
     },
 
     mouseDown: function(e) {
+        console.log("Mouse Down. Button = " + e.button);
         switch (e.button) {
             case 0: // left
                 mouse.mouseButtons |= MOUSE_LEFT_BUTTON;
@@ -125,6 +103,7 @@ var mouse = {
     },
 
     mouseUp: function(e) {
+        console.log("Mouse Up. Button = " + e.button);
         switch (e.button) {
             case 0: // left
                 mouse.mouseButtons ^= MOUSE_LEFT_BUTTON;

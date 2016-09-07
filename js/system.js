@@ -21,7 +21,7 @@
 // An Alto System
 //
 
-var altoSystem = function(url) {
+var altoSystem = function() {
 
     memoryBus.addDevice(memory);
     memoryBus.addDevice(keyboard);
@@ -31,13 +31,6 @@ var altoSystem = function(url) {
     var pack = null;
 
     // Optionally load the system from the URL
-
-    if (url) {
-        pack = new DiabloPack(DiabloDiskType.DIABLO_31);
-        pack.load(url, false, function() {
-            diskController.drives[0].loadPack(pack);
-        });
-    }
 
     var system = {
         instTrace: false,
@@ -81,6 +74,20 @@ var altoSystem = function(url) {
 
         stop: function() {
             this.run = false;
+        },
+
+        loadPack: function(url) {
+            "use strict";
+
+            if (url) {
+                pack = new DiabloPack(DiabloDiskType.DIABLO_31);
+                console.log("Downloading file " + url + "...");
+                pack.load(url, false, function() {
+                    console.log("Done.");
+                    diskController.drives[0].loadPack(pack);
+                });
+            }
+
         }
     };
 
