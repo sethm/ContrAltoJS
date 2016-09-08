@@ -1,6 +1,7 @@
 # About
 
-This is a pure JavaScript implementation of a Xerox Alto emulator.
+This is a pure JavaScript implementation of the ContrAlto Xerox Alto
+emulator.
 
 The end goal is a usable, performant Xerox Alto emulator running in
 your web browser.

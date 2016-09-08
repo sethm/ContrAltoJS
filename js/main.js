@@ -51,7 +51,6 @@ var stopButton = document.getElementById("stopButton");
 var resetButton = document.getElementById("resetButton");
 
 diskChooser.onchange = function(e) {
-    "use strict";
     loadSystemWithDisk();
     system.reset();
 };
@@ -70,7 +69,7 @@ function mouseMove(e) {
 // Main loop
 function runMainLoop() {
     frameId = animFrame(runMainLoop);
-    system.run(95000);
+    system.run(100000);
     altoDisplay.render();
 }
 
@@ -108,7 +107,7 @@ var stepCount = 0;
 function novaStepSimulator() {
     bootButton.disabled = true;
     // To prevent runaway execution.
-    var maxStepsAllowed = 20000000;
+    var maxStepsAllowed = 2000000;
     system.step();
 
     while (cpu.currentTask !== undefined && cpu.currentTask.mpc != 020 && stepCount < maxStepsAllowed) {

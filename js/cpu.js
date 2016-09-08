@@ -341,8 +341,6 @@ var cpu = {
             }
         }
 
-        console.log("Silent Boot: microcode banks initialized " +
-                    "to " + this.rmr.toString(8));
         uCodeMemory.loadBanksFromRMR(this.rmr);
 
         this.rmr = 0;

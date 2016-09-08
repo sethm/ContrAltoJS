@@ -35,11 +35,7 @@ var altoSystem = function() {
     var system = {
         instTrace: false,
         diskTrace: false,
-
-        clockedDevices: [
-            memoryBus,
-            cpu
-        ],
+        clocks: 0,
 
         reset: function() {
             scheduler.reset();
@@ -59,9 +55,8 @@ var altoSystem = function() {
         },
 
         step: function() {
-            for (var i = 0; i < this.clockedDevices.length; i++) {
-                this.clockedDevices[i].clock();
-            }
+            memoryBus.clock();
+            cpu.clock();
             scheduler.clock();
             this.clocks++;
         },
@@ -72,13 +67,7 @@ var altoSystem = function() {
             }
         },
 
-        stop: function() {
-            this.run = false;
-        },
-
         loadPack: function(url) {
-            "use strict";
-
             if (url) {
                 pack = new DiabloPack(DiabloDiskType.DIABLO_31);
                 console.log("Downloading file " + url + "...");

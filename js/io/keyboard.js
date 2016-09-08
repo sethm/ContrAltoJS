@@ -86,7 +86,7 @@ var keyboard = {
         32:  [3, 0x0040],  // Space
         219: [3, 0x0020],  // LBracket
         187: [3, 0x0010],  // Plus
-        // 16:  [3, 0x0008],  // RShift
+        256: [3, 0x0008],  // RShift - special
         114: [3, 0x0004]   // BlankBottom
     },
 
@@ -105,12 +105,15 @@ var keyboard = {
         // Nothing.
     },
 
-    toString: function() {
-        return "Keyboard";
-    },
-
     keyUp: function(e) {
-        var code = keyboard.keyCodes[e.keyCode];
+        var keyCode = e.keyCode;
+
+        // Special logic for left-shift vs. right-shift
+        if (keyCode === 16 && e.location === KeyboardEvent.DOM_KEY_LOCATION_RIGHT) {
+            keyCode = 256;
+        }
+
+        var code = keyboard.keyCodes[keyCode];
 
         if (code) {
             keyboard.keys[code[0]] &= ((~code[1]) & 0xffff);
@@ -122,7 +125,14 @@ var keyboard = {
     },
 
     keyDown: function(e) {
-        var code = keyboard.keyCodes[e.keyCode];
+        var keyCode = e.keyCode;
+
+        // Special logic for left-shift vs. right-shift
+        if (keyCode === 16 && e.location === KeyboardEvent.DOM_KEY_LOCATION_RIGHT) {
+            keyCode = 256;
+        }
+
+        var code = keyboard.keyCodes[keyCode];
 
         if (code) {
             keyboard.keys[code[0]] |= code[1];
@@ -130,11 +140,14 @@ var keyboard = {
 
         e.stopPropagation();
         e.preventDefault();
-
         return false;
     },
 
     addresses: [
         new MemoryRange(0xfe1c, 0xfe1f)
-    ]
+    ],
+
+    toString: function() {
+        return "Keyboard";
+    }
 };
