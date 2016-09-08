@@ -11,7 +11,7 @@ your web browser.
 # Status
 
 The project is usable, with some known bugs. It should be considered
-early beta quality.
+beta quality.
 
 # Credits
 
