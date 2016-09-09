@@ -3,6 +3,7 @@ MOUSE_RIGHT_BUTTON  = 0x02;
 MOUSE_MIDDLE_BUTTON = 0x01;
 
 MOUSE_MAX_X = 608 - 16;
+MOUSE_MAX_Y = 808;
 
 
 var mouse = {
@@ -69,8 +70,8 @@ var mouse = {
             mouse.currentX = 0;
         }
 
-        if (mouse.currentY > 808) {
-            mouse.currentY = 808;
+        if (mouse.currentY > MOUSE_MAX_Y) {
+            mouse.currentY = MOUSE_MAX_Y;
         }
 
         if (mouse.currentY < 0) {
@@ -100,7 +101,14 @@ var mouse = {
     },
 
     mouseMove: function(x, y) {
+        // This is where the cursor really is, in memory
+        // var memX = memoryBus.readFromBus(0426, TaskType.EMULATOR, false);
+        // var memY = memoryBus.readFromBus(0427, TaskType.EMULATOR, false);
 
+        // mouse.currentX = memX;
+        // mouse.currentY = memY;
+
+        // This is where the web browser has positioned the cursor.
         mouse.newX = x;
         mouse.newY = y;
     },
