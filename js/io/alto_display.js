@@ -36,6 +36,7 @@ var altoDisplay = {
     },
 
     drawCursorWord: function(scanline, xoffset, whiteOnBlack, cursorWord) {
+
         var address = ((scanline * 38 * 16 * 4)) + ((xoffset / 4) * 16);
 
         // TODO: Merge cursor into existing scanline - this clobbers it.

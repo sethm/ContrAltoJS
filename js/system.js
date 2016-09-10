@@ -35,6 +35,7 @@ var altoSystem = function() {
     var system = {
         instTrace: false,
         diskTrace: false,
+        profiling: false,
         clocks: 0,
 
         reset: function() {

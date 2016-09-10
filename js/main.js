@@ -31,6 +31,8 @@ var animFrame = window.requestAnimationFrame ||
 
 var frameId = 0;
 
+var STEPS_PER_FRAME = 98000;
+
 var system = new altoSystem();
 
 window.addEventListener("keydown", keyboard.keyDown, false);
@@ -58,9 +60,6 @@ diskChooser.onchange = function(e) {
 function mouseMove(e) {
     var rect = display.getBoundingClientRect();
 
-    var scaleX = display.width / rect.width;
-    var scaleY = display.height / rect.height;
-
     mouse.mouseMove(Math.ceil((e.clientX - rect.left) / (rect.right - rect.left) * display.width),
                     Math.ceil((e.clientY - rect.top) / (rect.bottom - rect.top) * display.height));
     return false;
@@ -68,9 +67,15 @@ function mouseMove(e) {
 
 // Main loop
 function runMainLoop() {
+    var startTime = Date.now();
     frameId = animFrame(runMainLoop);
-    system.run(100000);
+    system.run(STEPS_PER_FRAME);
     altoDisplay.render();
+    if (system.profiling) {
+        var endTime = Date.now();
+        var clockNS = Math.ceil(((endTime - startTime) / STEPS_PER_FRAME) * conversion.msecToNsec);
+        console.log("Avg Step = " + clockNS + " ns. (" + Math.ceil((170 / clockNS) * 100) + "% a real Alto)");
+    }
 }
 
 function stopRunning() {

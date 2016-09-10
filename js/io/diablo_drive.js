@@ -117,7 +117,6 @@ DiabloDrive.prototype = {
     writeWord: function(index, data) {
         if (this.pack !== null && this.pack !== undefined && index < this.sectorData.length) {
             if (this.sectorData[index].type === CellType.DATA) {
-                var oldData = this.sectorData[index].data;
                 this.sectorData[index].data = data;
                 this.sectorModified = true;
             }

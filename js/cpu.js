@@ -123,7 +123,7 @@ var alu = {
     },
 
     execute: function(fn, bus, t, skip) {
-        var r = 0; // n.b. 32-bit signed number
+        var r = 0;
 
         switch (fn) {
         case AluFunction.BUS:
@@ -381,7 +381,7 @@ var cpu = {
     // Switch tasks
     taskSwitch: function() {
         for (var i = (this.tasks.length - 1); i >= 0; i--) {
-            if (this.tasks[i] !== undefined && this.tasks[i].wakeup === true) {
+            if (this.tasks[i] !== undefined && this.tasks[i].wakeup) {
                 this.nextTask = this.tasks[i];
                 this.nextTask.firstInstructionAfterSwitch = true;
                 break;
