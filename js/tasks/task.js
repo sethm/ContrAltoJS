@@ -280,7 +280,7 @@ var Task = {
         // constants with BS>4 is to provide a masking facility,
         // particularly for the <-MOUSE and <-DISP bus sources. This
         // works because the processor bus ANDs if more than one
-        // source is gated to it. Up to 32 such mask contans can be
+        // source is gated to it. Up to 32 such mask constants can be
         // provided for each of the four bus sources > 4."
         //
         // This is precached by the MicroInstruction object.

@@ -178,7 +178,7 @@ var memoryBus = {
                 throw "Unexpected microcode behavior - readMD too soon after start of memory cycle";
             case 3:
             case 4:
-                // This should not hapen; CPU should check whether the
+                // This should not happen; CPU should check whether the
                 // operation is possible using 'ready()' and stall if not
                 throw "Invalid readMD request during cycle 3 or 4 of memory operation";
             case 5:
