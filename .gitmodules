@@ -1,0 +1,3 @@
+[submodule "js/third-party/retroweb-networking"]
+	path = js/third-party/retroweb-networking
+	url = https://github.com/marciot/retroweb-networking.git
