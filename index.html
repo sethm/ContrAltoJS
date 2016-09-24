@@ -24,9 +24,14 @@
             margin: 15px auto 20px auto;
         }
 
-        #controls {
+        .controls {
             text-align: center;
             margin-top: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            padding-right: 5px;
         }
 
         button {
@@ -45,7 +50,7 @@
 
     <canvas id="altoDisplay" width="608" height="808"></canvas>
 
-    <div id="controls">
+    <div class="controls">
         <select id="diskChooser">
             <option value="Clark-Games.dsk">Clark-Games.dsk</option>
             <option value="Josh.dsk">Josh.dsk</option>
@@ -68,7 +73,7 @@
             <option value="tdisk8.dsk">tdisk8.dsk</option>
             <option value="xmsmall.dsk">xmsmall.dsk</option>
         </select>
-        <button name="start" id="bootButton" onclick="startRunning()">Boot</button>
+        <button name="start" id="bootButton" onclick="setHostId();startRunning()">Boot</button>
         <button name="stop" id="stopButton" onclick="stopRunning()">Stop</button>
         <button name="step" id="resetButton" onclick="resetSimulator()">Reset</button>
     </div>
@@ -86,10 +91,22 @@
     <h3>Running Smalltalk 76</h3>
     <p>To run Smalltalk 76, boot the <strong>xmsmall.dsk</strong> image, and type:
        <br/><code>&gt;resume xmsmall.boot</code></p>
+    <h3>Running networked applications</h3>
+    <p>
+    To run network-based applications, you must choose a network ID and click the "Join Network" button below for each running instance of the emulator. The virtual network will be shared among all running instances of ContraltoJS, regardless of location.
+    </p>
+
+    <div class="controls">
+    <label>Network ID</label><input type="number" id="hostId" size="2" min="1" max="255">
+    <button id="joinNetworkButton" onclick="joinNetwork()">Join Network</button>
+    </div>
+
+    <p>You can demonstrate networking by running two instances of ContraltoJS and executing <code>Battleship.RUN</code> from the <strong>games.dsk</strong> image.</p>
+    <p>Enter &quot;<code>##<em>network_id</em></code>&quot; as the name of opponent player, where <code><em>network_id</em></code> is the network ID of the emulator for the opposing player.</p>
     <h3>Known Bugs</h3>
     <ul>
         <li>Mouse tracking is VERY BAD and gets &ldquo;off track&rdquo; very easily.</li>
-        <li>Ethernet emulation is just a stub.</li>
+        <li>Ethernet emulation is a work-in-progress and has not been fully validated.</li>
         <li>Keyboard input is laggy, keystrokes are easily missed.</li>
         <li>You cannot save changes to disk.</li>
     </ul>
@@ -97,7 +114,14 @@
     <p>This is a port of the Living Computer Museum's <strong>ContrAlto</strong> project to JavaScript.
         Find ContrAlto <a href="http://github.com/livingcomputermuseum/contralto">On GitHub</a>.
         The JavaScript project is also <a href="https://github.com/sethm/jsalto">On GitHub</a>.</p>
+    
+    <p>For networking, this project makes use of the <a href="https://github.com/marciot/retroweb-networking">Retroweb Networking</a> project, a JavaScript networking library for tunneling legacy networking protocols over <a href="https://webrtc.org">WebRTC</a>; that project is build atop the <a href="http://peerjs.com">Peerjs</a> communications library.</p>
 </div>
+
+<!-- The following files enable Alto networking -->
+<script src="js/third-party/peerjs/peer.min.js"></script>
+<script src="js/third-party/retroweb-networking/retroweb-network.js"></script>
+<!-- End of Alto networking -->
 
 <script src="js/config.js"></script>
 <script src="js/scheduler.js"></script>
@@ -121,6 +145,20 @@
 <script src="js/system.js"></script>
 <script src="js/debugger/debugger.js"></script>
 <script src="js/main.js"></script>
+
+<script>
+    /* Suggest a random suggested hostId */
+    const ETHERNET_ADDR_MIN       = 0x01;
+    const ETHERNET_ADDR_MAX       = 0xFF;
+
+    var hostIdField = document.getElementById("hostId");
+    hostIdField.value = Math.floor(Math.random() * (ETHERNET_ADDR_MAX - ETHERNET_ADDR_MIN)) + ETHERNET_ADDR_MIN;
+
+    function setHostId() {
+        ethernetController.address = hostIdField.value;
+        hostIdField.disabled = true;
+    }
+</script>
 
 </body>
 </html>
