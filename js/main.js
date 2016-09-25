@@ -115,15 +115,24 @@ function pointerLockChange() {
 
 // Main loop
 function runMainLoop() {
-    var startTime = Date.now();
-    frameId = animFrame(runMainLoop);
-    system.run(STEPS_PER_FRAME);
-    altoDisplay.render();
     if (system.profiling) {
-        var endTime = Date.now();
+        /* Running through the JavaScript profiler I learned that Date.now() is
+         * actually a rather slow function. Replacing it with performance.now()
+         * gave some improvement, but the best gains came from not calling timing
+         * functions at all (unless system.profiling is enabled) */
+        var startTime = performance.now();
+
+        system.run(STEPS_PER_FRAME);
+        altoDisplay.render();
+
+        var endTime = performance.now();
         var clockNS = Math.ceil(((endTime - startTime) / STEPS_PER_FRAME) * conversion.msecToNsec);
         console.log("Avg Step = " + clockNS + " ns. (" + Math.ceil((170 / clockNS) * 100) + "% a real Alto)");
+    } else {
+        system.run(STEPS_PER_FRAME);
+        altoDisplay.render();
     }
+    frameId = animFrame(runMainLoop);
 }
 
 function stopRunning() {
