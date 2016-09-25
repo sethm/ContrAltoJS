@@ -41,7 +41,7 @@ window.addEventListener("keyup", keyboard.keyUp, false);
 var display = document.getElementById("altoDisplay");
 
 display.addEventListener("mousemove", mouseMove, false);
-display.addEventListener("mousedown", mouse.mouseDown, false);
+display.addEventListener("mousedown", mouseDown, false);
 display.addEventListener("mouseup", mouse.mouseUp, false);
 display.oncontextmenu = function() {
     return false;
@@ -51,6 +51,7 @@ var diskChooser = document.getElementById("diskChooser");
 var bootButton = document.getElementById("bootButton");
 var stopButton = document.getElementById("stopButton");
 var resetButton = document.getElementById("resetButton");
+var pointerLockCheckbox = document.getElementById("pointerLockCheckbox");
 
 diskChooser.onchange = function(e) {
     loadSystemWithDisk();
@@ -58,11 +59,58 @@ diskChooser.onchange = function(e) {
 };
 
 function mouseMove(e) {
+    // Use relative mouse positioning when pointer is captured
+
+    if(isPointerLocked()) {
+        mouse.mouseMoveRelative(e.movementX, e.movementY);
+        return false;
+    } else if(pointerLockCheckbox.checked) {
+        // Mouse not yet captured, ignore motion.
+        return false;
+    }
+
+    // Use absolute mouse positioning otherwise
+
     var rect = display.getBoundingClientRect();
 
     mouse.mouseMove(Math.ceil((e.clientX - rect.left) / (rect.right - rect.left) * display.width),
                     Math.ceil((e.clientY - rect.top) / (rect.bottom - rect.top) * display.height));
     return false;
+}
+
+function mouseDown(e) {
+    if(pointerLockCheckbox.checked && !isPointerLocked()) {
+        requestPointerLock(display);
+    }
+
+    mouse.mouseDown(e);
+}
+
+/* Pointer Lock API Support (very useful for games that rely on relative mouse positioning) */
+
+function requestPointerLock(element) {
+    element.requestPointerLock = element.requestPointerLock ||
+                                 element.mozRequestPointerLock ||
+                                 element.webkitRequestPointerLock;
+    // Ask the browser to lock the pointer
+    element.requestPointerLock();
+}
+
+function isPointerLocked() {
+    return document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement;
+}
+
+if ("onpointerlockchange" in document) {
+  document.addEventListener('pointerlockchange', pointerLockChange, false);
+} else if ("onmozpointerlockchange" in document) {
+  document.addEventListener('mozpointerlockchange', pointerLockChange, false);
+}
+function pointerLockChange() {
+    if(!pointerLockCheckbox.checked || isPointerLocked()) {
+        display.style.cursor = "none";
+    } else {
+        display.style.cursor = "pointer";
+    }
 }
 
 // Main loop

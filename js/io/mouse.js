@@ -102,15 +102,20 @@ var mouse = {
 
     mouseMove: function(x, y) {
         // This is where the cursor really is, in memory
-        // var memX = memoryBus.readFromBus(0426, TaskType.EMULATOR, false);
-        // var memY = memoryBus.readFromBus(0427, TaskType.EMULATOR, false);
+        var memX = memoryBus.readFromBus(0426, TaskType.EMULATOR, false);
+        var memY = memoryBus.readFromBus(0427, TaskType.EMULATOR, false);
 
-        // mouse.currentX = memX;
-        // mouse.currentY = memY;
+        mouse.currentX = memX;
+        mouse.currentY = memY;
 
         // This is where the web browser has positioned the cursor.
         mouse.newX = x;
         mouse.newY = y;
+    },
+
+    mouseMoveRelative: function(relx, rely) {
+        mouse.newX = mouse.currentX + relx;
+        mouse.newY = mouse.currentY + rely;
     },
 
     mouseDown: function(e) {

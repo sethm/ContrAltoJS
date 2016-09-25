@@ -71,6 +71,7 @@
         <button name="start" id="bootButton" onclick="startRunning()">Boot</button>
         <button name="stop" id="stopButton" onclick="stopRunning()">Stop</button>
         <button name="step" id="resetButton" onclick="resetSimulator()">Reset</button>
+        <label><input type="checkbox" id="pointerLockCheckbox" onclick="pointerLockChange()">Captive mouse</label>
     </div>
 
     <h3>Usage</h3>
@@ -82,13 +83,15 @@
             <br/><code>&gt;*.run?</code></li>
         <li>To run a program, just type its name and hit ENTER. e.g.,
             <br/><code>&gt;trek</code></li>
+        <li>Checking "Captive Mouse" will cause the emulator to capture the mouse cursor
+            when you click the screen and release it only when you press ESCAPE. This is
+            useful for games that expect relative mouse motion.</li>
     </ul>
     <h3>Running Smalltalk 76</h3>
     <p>To run Smalltalk 76, boot the <strong>xmsmall.dsk</strong> image, and type:
        <br/><code>&gt;resume xmsmall.boot</code></p>
     <h3>Known Bugs</h3>
     <ul>
-        <li>Mouse tracking is VERY BAD and gets &ldquo;off track&rdquo; very easily.</li>
         <li>Ethernet emulation is just a stub.</li>
         <li>Keyboard input is laggy, keystrokes are easily missed.</li>
         <li>You cannot save changes to disk.</li>
