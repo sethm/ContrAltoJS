@@ -749,7 +749,7 @@ var ethernetTask = extend(Task, {
 
 
     getBusSource: function(bs) {
-        switch (instruction.bs) {
+        switch (bs) {
             case EthernetBusSource.EIDFCT:
                 // Input Data Function. Gates the contents of the FIFO to BUS[0-15], and
                 // increments the read pointer at the end of the cycle.

@@ -35,13 +35,17 @@ var STEPS_PER_FRAME = 98000;
 
 var system = new altoSystem();
 
-window.addEventListener("keydown", keyboard.keyDown, false);
-window.addEventListener("keyup", keyboard.keyUp, false);
-
 var display = document.getElementById("altoDisplay");
 
+/* Set keyboard events on canvas and make it focusable */
+display.addEventListener("keydown", keyboard.keyDown, false);
+display.addEventListener("keyup", keyboard.keyUp, false);
+display.setAttribute("tabindex", "0");
+display.addEventListener('mousedown', function(event){this.focus();});
+display.focus();
+
 display.addEventListener("mousemove", mouseMove, false);
-display.addEventListener("mousedown", mouse.mouseDown, false);
+display.addEventListener("mousedown", mouseDown, false);
 display.addEventListener("mouseup", mouse.mouseUp, false);
 display.oncontextmenu = function() {
     return false;
@@ -51,6 +55,7 @@ var diskChooser = document.getElementById("diskChooser");
 var bootButton = document.getElementById("bootButton");
 var stopButton = document.getElementById("stopButton");
 var resetButton = document.getElementById("resetButton");
+var pointerLockCheckbox = document.getElementById("pointerLockCheckbox");
 
 diskChooser.onchange = function(e) {
     loadSystemWithDisk();
@@ -58,6 +63,18 @@ diskChooser.onchange = function(e) {
 };
 
 function mouseMove(e) {
+    // Use relative mouse positioning when pointer is captured
+
+    if(isPointerLocked()) {
+        mouse.mouseMoveRelative(e.movementX, e.movementY);
+        return false;
+    } else if(pointerLockCheckbox.checked) {
+        // Mouse not yet captured, ignore motion.
+        return false;
+    }
+
+    // Use absolute mouse positioning otherwise
+
     var rect = display.getBoundingClientRect();
 
     mouse.mouseMove(Math.ceil((e.clientX - rect.left) / (rect.right - rect.left) * display.width),
@@ -65,17 +82,61 @@ function mouseMove(e) {
     return false;
 }
 
+function mouseDown(e) {
+    if(pointerLockCheckbox.checked && !isPointerLocked()) {
+        requestPointerLock(display);
+    }
+
+    mouse.mouseDown(e);
+}
+
+/* Pointer Lock API Support (very useful for games that rely on relative mouse positioning) */
+
+function requestPointerLock(element) {
+    element.requestPointerLock = element.requestPointerLock ||
+                                 element.mozRequestPointerLock ||
+                                 element.webkitRequestPointerLock;
+    // Ask the browser to lock the pointer
+    element.requestPointerLock();
+}
+
+function isPointerLocked() {
+    return document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement;
+}
+
+if ("onpointerlockchange" in document) {
+  document.addEventListener('pointerlockchange', pointerLockChange, false);
+} else if ("onmozpointerlockchange" in document) {
+  document.addEventListener('mozpointerlockchange', pointerLockChange, false);
+}
+function pointerLockChange() {
+    if(!pointerLockCheckbox.checked || isPointerLocked()) {
+        display.style.cursor = "none";
+    } else {
+        display.style.cursor = "pointer";
+    }
+}
+
 // Main loop
 function runMainLoop() {
-    var startTime = Date.now();
-    frameId = animFrame(runMainLoop);
-    system.run(STEPS_PER_FRAME);
-    altoDisplay.render();
     if (system.profiling) {
-        var endTime = Date.now();
+        /* Running through the JavaScript profiler I learned that Date.now() is
+         * actually a rather slow function. Replacing it with performance.now()
+         * gave some improvement, but the best gains came from not calling timing
+         * functions at all (unless system.profiling is enabled) */
+        var startTime = performance.now();
+
+        system.run(STEPS_PER_FRAME);
+        altoDisplay.render();
+
+        var endTime = performance.now();
         var clockNS = Math.ceil(((endTime - startTime) / STEPS_PER_FRAME) * conversion.msecToNsec);
         console.log("Avg Step = " + clockNS + " ns. (" + Math.ceil((170 / clockNS) * 100) + "% a real Alto)");
+    } else {
+        system.run(STEPS_PER_FRAME);
+        altoDisplay.render();
     }
+    frameId = animFrame(runMainLoop);
 }
 
 function stopRunning() {

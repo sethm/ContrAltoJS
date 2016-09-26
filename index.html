@@ -24,9 +24,14 @@
             margin: 15px auto 20px auto;
         }
 
-        #controls {
+        .controls {
             text-align: center;
             margin-top: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            padding-right: 5px;
         }
 
         button {
@@ -45,7 +50,7 @@
 
     <canvas id="altoDisplay" width="608" height="808"></canvas>
 
-    <div id="controls">
+    <div class="controls">
         <select id="diskChooser">
             <option value="Clark-Games.dsk">Clark-Games.dsk</option>
             <option value="Josh.dsk">Josh.dsk</option>
@@ -68,9 +73,10 @@
             <option value="tdisk8.dsk">tdisk8.dsk</option>
             <option value="xmsmall.dsk">xmsmall.dsk</option>
         </select>
-        <button name="start" id="bootButton" onclick="startRunning()">Boot</button>
+        <button name="start" id="bootButton" onclick="bootEmulator()">Boot</button>
         <button name="stop" id="stopButton" onclick="stopRunning()">Stop</button>
         <button name="step" id="resetButton" onclick="resetSimulator()">Reset</button>
+        <label><input type="checkbox" id="pointerLockCheckbox" onclick="pointerLockChange()">Captive mouse</label>
     </div>
 
     <h3>Usage</h3>
@@ -82,14 +88,31 @@
             <br/><code>&gt;*.run?</code></li>
         <li>To run a program, just type its name and hit ENTER. e.g.,
             <br/><code>&gt;trek</code></li>
+        <li>Checking "Captive Mouse" will cause the emulator to capture the mouse cursor
+            when you click the screen and release it only when you press ESCAPE. This is
+            useful for games that expect relative mouse motion.</li>
     </ul>
     <h3>Running Smalltalk 76</h3>
     <p>To run Smalltalk 76, boot the <strong>xmsmall.dsk</strong> image, and type:
        <br/><code>&gt;resume xmsmall.boot</code></p>
+    <h3>Running networked applications</h3>
+    <p>
+    To run network-based applications, you must choose a network ID and click the "Join Network" button below for each running instance of the emulator. The virtual network will be shared among all running instances of ContraltoJS, regardless of location.
+    </p>
+
+    <div class="controls">
+    <form id="hostIdForm">
+        <label>Network ID</label>
+        <input type="text" id="hostId" pattern="^[0-3][0-7][0-7]|[0-7]{1,2}$" size="3" title="Network address must be an octal number between 1 and 377">
+        <input type="submit" id="joinNetworkButton" value="Join Network">
+    </form>
+    </div>
+
+    <p>You can demonstrate networking by running two instances of ContraltoJS and executing <code>Battleship.RUN</code> from the <strong>games.dsk</strong> image.</p>
+    <p>Enter &quot;<code>##<em>network_id</em></code>&quot; as the name of opponent player, where <code><em>network_id</em></code> is the network ID of the emulator for the opposing player.</p>
     <h3>Known Bugs</h3>
     <ul>
-        <li>Mouse tracking is VERY BAD and gets &ldquo;off track&rdquo; very easily.</li>
-        <li>Ethernet emulation is just a stub.</li>
+        <li>Ethernet emulation is a work-in-progress and has not been fully validated.</li>
         <li>Keyboard input is laggy, keystrokes are easily missed.</li>
         <li>You cannot save changes to disk.</li>
     </ul>
@@ -97,7 +120,14 @@
     <p>This is a port of the Living Computer Museum's <strong>ContrAlto</strong> project to JavaScript.
         Find ContrAlto <a href="http://github.com/livingcomputermuseum/contralto">On GitHub</a>.
         The JavaScript project is also <a href="https://github.com/sethm/jsalto">On GitHub</a>.</p>
+
+    <p>For networking, this project makes use of the <a href="https://github.com/marciot/retroweb-networking">Retroweb Networking</a> project, a JavaScript networking library for tunneling legacy networking protocols over <a href="https://webrtc.org">WebRTC</a>; that project is build atop the <a href="http://peerjs.com">Peerjs</a> communications library.</p>
 </div>
+
+<!-- The following files enable Alto networking -->
+<script src="js/third-party/peerjs/peer.min.js"></script>
+<script src="js/third-party/retroweb-networking/retroweb-network.js"></script>
+<!-- End of Alto networking -->
 
 <script src="js/config.js"></script>
 <script src="js/scheduler.js"></script>
@@ -113,7 +143,8 @@
 <script src="js/io/disk_controller.js"></script>
 <script src="js/io/alto_display.js"></script>
 <script src="js/io/display_controller.js"></script>
-<script src="js/io/ethernet_controller.js"></script>
+<!--<script src="js/io/ethernet_controller.js"></script>-->
+<script src="js/io/ethernet_controller_abridged.js"></script>
 <script src="js/io/mouse.js"></script>
 <script src="js/io/keyboard.js"></script>
 <script src="js/io/music_interface.js"></script>
@@ -121,6 +152,68 @@
 <script src="js/system.js"></script>
 <script src="js/debugger/debugger.js"></script>
 <script src="js/main.js"></script>
+
+<script>
+    var hostIdField = document.getElementById("hostId");
+    var hostIdForm = document.getElementById("hostIdForm");
+    var joinNetworkButton = document.getElementById("joinNetworkButton");
+
+    /* Suggest a random suggested hostId to begin with */
+    const ETHERNET_ADDR_MIN       = 0x01;
+    const ETHERNET_ADDR_MAX       = 0xFF;
+
+    hostIdField.value = Number(
+        Math.floor(Math.random() * (ETHERNET_ADDR_MAX - ETHERNET_ADDR_MIN)) + ETHERNET_ADDR_MIN
+    ).toString(8);
+
+    /* I use a HTML form to allow the browser to do validation using native notifications */
+    hostIdForm.addEventListener("submit",
+        function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            setHostId() && joinNetwork();
+        }
+    );
+
+    /* setHostId is called prior to starting the emulator, or whenever we join the network,
+     * which ever happens first. The host ID cannot be changed once the emulator starts. */
+    function setHostId() {
+        /* Make sure we have a valid octal number. We can't rely on browser validation here
+         * as that validation requires an asynchronous submit of the form. */
+        var addr = parseInt(hostIdField.value, 8);
+        if((Number(addr).toString(8) !== hostIdField.value) || addr < 1 || addr > 377) {
+            return false;
+        }
+
+        /* Set the interface to the address and prevent further changes */
+        ethernetController.setHostAddress(addr);
+        hostIdField.disabled = true;
+        return true;
+    }
+
+    /* joinNetwork is only called when the user clicks the button to do so. The emulator
+     * runs fine if the network has not been joined and the join can happen after the
+     * emulator has been started.
+     */
+    function joinNetwork() {
+        function connectionStateChangedCallback(state) {
+            joinNetworkButton.value = state;
+        }
+        ethernetController.joinPeerToPeerNetwork(connectionStateChangedCallback);
+        joinNetworkButton.disabled = true;
+    }
+
+    /* bootEmulator sets the host id and starts the emulator if that succeeds. */
+    function bootEmulator() {
+        if(setHostId()) {
+            startRunning();
+        } else {
+            /* Validation failed. Submitting the form is a nice way to get
+             * the browser to alert the user of the validation error */
+            joinNetworkButton.click();
+        }
+    }
+</script>
 
 </body>
 </html>
