@@ -160,61 +160,6 @@ var Task = {
         return this.executeInstruction(instruction);
     },
 
-    executeInstructionF2: function (instruction) {
-        switch (instruction.f2) {
-            case SpecialFunction2.NONE:
-                // Nothing
-                break;
-
-            case SpecialFunction2.BUSEQ0:
-                if (this.busData === 0) {
-                    this.nextModifier = 1;
-                }
-                break;
-
-            case SpecialFunction2.SHLT0:
-                // Handled below, after the shifter runs
-                break;
-
-            case SpecialFunction2.SHEQ0:
-                // Same as above
-                break;
-
-            case SpecialFunction2.BUS:
-                // Select bits 6-15 (bits 0-9 in modern parlance) of the bus
-                this.nextModifier = this.busData & 0x3ff;
-                break;
-
-            case SpecialFunction2.ALUCY:
-                // ALUC0 is the carry produced by the ALU during the most
-                // recent microinstruction that loaded L. It is *not* the
-                // carry produced during the execution of the
-                // microinstruction that contains the ALUCY function.
-                this.nextModifier = cpu.aluC0;
-                break;
-
-            case SpecialFunction2.STORE_MD:
-                // Special case for XMAR on non-Alto I machines: if F1 is
-                // a LoadMAR we do nothing here; the handler for LoadMAR
-                // will load the correct bank.
-                if (Configuration.systemType == SystemType.ALTO_I) {
-                    memoryBus.loadMD(this.busData);
-                } else if (instruction.f1 != SpecialFunction1.LOAD_MAR) {
-                    memoryBus.loadMD(this.busData);
-                }
-                break;
-
-            case SpecialFunction2.CONSTANT:
-                // Ignored here; handled by Constant ROM access logic above
-                break;
-
-            default:
-                // Let the specific task implementation handle it.
-                this.executeSpecialFunction2(instruction);
-                break;
-        }
-    },
-
     // ExecuteInstruction causes the Task to execute the next
     // instruction (the one this.mpc is pointing to). The base
     // implementation covers non-task specific logic, but other
@@ -452,13 +397,58 @@ var Task = {
                 break;
         }
 
-        /* Chrome's JavaScript profiler revealed that "baseExecuteInstruction" (this method)
-         * was failing optimization. Running chrome.exe with "--js-flags=--trace-dopt" revealed
-         * an error of "Unknown map in polymorphic access". I determined, through divide and
-         * conquer, that moving the switch statement that used to be here into a separate function
-         * allowed the code optimization to succeed, for a speed bump - MLT */
+        switch (instruction.f2) {
+            case SpecialFunction2.NONE:
+                // Nothing
+                break;
 
-        this.executeInstructionF2(instruction);
+            case SpecialFunction2.BUSEQ0:
+                if (this.busData === 0) {
+                    this.nextModifier = 1;
+                }
+                break;
+
+            case SpecialFunction2.SHLT0:
+                // Handled below, after the shifter runs
+                break;
+
+            case SpecialFunction2.SHEQ0:
+                // Same as above
+                break;
+
+            case SpecialFunction2.BUS:
+                // Select bits 6-15 (bits 0-9 in modern parlance) of the bus
+                this.nextModifier = this.busData & 0x3ff;
+                break;
+
+            case SpecialFunction2.ALUCY:
+                // ALUC0 is the carry produced by the ALU during the most
+                // recent microinstruction that loaded L. It is *not* the
+                // carry produced during the execution of the
+                // microinstruction that contains the ALUCY function.
+                this.nextModifier = cpu.aluC0;
+                break;
+
+            case SpecialFunction2.STORE_MD:
+                // Special case for XMAR on non-Alto I machines: if F1 is
+                // a LoadMAR we do nothing here; the handler for LoadMAR
+                // will load the correct bank.
+                if (Configuration.systemType == SystemType.ALTO_I) {
+                    memoryBus.loadMD(this.busData);
+                } else if (instruction.f1 != SpecialFunction1.LOAD_MAR) {
+                    memoryBus.loadMD(this.busData);
+                }
+                break;
+
+            case SpecialFunction2.CONSTANT:
+                // Ignored here; handled by Constant ROM access logic above
+                break;
+
+            default:
+                // Let the specific task implementation handle it.
+                this.executeSpecialFunction2(instruction);
+                break;
+        }
 
         //
         // Do the shifter operation if we're doing an operation that
