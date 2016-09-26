@@ -35,10 +35,14 @@ var STEPS_PER_FRAME = 98000;
 
 var system = new altoSystem();
 
-window.addEventListener("keydown", keyboard.keyDown, false);
-window.addEventListener("keyup", keyboard.keyUp, false);
-
 var display = document.getElementById("altoDisplay");
+
+/* Set keyboard events on canvas and make it focusable */
+display.addEventListener("keydown", keyboard.keyDown, false);
+display.addEventListener("keyup", keyboard.keyUp, false);
+display.setAttribute("tabindex", "0");
+display.addEventListener('mousedown', function(event){this.focus();});
+display.focus();
 
 display.addEventListener("mousemove", mouseMove, false);
 display.addEventListener("mousedown", mouseDown, false);

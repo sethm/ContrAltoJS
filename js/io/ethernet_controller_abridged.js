@@ -19,11 +19,6 @@
  *   - Marcio Teixeira
  */
 
-function joinNetwork() {
-    ethernetController.joinPeerToPeerNetwork();
-    document.getElementById("joinNetworkButton").disabled = true;
-}
-
 var InputState = {
     ReceiverOff:     0,
     ReceiverWaiting: 1,
@@ -77,14 +72,11 @@ var ethernetController = {
         return this;
     },
 
-    joinPeerToPeerNetwork: function() {
+    joinPeerToPeerNetwork: function(connectionStateChangedCallback) {
         console.log("Joining the RetroWeb peer-to-peer network.");
 
         const ETHERNET_ADDR_BROADCAST = 0x00;
 
-        function stateChangedCallback(state) {
-            document.getElementById("joinNetworkButton").innerText = state;
-        }
         function gotNetworkPacket(dst, src, frame) {
             this.incomingFrameQueue.push(frame);
             this.beginReadingFrame();
@@ -93,10 +85,17 @@ var ethernetController = {
             "Alto",
             RetroWeb.peerJSConfig,
             gotNetworkPacket.bind(this),
-            stateChangedCallback.bind(this)
+            connectionStateChangedCallback
         );
         this.network.joinRoom();
         this.network.broadcastId = ETHERNET_ADDR_BROADCAST;
+    },
+
+    setHostAddress: function(addr) {
+        if(typeof addr !== "number") {
+            throw "Host address must be a number";
+        }
+        this.address = addr;
     },
 
     reset: function() {

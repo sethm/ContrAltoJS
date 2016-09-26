@@ -20,6 +20,13 @@ var ethernetController = {
     reset: function() {
     },
 
+    setHostAddress: function(addr) {
+        if(typeof addr !== "number") {
+            throw "Host address must be a number";
+        }
+        this.address = addr;
+    },
+
     startf: function(busData) {
         this.ioCmd = busData & 0x3;
         cpu.wakeupTask(TaskType.ETHERNET);
@@ -129,5 +136,4 @@ var ethernetController = {
     fifoEmpty: function() {
         return (this.fifo.length === 0);
     }
-
 };
