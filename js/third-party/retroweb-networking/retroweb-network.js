@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
             this.peerOptions                = peerOptions;
             this.networkDataCallback        = networkDataCallback;
             this.stateChangedCallback       = stateChangedCallback;
-            this.verbose                    = false;
+            this.verbose                    = true;
             this.peerPrefix                 = "retroweb_";
             this.reset();
         }
@@ -133,7 +133,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
                 this.isJoined = true;
                 if(this.isMaster) {
                     /* If I am the master, I need to inform this new network member of the other peers */
-                    window.setTimeout(this._sendPeerList.bind(this), 500);
+                    window.setTimeout(this._sendPeerList.bind(this), 1000);
                 }
             }
         }
@@ -287,7 +287,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
      * for tunneling binary data link protocols.
      *
      *   1) A linkType can be used, in addition to roomIds, to keep incompatible traffic separate.
-     *        LocalTalk - Legacy LocalTalk packets
+     *        LocalTalk - Legacy LocalTalk frames
      *        Alto      - Legacy Ethernet v1/PARC Universal Packet
      *   2) A new sendFrame method works with source and destination addresses native to the
      *      tunneled protocol and the map from addresses to connected peers is learned automatically.
@@ -327,10 +327,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         receivedNetworkObject(peer, obj) {
              if(obj.hasOwnProperty("command")) {
                 switch(obj.command) {
-                    case "forwardPacket":
+                    case "forwardFrame":
                         delete obj.command;
-                        this.forwardPacket(obj.dst, obj.src, obj.frame);
-                        if(isMonitoring) {
+                        this.forwardFrame(obj.dst, obj.src, obj.frame);
+                        if(this.isMonitoring) {
                             this.networkDataCallback(obj.dst, obj.src, new Uint8Array(obj.frame));
                         }
                         break;
@@ -346,7 +346,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
                         }
                         break;
                     default:
-                        this._info("Received unknown command packet", obj.command);
+                        this._info("Received unknown command", obj.command);
                 }
             } else if(obj.hasOwnProperty("frame")) {
                 this._info("Received frame of", obj.frame.byteLength, "bytes from", obj.src);
@@ -397,13 +397,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
             
             if(this.forwardingPeer) {
                 /* Some node has requested to inspect my traffic. Direct all my
-                 * outgoing packets to that node for inspection and forwarding. */
-                obj.command = "forwardPacket";
+                 * outgoing frames to that node for inspection and forwarding. */
+                obj.command = "forwardFrame";
                 this.sendObjectToPeer(this.forwardingPeer, obj);
             } else {
                 var peer = this.peerMap.nodeIdToPeer(dstId);
                 if(peer === this.broadcastDstId || !peer) {
-                    /* Send the packet to everyone when the packet is to
+                    /* Send the frame to everyone when the frame is to
                      * the broadcast address or it is directed to a node
                      * for which we do not know the peer */
                     this.sendObjectToAll(obj);
