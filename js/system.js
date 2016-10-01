@@ -52,6 +52,7 @@ var altoSystem = function() {
             altoDisplay.reset();
             mouse.reset();
             keyboard.reset();
+            ethernetController.reset();
             musicInterface.reset();
         },
 
@@ -68,11 +69,14 @@ var altoSystem = function() {
             }
         },
 
-        loadPack: function(url) {
+        loadPack: function(url, loadedCallback) {
             if (url) {
                 pack = new DiabloPack(DiabloDiskType.DIABLO_31);
                 console.log("Downloading file " + url + "...");
                 pack.load(url, false, function() {
+                    if(loadedCallback) {
+                        loadedCallback();
+                    }
                     console.log("Done.");
                     diskController.drives[0].loadPack(pack);
                 });
