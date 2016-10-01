@@ -23,35 +23,37 @@
 var SchedulerQueue = function () {
     var q = [];
 
-    this.push = function(event) {
-        if (q.length === 0 || q.peek().timestampNsec >= event.timestampNsec) {
-            q.push(event);
-            return;
-        }
-
-        var newIndex = 0;
-
+    this.enqueue = function(event) {
         // Do a linear search to find a place to put the event
         for (var i = 0; i < q.length; i++) {
             if (q[i].timestampNsec >= event.timestampNsec) {
-                newIndex = i;
-                break;
+                q.splice(i, 0, event);
+                return;
             }
         }
 
-        q.splice(newIndex, 0, event);
+        // Event happens later than any other event on list
+        q.push(event);
+    };
+
+    this.checkOrdering = function() {
+        for (var i = 0; i < q.length-1; i++) {
+            if(q[i].timestampNsec > q[i+1].timestampNsec) {
+                console.log("scheduler: Error: Priority queue out of order");
+            }
+        }
     };
 
     this.peek = function() {
-        return q.peek();
+        return q[0];
     };
 
-    this.pop = function() {
-        return q.pop();
+    this.dequeue = function() {
+        return q.shift();
     };
 
     this.remove = function(event) {
-        return q.remove(event);
+        return removeFromArray(q, event);
     };
 
     this.clear = function() {
@@ -73,21 +75,18 @@ var Event = function(timestampNsec, context, callback) {
     this.timestampNsec = timestampNsec;
     this.context = context;
     this.callback = callback;
+    this.pending = false;
 };
 
 Event.prototype.toString = function() {
     return "[Event: timestampNsec = " + this.timestampNsec + "]";
 };
 
-Array.prototype.peek = function() {
-    return this[this.length - 1];
-};
-
-Array.prototype.remove = function(element) {
-    var index = this.indexOf(element);
+function removeFromArray(array, element) {
+    var index = array.indexOf(element);
 
     if (index > -1) {
-        return this.splice(index, 1);
+        return array.splice(index, 1);
     }
 
     return undefined;
@@ -101,24 +100,31 @@ var scheduler = {
 
     currentTimeNsec: 0,
 
+    debug: false,
+
     reset: function() {
         this.queue.clear();
         this.currentTimeNsec = 0;
     },
 
     clock: function() {
+        "use strict";
         this.currentTimeNsec += TIME_STEP_NSEC;
 
-        while (this.queue.peek() !== undefined && this.currentTimeNsec >= this.queue.peek().timestampNsec) {
-            var event = this.queue.pop();
+        var peek = this.queue.peek();
+        while (peek !== undefined && this.currentTimeNsec >= peek.timestampNsec) {
+            var event = this.queue.dequeue();
             event.callback(this.currentTimeNsec, this.currentTimeNsec - event.timestampNsec, event.context);
+            peek = this.queue.peek();
         }
     },
 
     schedule: function(event) {
         event.timestampNsec += this.currentTimeNsec;
-        this.queue.push(event);
-
+        this.queue.enqueue(event);
+        if(this.debug) {
+            this.queue.checkOrdering();
+        }
         return event;
     },
 
