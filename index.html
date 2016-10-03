@@ -97,19 +97,19 @@
        <br/><code>&gt;resume xmsmall.boot</code></p>
     <h3>Running networked applications</h3>
     <p>
-    To run network-based applications, you must choose a network ID and click the "Join Network" button below for each running instance of the emulator. The virtual network will be shared among all running instances of ContraltoJS, regardless of location.
+    To run network-based applications, you must choose a host ID and click the "Join Network" button below for each running instance of the emulator. The virtual network will be shared among all running instances of ContraltoJS, regardless of location.
     </p>
 
     <div class="controls">
     <form id="hostIdForm">
-        <label>Network ID</label>
-        <input type="text" id="hostId" pattern="^[0-3][0-7][0-7]|[0-7]{1,2}$" size="3" title="Network address must be an octal number between 1 and 377">
+        <label>Host ID</label>
+        <input type="text" id="hostId" pattern="^[0-3][0-7][0-7]|[0-7]{1,2}$" size="3" title="Host address must be an octal number between 1 and 377">
         <input type="submit" id="joinNetworkButton" value="Join Network">
     </form>
     </div>
 
     <p>You can demonstrate networking by running two instances of ContraltoJS and executing <code>Battleship.RUN</code> from the <strong>games.dsk</strong> image.</p>
-    <p>Enter &quot;<code>##<em>network_id</em></code>&quot; as the name of opponent player, where <code><em>network_id</em></code> is the network ID of the emulator for the opposing player.</p>
+    <p>Enter &quot;<code>##<em>host_id</em></code>&quot; as the name of opponent player, where <code><em>host_id</em></code> is the host ID of the emulator for the opposing player.</p>
     <h3>Known Bugs</h3>
     <ul>
         <li>Ethernet emulation is a work-in-progress and has not been fully validated.</li>
@@ -143,7 +143,6 @@
 <script src="js/io/disk_controller.js"></script>
 <script src="js/io/alto_display.js"></script>
 <script src="js/io/display_controller.js"></script>
-<!--<script src="js/io/ethernet_controller.js"></script>-->
 <script src="js/io/ethernet_controller_abridged.js"></script>
 <script src="js/io/mouse.js"></script>
 <script src="js/io/keyboard.js"></script>
