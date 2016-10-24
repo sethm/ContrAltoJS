@@ -31,6 +31,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
             this.verbose                    = false;
             this.peerPrefix                 = "retroweb_";
             this.reset();
+
+            this.eventListeners = {
+                allPeersConnected:   []
+            };
         }
 
         reset() {
@@ -40,6 +44,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
             }
             this.joinInitiated              = false;
             this.isJoined                   = false;
+            this.fullyConnected             = false;
             this.isMaster                   = false;
             this.roomId                     = null;
             this.masterId                   = null;
@@ -56,25 +61,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         _getMasterPeerId(roomId) {
             var sanitized = roomId ? roomId.replace(/[^0-9a-zA-Z]/g,'').toLowerCase() : null;
             var id = this.peerPrefix + (sanitized ? sanitized : 'lobby');
-            this._info("retroweb-network: Generated master id ", id);
+            this._info("retroweb-network: Generated master id", id);
             return id;
         }
 
-        /* joinRoom attempts to start a new room as the master (leave blank for lobby).
-         * If that room is already started, then join as a member.
+        /* joinRoom attempts to join a room as a participant (leave
+         * roomId blank for the lobby). If the peer which is the room
+         * master does not exist, then become the master.
          */
         joinRoom(roomId) {
-            if(this.joinInitiated) {
-                return;
-            }
-            this.joinInitiated = true;
-
             var me = this;
 
             function errorFunc(err) {
-                if(err.type == 'unavailable-id') {
-                    /* The peer-id is unavailable, this means a master already exists */
-                    window.setTimeout(me._joinAsMember.bind(me, me.roomId), 10);
+                if(err.type == 'peer-unavailable') {
+                    /* The peer-id is unavailable, this means we need to become
+                       the master */
+                    window.setTimeout(me._joinAsMaster.bind(me, me.roomId), 10);
                 } else {
                     me._setState('error', err.type);
                 }
@@ -82,59 +84,109 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
             this.roomId    = roomId;
             this.masterId  = this._getMasterPeerId(this.roomId);
-            this.peer      = new Peer(this.masterId, this.peerOptions);
-            this.peer.on('error', errorFunc);
-            this.peer.on('open', function(id) {
-                me.myPeerId    = id;
-                me.isJoined    = true;
-                me.isMaster    = true;
-                me._setState('joined');
 
-                me._info("retroweb-network: I am the master of network. My id is ", id);
-                me.peer.on('connection', function(conn) {me._processPeerConnection(conn);});
-                if(me.onceJoinedCallback) {
-                    me.onceJoinedCallback();
-                }
-            });
+            // Start new Peer as a participant in the room
+            this.peer = new Peer(this.peerOptions);
+            this.peer.on('error', errorFunc);
+            this.peer.on('open', function(id) {me.myPeerId = id;});
+
+            // Initiate connection to master
+            function connectedToMaster() {
+                me._info("retroweb-network: I am member of the network. My id is", me.myPeerId);
+            }
+            this._info("retroweb-network: Trying to connect to master", this.masterId);
+            this._processConnection(connectedToMaster, this.peer.connect(this.masterId));
+
+            // Handle subsequent connections from new peers
+            function connectionOpenFunc() {
+                me._checkIfFullyConnected();
+            }
+            this.peer.on('connection', this._processConnection.bind(this, connectionOpenFunc));
         }
 
-        _joinAsMember(roomId) {
+        /* _joinAsMaster attempts to start a new room as the master (leave blank for lobby).
+         * If that room is already started, then attempt to join as a member.
+         */
+        _joinAsMaster(roomId, onceJoinedCallback) {
             var me = this;
 
             function errorFunc(err) {
-                me._setState('error', err.type);
+                if(err.type == 'unavailable-id') {
+                    /* The peer-id is unavailable, this means a master already exists */
+                    window.setTimeout(me.joinRoom.bind(me, me.roomId), 10);
+                } else {
+                    me._setState('error', err.type);
+                }
+            }
+
+            function peerOpenFunc(id) {
+                me._info("retroweb-network: I am the master of network. My id is", id);
+                me._setState('joined');
+                me.isJoined    = true;
+                me.isMaster    = true;
+                me.myPeerId    = id;
+                if(onceJoinedCallback) {
+                    onceJoinedCallback();
+                }
+                me._checkIfFullyConnected();
             }
 
             this.roomId    = roomId;
             this.masterId  = this._getMasterPeerId(this.roomId);
-            this.peer = new Peer(this.peerOptions);
+
+            // Start new Peer as a master for the room
+            this.peer = new Peer(this.masterId, this.peerOptions);
             this.peer.on('error', errorFunc);
-            this.peer.on('open', function(id) {
-                me.myPeerId = id;
-                me._info("retroweb-network: I am member of the network. My id is ", id);
-                me._info("retroweb-network: Trying to connect to master ", me.masterId);
-                me.peer.on('connection', function(conn) {me._processPeerConnection(conn);});
-                me._processPeerConnection(me.peer.connect(me.masterId));
-            });
+            this.peer.on('open', peerOpenFunc);
+
+            // Handle subsequent connections from new peers
+            function connectionOpenFunc() {
+                // As the master I am responsible for broadcasting the
+                // peer list when a new peer joins the network.
+                me._sendPeerList();
+                me._checkIfFullyConnected();
+            }
+            this.peer.on('connection', this._processConnection.bind(this, connectionOpenFunc));
         }
 
-        _processPeerConnection(newConnection) {
+        _processConnection(callback, newConnection) {
+            this.fullyConnected = false;
             var peer = newConnection.peer;
-            if(this.connections[peer]) {
-                /* If we are already connected, reject the new connection */
-                this._info("retroweb-network: Rejecting connection from", peer, "; already connected");
-            } else {
-                this._info("retroweb-network: Accepting connection from", peer);
-                this.connections[peer] = newConnection;
-                var me = this;
-                newConnection.on('data',  function(obj) {me._receivedNetworkObject(peer, obj);});
-                newConnection.on('close', function()    {me._connectionClosed(peer);});
-                this._setState('joined');
-                this.isJoined = true;
-                if(this.isMaster) {
-                    /* If I am the master, I need to inform this new network member of the other peers */
-                    window.setTimeout(this._sendPeerList.bind(this), 1000);
+            var me = this;
+            function openCallback() {
+                if(me.connections[peer]) {
+                    /* If we are already connected, reject the new connection */
+                    me._error("retroweb-network: Redundant connection from", peer, "; already connected");
+                } else {
+                    me._info("retroweb-network: Accepting connection from", peer);
+                    me.connections[peer] = newConnection;
+                    callback();
                 }
+            }
+            newConnection.on('data',  function(obj) {me._receivedNetworkObject(peer, obj);});
+            newConnection.on('close', function()    {me._connectionClosed(peer);});
+            newConnection.on('open', openCallback);
+        }
+
+        _checkIfFullyConnected() {
+            var participantIsFullyConnected = this.peerList &&
+                (this.peerList.length === Object.keys(this.connections).length);
+
+            if(this.isMaster || participantIsFullyConnected) {
+                this._info("Network complete. All peers connected.");
+
+                if(!this.isJoined) {
+                    this._setState('joined');
+                    this.isJoined = true;
+                }
+
+                if(!this.fullyConnected) {
+                    this.fullyConnected = true;
+                    this.dispatchEvent("allPeersConnected");
+                }
+            } else {
+                this.fullyConnected = false;
+                this._info("Network incomplete. Waiting for peers to connect.");
             }
         }
 
@@ -144,8 +196,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         _reconnectAsMaster() {
             var peers = Object.getOwnPropertyNames(this.connections);
             this.leaveRoom();
-            this.onceJoinedCallback = this._connectToPeers.bind(this, peers);
-            this.joinRoom(this.roomId);
+            this._joinAsMaster(this.roomId, this._connectToPeers.bind(this, peers));
         }
 
         /* When a connection is closed, we remove it from the connections list. However, if the master
@@ -154,9 +205,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         _connectionClosed(peer) {
             this._info("retroweb-network: Connection closed:", peer);
             delete this.connections[peer];
-            if(peer == this.masterId && this.myPeerId == this.peerList[0]) {
-                this._info("retroweb-network: Master closed connection. Promoting myself to master");
-                this._reconnectAsMaster();
+            if(this.peerList) {
+                // Remove peer from peer list
+                var index = this.peerList.indexOf(peer);
+                if(index > -1) {
+                    this.peerList.splice(index, 1);
+                }
+                // Check to see if I need to promote myself to master
+                if(peer == this.masterId && this.myPeerId == this.peerList[0]) {
+                    this._info("retroweb-network: Master closed connection. Promoting myself to master");
+                    this._reconnectAsMaster();
+                }
             }
         }
 
@@ -178,11 +237,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
          * is provided, then a connection is made only if that function returns true.
         */
         _connectToPeers(peerList, filterFunc) {
+            var me = this;
+            function connectionOpenFunc() {
+                me._checkIfFullyConnected();
+            }
+
             for(var i = 0; i < peerList.length; i++) {
                 var peer = peerList[i];
                 if(!this._isConnectedTo(peer) && peer != this.myPeerId && (filterFunc ? filterFunc(peer) : true)) {
                     this._info("retroweb-network: Connecting to new peer", peer);
-                    this._processPeerConnection(this.peer.connect(peer));
+                    this._processConnection(connectionOpenFunc, this.peer.connect(peer));
                 }
             }
         }
@@ -191,6 +255,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
             if(obj.hasOwnProperty("peerList")) {
                 this._info("retroweb-network: Receiving updated peer list", obj.peerList);
                 this.peerList = obj.peerList;
+                this._checkIfFullyConnected();
                 /* All peers will receive the peerList updates. To avoid two peers from
                  * trying to make redundant connections to each other, we impose a rule
                  * where only a peer with the higher ID connects to the peer with the
@@ -235,7 +300,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         get peers() {
             return Object.getOwnPropertyNames(this.connections);
         }
-        
+
         get isPrivateRoom() {
             return !!this.roomId;
         }
@@ -249,13 +314,23 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         _error() {
             console.log.apply(console, arguments);
         }
+
+        addEventListener(eventStr, callback) {
+            this.eventListeners[eventStr].push(callback);
+        }
+
+        dispatchEvent(eventStr, ...args) {
+            for(var i = 0; i < this.eventListeners[eventStr].length; i++) {
+                this.eventListeners[eventStr][i].apply(null, args);
+            }
+        }
     };
 
     class ShortIntegerToPeerMap {
         constructor() {
             this.map = [];
         }
-        
+
         learnNodeIdToPeerMapping(nodeId, peer) {
             if(peer != this.map[nodeId]) {
                 this.map[nodeId] = peer;
@@ -266,19 +341,19 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
             for(var i = 0; i < this.map.length; i++) {
                 if(this.map[i] === peer) {
                     delete this.map[i];
-                } 
+                }
             }
         }
 
         nodeIdToPeer(nodeId) {
             return this.map[nodeId];
         }
-        
+
         peerToNodeId(peer) {
             for(var i = 0; i < this.map.length; i++) {
                 if(this.map[i] === peer) {
                     return i;
-                } 
+                }
             }
         }
     }
@@ -329,6 +404,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
                 switch(obj.command) {
                     case "forwardFrame":
                         delete obj.command;
+                        this.peerMap.learnNodeIdToPeerMapping(obj.src, peer);
                         this.forwardFrame(obj.dst, obj.src, obj.frame);
                         if(this.isMonitoring) {
                             this.networkDataCallback(obj.dst, obj.src, new Uint8Array(obj.frame));
@@ -349,17 +425,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
                         this._info("Received unknown command", obj.command);
                 }
             } else if(obj.hasOwnProperty("frame")) {
-                this._info("Received frame of", obj.frame.byteLength, "bytes from", obj.src);
+                this._info("Received frame of", obj.frame.byteLength, "bytes from", obj.src, "(0"+obj.src.toString(8)+"B)");
                 this.peerMap.learnNodeIdToPeerMapping(obj.src, peer);
                 this.networkDataCallback(obj.dst, obj.src, new Uint8Array(obj.frame));
             }
         }
 
         _setForwardMode(peer, state) {
-            if (state && confirm('A peer is requesting to monitor all communications. Allow?')) {
-                this.forwardingPeer = peer;
-            } else {
+            if (!state) {
                 this.forwardingPeer = null;
+            } else if(
+                peer !== this.forwardingPeer
+                && confirm('A peer is requesting to monitor all communications. Allow?')
+            ) {
+                this.forwardingPeer = peer;
             }
         }
 
@@ -370,7 +449,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
             }
             this.peerMap.forgetPeer(peer);
         }
-        
+
         _learnMyOwnNodeId(nodeId) {
             if(this.myNodeId !== nodeId) {
                 this.myNodeId = nodeId;
@@ -388,13 +467,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
             this.forwardFrame(dstId, srcId, frame);
         }
-        
+
         forwardFrame(dstId, srcId, uint8Array) {
             /* The destination and source address are copied into the
              * object as the receiving end may not know how to decode
              * the frame */
             var obj = {dst: dstId, src: srcId, frame: uint8Array};
-            
+
             if(this.forwardingPeer) {
                 /* Some node has requested to inspect my traffic. Direct all my
                  * outgoing frames to that node for inspection and forwarding. */
@@ -414,17 +493,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
         }
 
         enableMonitoring(peer) {
-            this.sendObjectToPeer(peer, {command: "requestForwardMode", state: true});
+            if(peer) {
+                this.sendObjectToPeer(peer, {command: "requestForwardMode", state: true});
+            } else {
+                this.sendObjectToAll({command: "requestForwardMode", state: true});
+            }
             this.isMonitoring = true;
             this.forwardingPeer = null;
         }
-        
+
         disableMonitoring() {
             this.sendObjectToAll({command: "requestForwardMode", state: false});
             this.isMonitoring = false;
         }
     }
-    
+
     namespace.RetrowebNetwork = class extends namespace.BinarySwitchedNetwork {
         constructor(linkType, peerOptions, networkDataCallback, stateChangedCallback) {
             super(linkType, peerOptions, networkDataCallback, stateChangedCallback);
