@@ -213,7 +213,7 @@ function loadSystemWithDisk() {
     console.log("Choosing disk image: "  + diskName);
 
     bootButton.disabled = true;
-    system.loadPack("https://www.loomcom.com/jsalto/images/" + diskName,
+    system.loadPack("/contraltojs/images/" + diskName,
         function() {bootButton.disabled = false;});
 }
 
