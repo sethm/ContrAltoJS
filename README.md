@@ -6,7 +6,7 @@ emulator.
 The end goal is a usable, performant Xerox Alto emulator running in
 your web browser.
 
-![ContrAltoJS In Action] (https://loomcom.com/images/pages/contraltojs.png)
+![ContrAltoJS In Action](https://loomcom.com/images/pages/contraltojs.png)
 
 # Status
 
